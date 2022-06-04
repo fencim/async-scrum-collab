@@ -149,7 +149,7 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { ICeremony } from 'src/services';
+import { ICeremony } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { defineComponent } from 'vue';
 const ceremonyStore = useCeremonyStore();

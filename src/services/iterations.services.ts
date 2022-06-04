@@ -1,11 +1,6 @@
+import { IIteration } from 'src/entities';
 import { LocalBaseService } from './localbase.services';
-export interface IIteration {
-    key: string;
-    projectKey: string;
-    name: string;
-    start: string;
-    end: string;
-}
+
 class ProfileService extends LocalBaseService<IIteration> {
     constructor() {
         super('iteration')

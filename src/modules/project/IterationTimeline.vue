@@ -51,7 +51,7 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { ICeremony, IIteration } from 'src/services';
+import { ICeremony, IIteration } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useProjectStore } from 'src/stores/projects';
 import { defineComponent } from 'vue';

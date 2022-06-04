@@ -19,7 +19,7 @@ import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects';
-import { IProfile, IProject } from 'src/services';
+import { IProfile, IProject } from 'src/entities';
 const projectStore = useProjectStore();
 
 export default defineComponent({

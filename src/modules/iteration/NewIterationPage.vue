@@ -69,7 +69,7 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { IIteration, IProject, CeremonyType } from 'src/services';
+import { IIteration, IProject, CeremonyType } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useIterationStore } from 'src/stores/iterations';
 import { useProjectStore } from 'src/stores/projects';

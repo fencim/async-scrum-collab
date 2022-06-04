@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts">
-import { IProject } from 'src/services';
+import { IProject } from 'src/entities';
 import { useProfilesStore } from 'src/stores/profiles';
 import { useProjectStore } from 'src/stores/projects';
 import { defineComponent } from 'vue';

@@ -1,9 +1,6 @@
+import { IMedia } from 'src/entities';
 import { LocalBaseService } from './localbase.services';
-export interface IMedia {
-    key: string;
-    type: 'audio' | 'doc' | 'image' | 'video',
-    dataUrl: string;
-}
+
 class AttachmentService extends LocalBaseService<IMedia> {
     constructor() {
         super('media')

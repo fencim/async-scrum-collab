@@ -1,11 +1,6 @@
+import { IProject } from 'src/entities';
 import { LocalBaseService } from './localbase.services';
-export interface IProject {
-    key: string;
-    name: string;
-    description?: string;
-    icon?: string;
-    members: string[];
-}
+
 class ProjectService extends LocalBaseService<IProject> {
     constructor() {
         super('project')

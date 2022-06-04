@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts">
-import { IIteration, IProject } from 'src/services';
+import { IIteration, IProject } from 'src/entities';
 import { useIterationStore } from 'src/stores/iterations';
 import { useProjectStore } from 'src/stores/projects';
 import { defineComponent } from 'vue';

@@ -1,9 +1,6 @@
+import { IProfile } from 'src/entities';
 import { LocalBaseService } from './localbase.services';
-export interface IProfile {
-    key: string;
-    name: string;
-    avatar: string;
-}
+
 class ProfileService extends LocalBaseService<IProfile> {
     constructor() {
         super('profile')
