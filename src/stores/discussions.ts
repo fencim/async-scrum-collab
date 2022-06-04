@@ -51,7 +51,7 @@ export const useDiscussionStore = defineStore('discussion', {
         case 'objective':
           return 'Objective: ' + item.description;
         case 'story':
-          return `As a ${item.targetUser}, I want ${item.subject}`;
+          return `As a ${item.targetUser}, I want to ${item.subject}, so that ${item.purpose}`;
         case 'task':
           return 'Task:' + item.description
         default:

@@ -50,15 +50,16 @@
         {{ theDiscussion.purpose }}
 
         <q-table
+          title="Acceptance Criteria"
           class="col-12"
           :rows="theDiscussion.acceptanceCriteria"
           :columns="acceptanceCriteriaColumns"
         >
         </q-table>
-        {{ theDiscussion.tasks }}
+        <q-table title="Sub-Tasks" class="col-12" :rows="subTasks"> </q-table>
       </q-card-section>
       <q-card-section>
-        <q-table :rows="progressReport" grid>
+        <q-table title="Progress" :rows="progressReport" grid>
           <template v-slot:item="props">
             <div class="q-pa-xs col-12">
               <q-card
@@ -207,7 +208,10 @@ export default defineComponent({
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
           this.activeProject,
-          convoStore.convo
+          await convoStore.ofDiscussion(
+            this.activeProjectKey,
+            this.theDiscussion.key
+          )
         );
         this.progressReport = report;
         if (this.theDiscussion.progress != report[0].progress) {

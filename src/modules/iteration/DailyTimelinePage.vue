@@ -7,7 +7,7 @@
         :title="c.type.toUpperCase()"
         :subtitle="`${date.formatDate(
           c.start,
-          'MMM DD, YYYY hh:mm A'
+          'ddd, MMM DD, YYYY hh:mm A'
         )} - ${date.formatDate(c.end, 'hh:mm A')}`"
         :side="/(planning|retro|review)/.test(c.type) ? 'left' : 'right'"
       >
@@ -31,6 +31,7 @@
             '/' + c.projectKey + '/' + c.iterationKey + '/' + c.key + '/edit'
           "
         />
+        <q-linear-progress instant-feedback :value="c.progress" />
       </q-timeline-entry>
       <!-- <q-timeline-entry
         title="Sprint Planning"

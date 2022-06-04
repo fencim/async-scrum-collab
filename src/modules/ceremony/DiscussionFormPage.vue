@@ -96,11 +96,7 @@
           >
             <template v-slot:append>
               <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
+                <q-popup-proxy>
                   <q-date v-model="theDiscussion.due">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
@@ -115,17 +111,17 @@
           <q-input
             class="col-6"
             v-model="theDiscussion.targetUser"
-            label="Target user"
+            label="As a"
           />
           <q-input
             class="col-6"
             v-model="theDiscussion.subject"
-            label="Subject"
+            label="I want to"
           />
           <q-input
             class="col-12"
             v-model="theDiscussion.purpose"
-            label="Purpose"
+            label="So that"
           />
           <q-table
             class="col-12"
@@ -181,15 +177,19 @@ import {
   IProject,
 } from 'src/services';
 import { useCeremonyStore } from 'src/stores/cermonies';
+import { useConvoStore } from 'src/stores/convo';
 import { useDiscussionStore } from 'src/stores/discussions';
 import { useIterationStore } from 'src/stores/iterations';
+import { useProfilesStore } from 'src/stores/profiles';
 import { useProjectStore } from 'src/stores/projects';
 import { defineComponent } from 'vue';
 
+const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
+const convoStore = useConvoStore();
 
 export default defineComponent({
   name: 'DiscussionFormPage',
@@ -291,6 +291,31 @@ export default defineComponent({
       if (this.activeCeremony) {
         this.activeCeremony.discussions.push(this.theDiscussion.key);
         await ceremonyStore.saveCeremony(this.activeCeremony);
+      }
+      if (this.activeProject && profileStore.presentUser) {
+        const report = discussionStore.checkCompleteness(
+          this.theDiscussion,
+          this.activeProject,
+          await convoStore.ofDiscussion(
+            this.activeProjectKey,
+            this.theDiscussion.key
+          )
+        );
+        if (this.theDiscussion.progress != report[0].progress) {
+          convoStore.sendMessage(
+            this.activeProjectKey,
+            this.theDiscussion.key,
+            'bot',
+            {
+              type: 'message',
+              message: `${profileStore.presentUser.name} updated this ${
+                this.theDiscussion.type
+              } and progressed from ${
+                (this.theDiscussion.progress || 0) * 100
+              }% to ${100 * (report[0].progress || 0)}%`,
+            }
+          );
+        }
       }
       if (this.$route.params.item) {
         await this.$router.replace({
