@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
-import { IIteration, iterationService } from 'src/services';
+import { IIteration } from 'src/entities';
+import { iterationService } from 'src/services';
 
 export const useIterationStore = defineStore('iteration', {
   state: () => ({

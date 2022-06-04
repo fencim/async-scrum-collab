@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import { IProject } from 'src/services';
+import { IProject } from 'src/entities';
 import { useProjectStore } from 'src/stores/projects';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { Convo, IProject, IQuestion, IVote } from 'src/services';
-import { DiscussionItem, discussionService } from 'src/services/discussions.services';
+import { Convo, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
+import { discussionService } from 'src/services/discussions.services';
 
 export const useDiscussionStore = defineStore('discussion', {
   state: () => ({

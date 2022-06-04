@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { IProject, projectService } from 'src/services';
+import { IProject } from 'src/entities';
+import { projectService } from 'src/services';
 
 export const useProjectStore = defineStore('projectStore', {
   state: () => ({

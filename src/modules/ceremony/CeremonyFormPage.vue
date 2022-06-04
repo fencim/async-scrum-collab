@@ -116,7 +116,7 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/services';
+import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useDiscussionStore } from 'src/stores/discussions';
 import { useIterationStore } from 'src/stores/iterations';

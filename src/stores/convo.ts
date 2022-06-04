@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
-import { Convo, convoService } from 'src/services';
+import { Convo } from 'src/entities';
+import { convoService } from 'src/services';
 
 export const useConvoStore = defineStore('convo', {
   state: () => ({

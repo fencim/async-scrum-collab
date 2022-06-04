@@ -58,7 +58,7 @@
 </template>
 
 <script lang="ts">
-import { DiscussionItem, ICeremony, IProject } from 'src/services';
+import { DiscussionItem, ICeremony, IProject } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useDiscussionStore } from 'src/stores/discussions';
 import { useProjectStore } from 'src/stores/projects';

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { IProfile, profileService } from 'src/services';
+import { IProfile } from 'src/entities';
+import { profileService } from 'src/services';
 
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({

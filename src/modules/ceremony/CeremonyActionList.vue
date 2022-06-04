@@ -27,7 +27,7 @@
 import { defineComponent } from 'vue';
 import EssentialLink from 'src/components/EssentialLink.vue';
 import { useCeremonyStore } from 'src/stores/cermonies';
-import { ICeremony, IIteration, IProject } from 'src/services';
+import { ICeremony, IIteration, IProject } from 'src/entities';
 import { useProjectStore } from 'src/stores/projects';
 import { useIterationStore } from 'src/stores/iterations';
 import { convoBus } from './convo-bus';

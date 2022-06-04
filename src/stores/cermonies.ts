@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { ceremonyService, ICeremony } from 'src/services';
+import { ICeremony } from 'src/entities';
+import { ceremonyService } from 'src/services';
 
 export const useCeremonyStore = defineStore('ceremony', {
   state: () => ({

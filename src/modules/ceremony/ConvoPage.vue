@@ -283,7 +283,7 @@ import {
   Convo,
   IProfile,
   DiscussionItem,
-} from 'src/services';
+} from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useConvoStore } from 'src/stores/convo';
 import { useDiscussionStore } from 'src/stores/discussions';

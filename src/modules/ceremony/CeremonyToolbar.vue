@@ -44,7 +44,7 @@ import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useIterationStore } from 'src/stores/iterations';
 import { useProjectStore } from 'src/stores/projects';
 import { useCeremonyStore } from 'src/stores/cermonies';
-import { ICeremony, IIteration, IProfile, IProject } from 'src/services';
+import { ICeremony, IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
 
 const projectStore = useProjectStore();
