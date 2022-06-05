@@ -7,6 +7,7 @@ class ProfileService extends LocalBaseService<IProfile> {
     }
     saveCb?: ((data: IProfile) => Promise<void>) | undefined = async (data) => {
         console.log('save profile', data);
+
     }
     updateCb?: ((data: IProfile) => Promise<void>) | undefined = async (data) => {
         console.log('update profile', data);
@@ -17,5 +18,6 @@ class ProfileService extends LocalBaseService<IProfile> {
     deleteAllCb?: (() => Promise<void>) | undefined = async () => {
         console.log('delete all profiles');
     }
+
 }
 export const profileService = new ProfileService();

@@ -3,6 +3,7 @@ export interface IDiscussion {
     projectKey: string;
     ceremonyKey: string;
     awareness: { [profileKey: string]: string };
+    complexity?: number;
     progress?: number;
     unread?: number;
 }
@@ -29,12 +30,33 @@ export interface IAcceptanceCriteria {
     when: string;
     then: string;
 }
+export interface IFeature extends IDiscussion {
+    type: 'Feature';
+    description: string;
+    businessValue: number;
+}
 export interface IStory extends IDiscussion {
     type: 'story';
+    forFeature?: string;
     targetUser?: string;
     subject?: string;
     purpose?: string;
     acceptanceCriteria: IAcceptanceCriteria[];
     tasks: (string | TechnicalTask)[]
 }
-export type DiscussionItem = IStory | IGoal | IObjective | TechnicalTask;
+export interface IRoadBlock extends IDiscussion {
+    type: 'roadblock';
+    description: string;
+    label: string;
+    resolution?: string;
+}
+
+export interface IScrumReport extends IDiscussion {
+    type: 'scrum';
+    reporter: string;
+    tasksDid: string[];
+    todoTasks: string[];
+    roadblocks: string[];
+}
+
+export type DiscussionItem = IStory | IGoal | IObjective | TechnicalTask | IScrumReport | IRoadBlock;

@@ -1,211 +1,206 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
-    <div style="width: 100%; margin-bottom: 80px">
-      <div v-for="m in messages" :key="m.key" :id="m.key">
-        <q-chat-message
-          v-if="m.type == 'message' && typeof m.from == 'object'"
-          :name="m.from.name"
-          :avatar="m.from.avatar"
-          :sent="m.from.key == profileStore.presentUser?.key"
-        >
-          <template v-slot:stamp>
-            <div>
-              <q-btn
-                @click="replyTo = m"
-                dense
-                color="primary"
-                flat
-                round
-                size="sm"
-                icon="reply"
-              />
-              {{ stampTime(m.date) }}
-              <q-icon
-                :name="getStatus(m)"
-                class="absolute-bottom-right rounded-borders"
-                size="sm"
-              />
-            </div>
-          </template>
-          <div style="min-width: 120px">
-            {{ m.message }}
-          </div>
-        </q-chat-message>
-        <q-chat-message
-          v-else-if="m.type == 'vote' && typeof m.from == 'object'"
-          :name="m.from.name"
-          :avatar="m.from.avatar"
-          :sent="m.from.key == profileStore.presentUser?.key"
-        >
-          <template v-slot:stamp>
-            <div>
-              <q-btn
-                @click="replyTo = m"
-                dense
-                color="primary"
-                flat
-                round
-                size="sm"
-                icon="reply"
-              />
-              {{ stampTime(m.date) }}
-              <q-icon
-                :name="getStatus(m)"
-                class="absolute-bottom-right rounded-borders"
-                size="sm"
-              />
-            </div>
-          </template>
-          <div style="min-width: 150px">
-            {{ m.message }}
-          </div>
-        </q-chat-message>
-        <q-chat-message
-          v-else-if="m.type == 'question' && typeof m.from == 'object'"
-          :name="m.from.name"
-          :avatar="m.from.avatar"
-          :sent="m.from.key == profileStore.presentUser?.key"
-        >
-          <template v-slot:stamp>
-            <div>
-              <q-btn
-                @click="replyTo = m"
-                dense
-                color="primary"
-                flat
-                round
-                size="sm"
-                icon="reply"
-              />
-              {{ stampTime(m.date) }}
-              <q-icon
-                :name="getStatus(m)"
-                class="absolute-bottom-right rounded-borders"
-                size="sm"
-              />
-            </div>
-          </template>
-          <div style="min-width: 150px">
-            {{ m.message }}
-            <q-icon name="question_mark" size="sm" />
-          </div>
-        </q-chat-message>
-        <q-chat-message
-          v-else-if="m.type == 'response' && typeof m.from == 'object'"
-          :name="m.from.name"
-          :avatar="m.from.avatar"
-          :sent="m.from.key == profileStore.presentUser?.key"
-        >
-          <template v-slot:stamp>
-            <div>
-              <q-btn
-                @click="replyTo = m"
-                dense
-                color="primary"
-                flat
-                round
-                size="sm"
-                icon="reply"
-              />
-              {{ stampTime(m.date) }}
-              <q-icon
-                :name="getStatus(m)"
-                class="absolute-bottom-right rounded-borders"
-                size="sm"
-              />
-            </div>
-          </template>
-          <a
-            style="min-width: 150px; text-decoration: none"
-            class="text-grey-9 no"
-            v-for="r in [convoStore.getConvo(m.ref)]"
-            :key="r?.key"
-            :href="
-              activeProject +
-              '/' +
-              activeIteration +
-              '/' +
-              activeCeremony +
-              '/' +
-              activeItem +
-              '/#' +
-              r?.key
-            "
+    <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)">
+      <div style="width: 100%; margin-bottom: 80px">
+        <div v-for="m in messages" :key="m.key" :id="m.key">
+          <q-chat-message
+            v-if="m.type == 'message' && typeof m.from == 'object'"
+            :name="m.from.name"
+            :avatar="m.from.avatar"
+            :sent="m.from.key == profileStore.presentUser?.key"
           >
-            <q-avatar size="sm" v-if="typeof r?.from == 'object'">
-              <img :src="r?.from.avatar" />
-            </q-avatar>
-            &nbsp;
-            {{ r?.message }}
-            <q-icon
-              name="question_mark"
-              v-if="r?.type == 'question'"
-              size="sm"
-            />
-            <q-icon name="reply" size="sm" />
-          </a>
-          <div style="min-width: 150px">
-            {{ m.message }}
-          </div>
-        </q-chat-message>
-      </div>
-
-      <!-- <q-chat-message
-        name="bot"
-        avatar="icons/bot2.png"
-        :text="['Acceptance Criteria (AC) was updated by @PO']"
-        stamp="7 minutes ago"
-      />
-      <q-chat-message
-        name="bot"
-        avatar="icons/bot2.png"
-        text-html
-        :text="['You may now vote <strong>SP</strong> estimates.']"
-        stamp="7 minutes ago"
-      />
-      <q-chat-message
-        name="me"
-        avatar="icons/avatar4.jpg"
-        text-html
-        :text="[`I will vote for this ticket for ... points.`]"
-        sent
-        stamp="7 minutes ago"
-      />
-      <q-chat-message
-        name="Jane"
-        avatar="icons/avatar3.jpg"
-        :text="[`I will vote for this ticket for ... points.`]"
-        stamp="4 minutes ago"
-      />
-      <q-chat-message
-        name="Jane"
-        avatar="icons/avatar3.jpg"
-        stamp="4 minutes ago"
-      >
-        <div>
-          <q-btn icon="play_arrow" flat size="lg" round dense />
-          <q-badge color="black" class="q-mx-xs" />
-          <q-badge color="black" class="q-mx-xs" />
-          <q-badge color="black" class="q-mx-xs" />
-          <span class="text-title">09:00</span>
-          <q-badge color="transparent">
-            <q-icon name="question_mark" color="white" size="sm" />
-          </q-badge>
+            <template v-slot:stamp>
+              <div>
+                <q-btn
+                  @click="replyTo = m"
+                  dense
+                  color="primary"
+                  flat
+                  round
+                  size="sm"
+                  icon="reply"
+                />
+                {{ stampTime(m.date) }}
+                <q-icon
+                  :name="getStatus(m)"
+                  class="absolute-bottom-right rounded-borders"
+                  size="sm"
+                />
+              </div>
+            </template>
+            <div style="min-width: 120px">
+              {{ m.message }}
+            </div>
+          </q-chat-message>
+          <q-chat-message
+            v-else-if="m.type == 'vote' && typeof m.from == 'object'"
+            :name="m.from.name"
+            :avatar="m.from.avatar"
+            :sent="m.from.key == profileStore.presentUser?.key"
+          >
+            <template v-slot:stamp>
+              <div>
+                <q-btn
+                  @click="replyTo = m"
+                  dense
+                  color="primary"
+                  flat
+                  round
+                  size="sm"
+                  icon="reply"
+                />
+                {{ stampTime(m.date) }}
+                <q-icon
+                  :name="getStatus(m)"
+                  class="absolute-bottom-right rounded-borders"
+                  size="sm"
+                />
+              </div>
+            </template>
+            <div style="min-width: 150px">
+              {{ m.message }}
+              <q-badge v-if="revealVotes == 1" class="bg-green">{{
+                m.vote
+              }}</q-badge>
+            </div>
+          </q-chat-message>
+          <q-chat-message
+            v-else-if="m.type == 'question' && typeof m.from == 'object'"
+            :name="m.from.name"
+            :avatar="m.from.avatar"
+            :sent="m.from.key == profileStore.presentUser?.key"
+          >
+            <template v-slot:stamp>
+              <div>
+                <q-btn
+                  @click="replyTo = m"
+                  dense
+                  color="primary"
+                  flat
+                  round
+                  size="sm"
+                  icon="reply"
+                />
+                {{ stampTime(m.date) }}
+                <q-icon
+                  :name="getStatus(m)"
+                  class="absolute-bottom-right rounded-borders"
+                  size="sm"
+                />
+              </div>
+            </template>
+            <div style="min-width: 150px">
+              <q-icon v-if="m.resolved" name="check" size="sm" />
+              {{ m.message }}
+              <q-icon name="question_mark" size="sm" />
+            </div>
+          </q-chat-message>
+          <q-chat-message
+            v-else-if="m.type == 'response' && typeof m.from == 'object'"
+            :name="m.from.name"
+            :avatar="m.from.avatar"
+            :sent="m.from.key == profileStore.presentUser?.key"
+          >
+            <template v-slot:stamp>
+              <div>
+                <q-btn
+                  @click="replyTo = m"
+                  dense
+                  color="primary"
+                  flat
+                  round
+                  size="sm"
+                  icon="reply"
+                />
+                {{ stampTime(m.date) }}
+                <q-icon
+                  :name="getStatus(m)"
+                  class="absolute-bottom-right rounded-borders"
+                  size="sm"
+                />
+              </div>
+            </template>
+            <a
+              style="min-width: 150px; text-decoration: none"
+              class="text-grey-9 no"
+              v-for="r in [convoStore.getConvo(m.ref)]"
+              :key="r?.key"
+              :href="
+                activeProject +
+                '/' +
+                activeIteration +
+                '/' +
+                activeCeremony +
+                '/' +
+                activeItem +
+                '/convo#' +
+                r?.key
+              "
+            >
+              <q-avatar size="sm" v-if="typeof r?.from == 'object'">
+                <img :src="r?.from.avatar" />
+              </q-avatar>
+              &nbsp;
+              {{ r?.message }}
+              <q-icon
+                name="question_mark"
+                v-if="r?.type == 'question'"
+                size="sm"
+              />
+              <q-icon name="reply" size="sm" />
+            </a>
+            <div style="min-width: 150px">
+              <q-card class="bg-transparent text-dark no-shadow">
+                <q-card-section horizontal>
+                  <q-card-actions vertical align="right">
+                    <q-btn
+                      icon="thumb_up_alt"
+                      size="sm"
+                      flat
+                      :color="
+                        profileStore.presentUser &&
+                        m.feedback &&
+                        m.feedback[profileStore.presentUser.key] == 'agree'
+                          ? 'primary'
+                          : 'dark'
+                      "
+                      dense
+                      @click="resolveQuestionOf(m, 'agree')"
+                      ><q-tooltip>{{
+                        Object.values(m.feedback).filter((m) => m == 'agree')
+                          .length
+                      }}</q-tooltip>
+                    </q-btn>
+                    <q-btn
+                      icon="thumb_down_alt"
+                      size="sm"
+                      flat
+                      :color="
+                        profileStore.presentUser &&
+                        m.feedback &&
+                        m.feedback[profileStore.presentUser.key] == 'disagree'
+                          ? 'primary'
+                          : 'dark'
+                      "
+                      dense
+                      @click="resolveQuestionOf(m, 'disagree')"
+                    >
+                      <q-tooltip>{{
+                        Object.values(m.feedback).filter((m) => m == 'disagree')
+                          .length
+                      }}</q-tooltip>
+                    </q-btn>
+                  </q-card-actions>
+                  <q-card-section>
+                    {{ m.message }}
+                  </q-card-section>
+                </q-card-section>
+              </q-card>
+            </div>
+          </q-chat-message>
         </div>
-      </q-chat-message>
-      <q-chat-message
-        name="Jane"
-        avatar="icons/avatar2.jpg"
-        :text="[`I will vote for this ticket for ... points.`]"
-        stamp="4 minutes ago"
-      />
-      <q-chat-message
-        name="Sarah"
-        avatar="icons/avatar5.jpg"
-        :text="[`I will vote for this ticket for ... points.`]"
-        stamp="4 minutes ago"
-      /> -->
-    </div>
+      </div>
+    </q-scroll-area>
     <q-form @submit="sendMessage">
       <q-page-sticky expand position="bottom">
         <q-toolbar class="bg-grey-10" style="padding-right: 70px">
@@ -216,19 +211,25 @@
               autofocus
               v-model="message"
               rounded
-              :label-slot="!!replyTo"
+              :label-slot="!!replyTo || confirmDisagreement"
             >
               <template v-slot:label>
                 <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
                   <img :src="replyTo?.from.avatar" />
                 </q-avatar>
+                <q-avatar size="sm" v-else-if="confirmDisagreement">
+                  <q-icon name="thumb_down_alt" />
+                </q-avatar>
                 &nbsp;
-                <span class="text-weight-bold text-deep-orange"
+                <span
+                  v-if="replyTo && !confirmDisagreement"
+                  class="text-weight-bold text-deep-orange"
                   >{{ replyTo?.message
                   }}<q-icon
                     name="question_mark"
                     v-if="replyTo?.type == 'question'"
                 /></span>
+                <span v-else>Why disagree?</span>
               </template>
               <template v-slot:append>
                 <q-icon name="question_mark" v-if="askingQuestion" />
@@ -275,7 +276,7 @@
 </template>
 
 <script lang="ts">
-import { date } from 'quasar';
+import { date, QScrollArea } from 'quasar';
 import {
   IIteration,
   IProject,
@@ -283,6 +284,8 @@ import {
   Convo,
   IProfile,
   DiscussionItem,
+  IResponse,
+  IVote,
 } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useConvoStore } from 'src/stores/convo';
@@ -297,7 +300,7 @@ const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
-const discusssionStore = useDiscussionStore();
+const discussionStore = useDiscussionStore();
 const convoStore = useConvoStore();
 
 export default defineComponent({
@@ -320,7 +323,9 @@ export default defineComponent({
       replyTo: undefined as Convo | undefined,
       timer: 0 as NodeJS.Timeout | 0,
       askingQuestion: false,
+      confirmDisagreement: false,
       dialogVote: false,
+      revealVotes: undefined as number | undefined,
     };
   },
   mounted() {
@@ -328,16 +333,33 @@ export default defineComponent({
     this.timer = setInterval(() => this.updateMessages(), 1000);
     convoBus.on('question', this.askQuestion);
     convoBus.on('vote', this.confirmVote);
+    convoBus.on('disagree', this.confirmDisagree);
+    convoBus.on('refresh', this.init);
   },
   unmounted() {
     this.timer && clearInterval(this.timer);
     convoBus.off('question', this.askQuestion);
     convoBus.off('vote', this.confirmVote);
+    convoBus.off('disagree', this.confirmVote);
+    convoBus.off('refresh', this.init);
     convoBus.emit('onQuestion', false);
+    convoBus.emit('onDisagree', false);
+  },
+  activated() {
+    if (!this.$route.hash) {
+      const scroll = this.$refs.scrollAreaRef as QScrollArea;
+
+      scroll?.setScrollPosition(
+        'vertical',
+        scroll.getScrollTarget().scrollHeight,
+        0
+      );
+    }
   },
   updated() {
     this.init();
   },
+
   methods: {
     async init() {
       this.activeProject =
@@ -364,9 +386,13 @@ export default defineComponent({
 
       this.activeItem =
         (this.$route.params.item && String(this.$route.params.item)) || '';
-      this.discussion = await discusssionStore.withKey(this.activeItem);
+      this.discussion = await discussionStore.withKey(this.activeItem);
       if (this.$route.params.action == 'question') {
         this.askQuestion();
+      } else if (this.$route.params.action == 'vote') {
+        this.confirmVote();
+      } else if (this.$route.params.action == 'disagree') {
+        this.confirmDisagree();
       }
       this.assesItem();
     },
@@ -399,6 +425,22 @@ export default defineComponent({
           profileStore.presentUser?.key || '',
           { type: 'response', message: this.message, ref: this.replyTo.key }
         );
+      } else if (this.confirmDisagreement && this.message.trim()) {
+        convoStore.sendMessage(
+          this.activeProject,
+          this.activeItem || this.activeCeremony,
+          profileStore.presentUser?.key || '',
+          {
+            type: 'question',
+            message: 'I disagree because ' + this.message,
+          }
+        );
+        if (this.discussion && profileStore.presentUser && this.project) {
+          this.discussion.awareness = this.discussion.awareness || {};
+          this.discussion.awareness[profileStore.presentUser.key] = 'disagree';
+          await this.assesItem();
+        }
+        this.confirmDisagree(); //toggle
       } else {
         convoStore.sendMessage(
           this.activeProject,
@@ -438,6 +480,10 @@ export default defineComponent({
       this.askingQuestion = !this.askingQuestion;
       convoBus.emit('onQuestion', this.askingQuestion);
     },
+    confirmDisagree() {
+      this.confirmDisagreement = !this.confirmDisagreement;
+      convoBus.emit('onDisagree', this.confirmDisagreement);
+    },
     confirmVote() {
       if (this.discussion) {
         this.dialogVote = true;
@@ -461,19 +507,80 @@ export default defineComponent({
           }
         );
       }
-      await this.assesItem();
+      const report = await this.assesItem();
+      const voteReport = report && report.find((r) => r.factor == 'votes');
+      if (voteReport && voteReport.progress >= 1) {
+        const voteCasts = this.convoStore.convo.filter(
+          (v) => v.type == 'vote'
+        ) as IVote[];
+        const votes = voteCasts
+          .map((v) => v.vote)
+          .sort()
+          .reverse();
+        const uniqueVotes = [...new Set(votes)];
+        const voteCounts = uniqueVotes.reduce(
+          (p, c) => p.concat([votes.filter((v) => v == c).length]),
+          [] as number[]
+        );
+        const majorityVoteIndex = voteCounts.reduce(
+          (p, c, index, self) => (c > 1 && (p < 0 || self[p] < c) ? index : p),
+          -1
+        );
+        const winningVote = uniqueVotes[majorityVoteIndex];
+        await convoStore.sendMessage(
+          this.activeProject,
+          this.activeItem || this.activeCeremony,
+          'bot',
+          {
+            type: 'message',
+            message:
+              'All votes are collected (' +
+              uniqueVotes.map((v, i) => v + ':' + voteCounts[i]).join(', ') +
+              ') with majority of ' +
+              winningVote,
+          }
+        );
+
+        if (this.discussion) {
+          this.discussion.complexity = Number(winningVote);
+          await discussionStore.saveDiscussion(this.discussion);
+        }
+      }
       this.dialogVote = false;
     },
     async assesItem() {
       if (this.discussion && this.project) {
-        const report = discusssionStore.checkCompleteness(
+        const report = discussionStore.checkCompleteness(
           this.discussion,
           this.project,
           this.convoStore.convo
         );
         if (this.discussion.progress != report[0].progress) {
           this.discussion.progress = report[0].progress;
-          await discusssionStore.saveDiscussion(this.discussion);
+          await discussionStore.saveDiscussion(this.discussion);
+        }
+        this.revealVotes = this.discussion.complexity;
+        return report;
+      }
+    },
+    async resolveQuestionOf(msg: IResponse, resolution: 'agree' | 'disagree') {
+      if (profileStore.presentUser) {
+        msg.feedback = { ...msg.feedback } || {};
+        msg.feedback[profileStore.presentUser?.key] = resolution;
+        await convoStore.saveConvo({ ...msg });
+
+        let qMsg = this.messages.find((m) => m.key == msg.ref);
+        while (qMsg && qMsg.type != 'question' && resolution == 'agree') {
+          if (qMsg.type == 'response' && qMsg.ref) {
+            const ref = qMsg.ref;
+            qMsg = this.messages.find((m) => m.key == ref);
+          } else {
+            qMsg = undefined;
+          }
+        }
+        if (qMsg && qMsg.type == 'question' && resolution == 'agree') {
+          qMsg.resolved = true;
+          await convoStore.saveConvo({ ...qMsg });
         }
       }
     },

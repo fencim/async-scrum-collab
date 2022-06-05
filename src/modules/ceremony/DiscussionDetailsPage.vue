@@ -17,8 +17,16 @@
           :to="`/${activeProjectKey}/${activeIterationKey}/${activeCeremonyKey}/${activeItemKey}/edit`"
         />
       </q-toolbar>
-      <q-card-section class="row">
-        {{ describeDiscussion(theDiscussion) }}
+      <q-card-section horizontal>
+        <q-card-section>
+          {{ describeDiscussion(theDiscussion) }}
+        </q-card-section>
+        <q-card-section v-if="theDiscussion.complexity !== undefined">
+          <q-badge class="text-h3">{{ theDiscussion.complexity }}</q-badge>
+          <q-btn icon="refresh" dense round flat @click="resetVoting()">
+            <q-tooltip>Reset Voting</q-tooltip>
+          </q-btn>
+        </q-card-section>
       </q-card-section>
       <q-card-section
         v-if="theDiscussion.type == 'goal' || theDiscussion.type == 'task'"
@@ -56,10 +64,39 @@
           :columns="acceptanceCriteriaColumns"
         >
         </q-table>
-        <q-table title="Sub-Tasks" class="col-12" :rows="subTasks"> </q-table>
+        <q-table
+          v-if="subTasks && subTasks.length"
+          title="Sub-Tasks"
+          class="col-12"
+          :rows="subTasks"
+        >
+        </q-table>
+      </q-card-section>
+      <q-card-section horizontal>
+        <q-card-section>
+          Agreed
+          <recent-active-members :profiles="membersAgreed" />
+        </q-card-section>
+        <q-card-section>
+          Disgreed
+          <recent-active-members :profiles="membersDisagreed" />
+        </q-card-section>
+        <q-card-section>
+          Pending
+          <recent-active-members :profiles="membersPending" />
+        </q-card-section>
+        <q-card-section>
+          Voted
+          <recent-active-members :profiles="membersVoted" />
+        </q-card-section>
       </q-card-section>
       <q-card-section>
-        <q-table title="Progress" :rows="progressReport" grid>
+        <q-table
+          title="Progress"
+          :rows="progressReport"
+          grid
+          :rows-per-page-options="[0]"
+        >
           <template v-slot:item="props">
             <div class="q-pa-xs col-12">
               <q-card
@@ -98,17 +135,21 @@ import {
   IAcceptanceCriteria,
   ICeremony,
   IIteration,
+  IProfile,
   IProject,
 } from 'src/entities';
+import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useCeremonyStore } from 'src/stores/cermonies';
 import { useConvoStore } from 'src/stores/convo';
 import { useDiscussionStore } from 'src/stores/discussions';
 import { useIterationStore } from 'src/stores/iterations';
+import { useProfilesStore } from 'src/stores/profiles';
 import { useProjectStore } from 'src/stores/projects';
 import { defineComponent } from 'vue';
 import { convoBus } from './convo-bus';
 
 const projectStore = useProjectStore();
+const profileStore = useProfilesStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
@@ -116,7 +157,7 @@ const convoStore = useConvoStore();
 
 export default defineComponent({
   name: 'DiscussionFormPage',
-  components: {},
+  components: { RecentActiveMembers },
   data() {
     return {
       date: date,
@@ -132,6 +173,10 @@ export default defineComponent({
       discussions: [] as DiscussionItem[],
       subTasks: [] as DiscussionItem[],
       theDiscussion: {} as DiscussionItem,
+      membersAgreed: [] as IProfile[],
+      membersDisagreed: [] as IProfile[],
+      membersPending: [] as IProfile[],
+      membersVoted: [] as IProfile[],
       progressReport: [] as { progress: number; feedback: string }[],
       dialogAcceptance: false,
       newAcceptance: {} as IAcceptanceCriteria,
@@ -157,12 +202,18 @@ export default defineComponent({
   },
   async mounted() {
     await this.init();
+    convoBus.on('question', () => this.doAction('question'));
+    convoBus.on('vote', () => this.doAction('vote'));
+    convoBus.on('disagree', () => this.doAction('disagree'));
+    convoBus.on('refresh', this.init);
   },
   async updated() {
     await this.init();
   },
   unmounted() {
-    convoBus.off('question', this.askQuestion);
+    convoBus.off('question');
+    convoBus.off('vote');
+    convoBus.off('refresh', this.init);
   },
   computed: {},
   methods: {
@@ -194,27 +245,51 @@ export default defineComponent({
       this.theDiscussion =
         (await discussionStore.withKey(this.activeItemKey)) ||
         this.theDiscussion;
-      if (this.theDiscussion.type == 'story') {
+      if (this.theDiscussion && this.theDiscussion.type == 'story') {
         this.subTasks = await discussionStore.fromKeyList(
           this.activeProjectKey,
           (this.theDiscussion.tasks as string[]) || []
         );
       }
+      await this.revealAwareMembers();
+
       await this.assesItem();
-      convoBus.on('question', this.askQuestion);
     },
-    async assesItem() {
+    async revealAwareMembers() {
+      if (this.theDiscussion) {
+        const awareness = this.theDiscussion.awareness || {};
+        const awareMembers = Object.keys(awareness);
+        this.membersAgreed = await profileStore.fromKeyList(
+          awareMembers.filter((m) => awareness[m] == 'agree')
+        );
+        this.membersDisagreed = await profileStore.fromKeyList(
+          awareMembers.filter((m) => awareness[m] == 'disagree')
+        );
+        this.membersPending = await profileStore.fromKeyList(
+          (this.activeProject?.members || []).filter(
+            (m) => !awareMembers.includes(m)
+          )
+        );
+      }
+    },
+    async assesItem(forceSave?: boolean) {
       if (this.theDiscussion && this.activeProject) {
+        const convo = await convoStore.ofDiscussion(
+          this.activeProjectKey,
+          this.theDiscussion.key
+        );
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
           this.activeProject,
-          await convoStore.ofDiscussion(
-            this.activeProjectKey,
-            this.theDiscussion.key
-          )
+          convo
         );
+        this.membersVoted = await profileStore.fromKeyList([
+          ...new Set(
+            convo.filter((c) => c.type == 'vote').map((c) => c.from as string)
+          ),
+        ]);
         this.progressReport = report;
-        if (this.theDiscussion.progress != report[0].progress) {
+        if (this.theDiscussion.progress != report[0].progress || forceSave) {
           this.theDiscussion.progress = report[0].progress;
           await discussionStore.saveDiscussion(this.theDiscussion);
         }
@@ -223,7 +298,7 @@ export default defineComponent({
     describeDiscussion(item: DiscussionItem) {
       return discussionStore.describeDiscussion(item);
     },
-    async askQuestion() {
+    async doAction(action: string) {
       await this.$router.replace({
         name: 'convo',
         params: {
@@ -231,12 +306,30 @@ export default defineComponent({
           iteration: this.activeIterationKey,
           ceremony: this.activeCeremonyKey,
           item: this.activeItemKey,
-          action: 'question',
+          action: action,
         },
       });
     },
     asProgress(progress: { progress: number; feedback: string }) {
       return progress;
+    },
+    async resetVoting(complexity?: number) {
+      if (this.theDiscussion && profileStore.presentUser) {
+        this.theDiscussion.complexity = complexity;
+        await this.assesItem(true);
+        if (typeof complexity == 'undefined') {
+          convoStore.sendMessage(
+            this.activeProjectKey,
+            this.activeItemKey,
+            profileStore.presentUser.key,
+            {
+              type: 'vote',
+              vote: undefined,
+              message: 'Reseting all votes',
+            }
+          );
+        }
+      }
     },
   },
 });

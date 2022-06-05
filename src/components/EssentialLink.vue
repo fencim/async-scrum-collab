@@ -1,5 +1,5 @@
 <template>
-  <q-item clickable :active="active">
+  <q-item clickable :active="active" v-if="!hide">
     <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
     </q-item-section>
@@ -33,6 +33,10 @@ export default defineComponent({
       default: '',
     },
     active: {
+      type: Boolean,
+      default: false,
+    },
+    hide: {
       type: Boolean,
       default: false,
     },

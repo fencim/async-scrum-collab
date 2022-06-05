@@ -25,6 +25,10 @@
       >
         {{ (progress * 100).toFixed(0) }}%
       </q-circular-progress>
+      <q-tooltip
+        ><div class="text-caption">Convo of {{ activeCeremony?.type }}</div>
+        <q-linear-progress :value="progress" />
+      </q-tooltip>
     </q-item>
     <q-item
       clickable
@@ -115,22 +119,10 @@ export default defineComponent({
       this.activeItemKey =
         (this.$route.params.item && String(this.$route.params.item)) || '';
       this.discussionItems = await Promise.all(
-        (
-          await discussionStore.fromKeyList(
-            this.activeProjectKey,
-            this.activeCeremony?.discussions || []
-          )
-        ).map(async (item) => {
-          if (this.activeProject) {
-            const progress = discussionStore.checkCompleteness(
-              item,
-              this.activeProject,
-              []
-            );
-            item.progress = progress[0].progress;
-          }
-          return item;
-        })
+        await discussionStore.fromKeyList(
+          this.activeProjectKey,
+          this.activeCeremony?.discussions || []
+        )
       );
       if (this.activeCeremony) {
         const progress =

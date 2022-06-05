@@ -21,23 +21,17 @@
         hours)
       </div>
       <recent-active-members :profiles="members" @ctrl-click="setAsUser" />
+      <q-linear-progress :value="ceremony?.progress" />
     </q-toolbar-title>
     <hour-glass v-if="ceremony" :start="ceremony.start" :end="ceremony.end" />
-    <q-circular-progress
-      :value="progress * 100"
-      size="45px"
-      show-value
-      :thickness="0.1"
-      color="grey"
-      center-color="grey-8"
-      class="q-ma-md"
-    />
+    <the-present-user />
   </q-toolbar>
 </template>
 
 <script lang="ts">
 import { useProfilesStore } from 'stores/profiles';
 import { defineComponent } from 'vue';
+import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import HourGlass from 'src/components/HourGlass.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
@@ -54,7 +48,12 @@ const ceremonyStore = useCeremonyStore();
 
 export default defineComponent({
   name: 'CeremonyToolbar',
-  components: { ThePresentProject, HourGlass, RecentActiveMembers },
+  components: {
+    ThePresentProject,
+    HourGlass,
+    RecentActiveMembers,
+    ThePresentUser,
+  },
   data() {
     return {
       date,

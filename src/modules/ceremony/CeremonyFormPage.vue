@@ -43,11 +43,7 @@
           <q-input class="col-6" filled v-model="theCeremony.start">
             <template v-slot:prepend>
               <q-icon name="event" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
+                <q-popup-proxy>
                   <q-date v-model="theCeremony.start" mask="YYYY-MM-DD HH:mm">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
@@ -59,11 +55,7 @@
 
             <template v-slot:append>
               <q-icon name="access_time" class="cursor-pointer">
-                <q-popup-proxy
-                  cover
-                  transition-show="scale"
-                  transition-hide="scale"
-                >
+                <q-popup-proxy>
                   <q-time
                     v-model="theCeremony.start"
                     mask="YYYY-MM-DD HH:mm"

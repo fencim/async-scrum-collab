@@ -301,21 +301,20 @@ export default defineComponent({
             this.theDiscussion.key
           )
         );
-        if (this.theDiscussion.progress != report[0].progress) {
-          convoStore.sendMessage(
-            this.activeProjectKey,
-            this.theDiscussion.key,
-            'bot',
-            {
-              type: 'message',
-              message: `${profileStore.presentUser.name} updated this ${
-                this.theDiscussion.type
-              } and progressed from ${
-                (this.theDiscussion.progress || 0) * 100
-              }% to ${100 * (report[0].progress || 0)}%`,
-            }
-          );
-        }
+
+        convoStore.sendMessage(
+          this.activeProjectKey,
+          this.theDiscussion.key,
+          'bot',
+          {
+            type: 'message',
+            message: `${profileStore.presentUser.name} updated this ${
+              this.theDiscussion.type
+            } and progressed from ${
+              (this.theDiscussion.progress || 0) * 100
+            }% to ${100 * (report[0].progress || 0)}%`,
+          }
+        );
       }
       if (this.$route.params.item) {
         await this.$router.replace({

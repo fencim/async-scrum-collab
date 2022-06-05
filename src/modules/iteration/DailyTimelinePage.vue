@@ -2,6 +2,13 @@
   <q-page class="justify-evenly q-pa-sm">
     <q-timeline layout="loose" :side="'left'">
       <q-timeline-entry
+        :color="
+          date.getDateDiff(new Date(), c.end) > 0
+            ? (c.progress || 0) < 1
+              ? 'negative'
+              : 'dark'
+            : 'info'
+        "
         v-for="c in ceremonies"
         :key="c.key"
         :title="c.type.toUpperCase()"
@@ -31,7 +38,15 @@
             '/' + c.projectKey + '/' + c.iterationKey + '/' + c.key + '/edit'
           "
         />
-        <q-linear-progress instant-feedback :value="c.progress" />
+        <q-linear-progress
+          :color="
+            (c.progress || 0) < 1 && date.getDateDiff(new Date(), c.end) > 0
+              ? 'red'
+              : 'blue'
+          "
+          instant-feedback
+          :value="c.progress"
+        />
       </q-timeline-entry>
       <!-- <q-timeline-entry
         title="Sprint Planning"

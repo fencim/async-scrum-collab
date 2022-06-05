@@ -47,31 +47,38 @@ export const useDiscussionStore = defineStore('discussion', {
     describeDiscussion(item?: DiscussionItem): string {
       switch (item?.type) {
         case 'goal':
-          return 'Goal:' + item.description;
+          return 'Goal: ' + item.description;
         case 'objective':
           return 'Objective: ' + item.description;
         case 'story':
           return `As a ${item.targetUser}, I want to ${item.subject}, so that ${item.purpose}`;
         case 'task':
-          return 'Task:' + item.description
+          return 'Task: ' + item.description;
         default:
           return (item && `${(item as DiscussionItem).type}`) || ('Unknown item');
       }
     },
     checkCompleteness(item: DiscussionItem, project: IProject, convo: Convo[]) {
-      const factors: { progress: number, feedback: string }[] = [];
+      const factors: { factor: string, progress: number, feedback: string }[] = [];
       const members = project.members;
       const questions = convo.filter(c => c.type == 'question') as IQuestion[];
       const votes = convo.filter(c =>
         (c.type == 'vote')
         && members.includes(
           (typeof c.from == 'object') ? c.from.key : c.from)) as IVote[];
-      const vCast = votes.map(v => (typeof v.from == 'object') ? v.from.key : v.from)
-        .filter((value, index, self) => {
-          return self.indexOf(value) === index;
-        });
+
+      const vCast = votes.reduce((p, c) =>
+      (typeof c.vote == 'undefined' ? {} :
+        { ...p, [typeof c.from == 'object' ? c.from.key : c.from]: c.vote }),
+        {} as { [v: string]: string });
+
+      const awareness = Object.values(item.awareness || {});
+      const agreement = awareness.filter(agreeement => agreeement == 'agree');
+
       factors.push(this.completenessOfItem(item));
-      factors.push(this.logFactor(vCast.length, Math.max(members.length, 1), 'approval'));
+      factors.push(this.logFactor(awareness.length, members.length, 'awareness'));
+      factors.push(this.logFactor(Object.values(vCast).length, members.length, 'votes'));
+      factors.push(this.logFactor(agreement.length, members.length, 'agreement'));
 
       const qProgress = questions.map((q) => {
         const totals = convo.reduce((p, c) => {
@@ -111,10 +118,12 @@ export const useDiscussionStore = defineStore('discussion', {
       if (value < 1 && (over > 0)) {
         return {
           progress: value,
+          factor: msg,
           feedback: `Only ${(progress).toFixed(2)} of ${over} of ${msg} is complete`
         };
       } else {
         return {
+          factor: msg,
           progress: 1, feedback: msg[0].toUpperCase() + msg.substring(1) + ' is complete'
         };
       }
@@ -122,9 +131,11 @@ export const useDiscussionStore = defineStore('discussion', {
     completenessOfItem(item: DiscussionItem) {
       let progress = 0;
       const feedbacks = [] as string[];
+
       switch (item.type) {
         case 'goal': case 'task':
           return {
+            factor: 'details',
             progress: item.description.length > 10 ? 1 : 0,
             feedback: item.description.length > 10 ? 'Details is set' : 'Descriptions is not well defined'
           };
@@ -161,6 +172,7 @@ export const useDiscussionStore = defineStore('discussion', {
             feedbacks.push('Due is not set')
           }
           return {
+            factor: 'details',
             progress: progress / feedbacks.length,
             feedback: feedbacks.join('\n')
           };
@@ -190,11 +202,13 @@ export const useDiscussionStore = defineStore('discussion', {
             feedbacks.push('No Acceptance Criteria is defined')
           }
           return {
+            factor: 'details',
             progress: progress / feedbacks.length,
             feedback: feedbacks.join('\n')
           };
         default:
           return {
+            factor: 'details',
             progress: 0,
             feedback: 'unknown item type'
           };

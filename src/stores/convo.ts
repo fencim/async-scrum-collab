@@ -38,7 +38,14 @@ export const useConvoStore = defineStore('convo', {
       await convoService.setData(msg.key, msg);
       this.convo.push(msg);
     },
-
+    async saveConvo(msg: Convo) {
+      if (msg && msg.key) {
+        await convoService.setData(msg.key, {
+          ...msg,
+          from: typeof msg.from == 'object' ? msg.from.key : msg.from
+        });
+      }
+    },
     async getConvoStatus(key: string) {
       return convoService.getDocStatus(key);
     },

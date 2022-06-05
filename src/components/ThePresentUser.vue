@@ -1,7 +1,7 @@
 <template>
   <q-btn round>
     <q-avatar>
-      <img :src="'icons/avatar4.jpg'" />
+      <img v-if="profile.presentUser" :src="profile.presentUser.avatar" />
     </q-avatar>
     <q-menu>
       <div class="row no-wrap q-pa-md">
@@ -26,13 +26,16 @@
 </template>
 
 <script lang="ts">
+import { useProfilesStore } from 'src/stores/profiles';
 import { defineComponent } from 'vue';
-
+const profileStore = useProfilesStore();
 export default defineComponent({
   name: 'ThePresentUser',
   components: {},
   data() {
-    return {};
+    return {
+      profile: profileStore,
+    };
   },
   methods: {},
 });
