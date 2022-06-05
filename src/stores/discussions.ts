@@ -54,6 +54,20 @@ export const useDiscussionStore = defineStore('discussion', {
           return `As a ${item.targetUser}, I want to ${item.subject}, so that ${item.purpose}`;
         case 'task':
           return 'Task: ' + item.description;
+        case 'action-item':
+          return 'Action Item';
+        case 'demo':
+          return 'Demonstration';
+        case 'went-well':
+          return 'What went well?';
+        case 'went-wrong':
+          return 'What went wrong?';
+        case 'to-improve':
+          return 'What to improve?';
+        case 'scrum':
+          return 'Daily Task Report';
+        case 'roadblock':
+          return 'Roadblock';
         default:
           return (item && `${(item as DiscussionItem).type}`) || ('Unknown item');
       }

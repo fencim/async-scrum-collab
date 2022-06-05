@@ -3,10 +3,11 @@
     dense
     flat
     round
+    size="xl"
     :to="`/${activeProject}`"
     style="border: 2px solid gray; border-radius: 50px"
   >
-    <q-img v-if="project" :src="project?.icon" sizes="lg" />
+    <q-img v-if="project" :src="project?.icon" sizes="xl" />
   </q-btn>
 </template>
 

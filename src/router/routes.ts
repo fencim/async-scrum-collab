@@ -48,6 +48,7 @@ const routes: RouteRecordRaw[] = [
 
         }
       }, {
+        name: 'iterationform',
         path: 'edit', components: {
           default: () => import('src/modules/iteration/NewIterationPage.vue'),
         }

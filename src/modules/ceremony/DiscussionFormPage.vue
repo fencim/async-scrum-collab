@@ -21,7 +21,7 @@
             :to="`/${activeProjectKey}/${activeIterationKey}/${activeCeremonyKey}/${$route.params.item}`"
           />
         </q-toolbar>
-        <q-card-section class="row">
+        <q-card-section class="row" v-if="activeCeremony">
           <q-select
             :readonly="!!$route.params.item"
             class="col-12"
@@ -29,12 +29,31 @@
             map-options
             label="Type"
             v-model="theDiscussion.type"
-            :options="[
-              { v: 'goal', t: 'Iteration Goal' },
-              { v: 'objective', t: 'Goal Objective' },
-              { v: 'story', t: 'Story' },
-              { v: 'task', t: 'Task' },
-            ]"
+            :options="
+              activeCeremony.type == 'planning'
+                ? [
+                    { v: 'goal', t: 'Iteration Goal' },
+                    { v: 'objective', t: 'Goal Objective' },
+                    { v: 'story', t: 'Story' },
+                    { v: 'task', t: 'Task' },
+                  ]
+                : activeCeremony.type == 'review'
+                ? [
+                    { v: 'report', t: 'Sprint Report' },
+                    { v: 'demo', t: 'Demostration' },
+                  ]
+                : activeCeremony.type == 'retro'
+                ? [
+                    { v: 'went-well', t: 'What went well?' },
+                    { v: 'went-wrong', t: 'What went wrong?' },
+                    { v: 'to-improve', t: 'What to improve?' },
+                    { v: 'action-item', t: 'Action Item' },
+                  ]
+                : [
+                    { v: 'scrum', t: 'Scrum Report' },
+                    { v: 'roadblock', t: 'Roadblock' },
+                  ]
+            "
             option-value="v"
             option-label="t"
           />

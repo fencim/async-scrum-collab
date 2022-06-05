@@ -6,7 +6,16 @@
       :class="isCurrent(iteration) ? 'bg-grey-8' : 'bg-grey-10'"
     >
       {{ iteration.name }}
-      <q-btn :to="`/${project}/${iteration.key}`">Open</q-btn>
+      <q-btn
+        :to="{
+          name: 'iteration',
+          params: {
+            project,
+            iteration: iteration.key,
+          },
+        }"
+        >Open</q-btn
+      >
       <q-icon
         v-if="isCurrent(iteration)"
         name="play_arrow"
@@ -25,7 +34,13 @@
           dense
           icon="edit"
           class="float-right"
-          :to="`/${project}/${iteration.key}/edit`"
+          :to="{
+            name: 'iterationform',
+            params: {
+              project,
+              iteration: iteration.key,
+            },
+          }"
         />
       </div>
     </q-timeline-entry>
@@ -42,7 +57,15 @@
         'hours'
       )} hours)`"
     >
-      <q-btn :to="'/' + (project || 'AP') + '/' + c.iterationKey + '/' + c.key"
+      <q-btn
+        :to="{
+          name: 'ceremony',
+          params: {
+            project,
+            iteration: c.iterationKey,
+            ceremony: c.key,
+          },
+        }"
         >Open</q-btn
       >
     </q-timeline-entry>

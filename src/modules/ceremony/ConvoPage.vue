@@ -399,7 +399,10 @@ export default defineComponent({
     async updateMessages() {
       this.messages = await Promise.all(
         (
-          await convoStore.ofDiscussion(this.activeProject, this.activeItem)
+          await convoStore.ofDiscussion(
+            this.activeProject,
+            this.activeItem || this.activeCeremony
+          )
         ).map(async (m) => {
           m.from = (await profileStore.get(m.from as string)) as IProfile;
           return m;
@@ -513,7 +516,12 @@ export default defineComponent({
         const voteCasts = this.convoStore.convo.filter(
           (v) => v.type == 'vote'
         ) as IVote[];
+
         const votes = voteCasts
+          .reduce(
+            (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
+            [] as IVote[]
+          )
           .map((v) => v.vote)
           .sort()
           .reverse();
@@ -523,27 +531,49 @@ export default defineComponent({
           [] as number[]
         );
         const majorityVoteIndex = voteCounts.reduce(
-          (p, c, index, self) => (c > 1 && (p < 0 || self[p] < c) ? index : p),
+          (p, c, index, self) =>
+            c > 1 && (p < 0 || self[p] < c) ? index : self[p] == c ? -1 : p,
           -1
         );
-        const winningVote = uniqueVotes[majorityVoteIndex];
-        await convoStore.sendMessage(
-          this.activeProject,
-          this.activeItem || this.activeCeremony,
-          'bot',
-          {
-            type: 'message',
-            message:
-              'All votes are collected (' +
-              uniqueVotes.map((v, i) => v + ':' + voteCounts[i]).join(', ') +
-              ') with majority of ' +
-              winningVote,
+        if (majorityVoteIndex >= 0) {
+          const winningVote = uniqueVotes[majorityVoteIndex];
+          await convoStore.sendMessage(
+            this.activeProject,
+            this.activeItem || this.activeCeremony,
+            'bot',
+            {
+              type: 'message',
+              message:
+                'All votes are collected (' +
+                uniqueVotes.map((v, i) => v + ':' + voteCounts[i]).join(', ') +
+                ') with majority of ' +
+                winningVote,
+            }
+          );
+          if (this.discussion) {
+            this.discussion.complexity = Number(winningVote);
+            await discussionStore.saveDiscussion(this.discussion);
           }
-        );
-
-        if (this.discussion) {
-          this.discussion.complexity = Number(winningVote);
-          await discussionStore.saveDiscussion(this.discussion);
+        } else if (uniqueVotes.length > 0) {
+          const winningVote =
+            uniqueVotes[Math.max(0, Math.round(uniqueVotes.length / 2) - 1)];
+          await convoStore.sendMessage(
+            this.activeProject,
+            this.activeItem || this.activeCeremony,
+            'bot',
+            {
+              type: 'message',
+              message:
+                'All votes are collected (' +
+                uniqueVotes.map((v, i) => v + ':' + voteCounts[i]).join(', ') +
+                ') with median of ' +
+                winningVote,
+            }
+          );
+          if (this.discussion) {
+            this.discussion.complexity = Number(winningVote);
+            await discussionStore.saveDiscussion(this.discussion);
+          }
         }
       }
       this.dialogVote = false;

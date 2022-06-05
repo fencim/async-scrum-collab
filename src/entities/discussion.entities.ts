@@ -59,4 +59,41 @@ export interface IScrumReport extends IDiscussion {
     roadblocks: string[];
 }
 
-export type DiscussionItem = IStory | IGoal | IObjective | TechnicalTask | IScrumReport | IRoadBlock;
+export interface ISprintReport extends IDiscussion {
+    type: 'report';
+    refPlanning?: string;
+    attachments?: string[];
+}
+
+export interface ISprintDemo extends IDiscussion {
+    type: 'demo';
+    refKey?: string;
+    attachments?: string[];
+}
+
+export interface IWentWell extends IDiscussion {
+    type: 'went-well';
+    comments: string[]
+}
+export interface IWentWrong extends IDiscussion {
+    type: 'went-wrong';
+    comments: string[]
+}
+export interface IToImprove extends IDiscussion {
+    type: 'to-improve';
+    comments: string[]
+}
+export interface IActionItem extends IDiscussion {
+    type: 'action-item';
+    owner: string;
+    description: string;
+}
+export type DiscussionItem =
+    //planning
+    IStory | IGoal | IObjective | TechnicalTask |
+    //scrum  
+    IScrumReport | IRoadBlock |
+    //review
+    ISprintReport | ISprintDemo |
+    //retro
+    IWentWell | IWentWrong | IToImprove | IActionItem;

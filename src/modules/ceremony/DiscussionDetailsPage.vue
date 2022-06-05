@@ -137,6 +137,7 @@ import {
   IIteration,
   IProfile,
   IProject,
+  IVote,
 } from 'src/entities';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useCeremonyStore } from 'src/stores/cermonies';
@@ -285,7 +286,12 @@ export default defineComponent({
         );
         this.membersVoted = await profileStore.fromKeyList([
           ...new Set(
-            convo.filter((c) => c.type == 'vote').map((c) => c.from as string)
+            (convo.filter((c) => c.type == 'vote') as IVote[])
+              .reduce(
+                (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
+                [] as IVote[]
+              )
+              .map((c) => c.from as string)
           ),
         ]);
         this.progressReport = report;
