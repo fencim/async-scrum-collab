@@ -16,7 +16,7 @@ export const useConvoStore = defineStore('convo', {
     async ofDiscussion(projectKey: string, discussion: string) {
       this.convo = (await convoService.findAllDocFrom({
         projectKey, discussion
-      })).map(d => ({
+      })).filter(d => d).map(d => ({
         ...d.data,
         status: d.status
       } as Convo)).sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));

@@ -101,6 +101,7 @@ export default defineComponent({
           this.project,
           convoStore.convo
         );
+        this.item.awareness = this.item.awareness || {};
         const presentUser = profileStore.presentUser?.key || '';
         const list = report.reduce((p, r) => {
           if (r.factor == 'details' && r.progress < 1) {

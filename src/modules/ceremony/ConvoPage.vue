@@ -399,7 +399,9 @@ export default defineComponent({
             this.activeItem || this.activeCeremony
           )
         ).map(async (m) => {
-          m.from = (await profileStore.get(m.from as string)) as IProfile;
+          if (typeof m.from == 'string') {
+            m.from = ((await profileStore.get(m.from)) as IProfile) || m.from;
+          }
           return m;
         })
       );
