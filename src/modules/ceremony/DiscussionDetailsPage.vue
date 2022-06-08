@@ -75,19 +75,46 @@
       <q-card-section horizontal>
         <q-card-section>
           Agreed
-          <recent-active-members :profiles="membersAgreed" />
+          <recent-active-members sizes="xs" :profiles="membersAgreed" />
         </q-card-section>
         <q-card-section>
           Disgreed
-          <recent-active-members :profiles="membersDisagreed" />
+          <recent-active-members sizes="xs" :profiles="membersDisagreed" />
         </q-card-section>
         <q-card-section>
           Pending
-          <recent-active-members :profiles="membersPending" />
+          <recent-active-members sizes="xs" :profiles="membersPending" />
         </q-card-section>
         <q-card-section>
           Voted
-          <recent-active-members :profiles="membersVoted" />
+          <recent-active-members sizes="xs" :profiles="membersVoted" />
+        </q-card-section>
+        <q-card-section>
+          Unresolved
+          <div>
+            <q-btn
+              round
+              size="xs"
+              v-for="q in unResolvedQuestions"
+              :key="q.key"
+              :to="{
+                name: 'convo',
+                params: {
+                  project: activeProjectKey,
+                  iteration: activeIterationKey,
+                  ceremony: activeCeremonyKey,
+                  item: activeItemKey,
+                },
+                hash: '#' + q.key,
+              }"
+            >
+              <q-avatar size="xs">
+                <img v-if="typeof q.from == 'object'" :src="q.from.avatar" />
+                <q-icon v-else name="question_mark" />
+              </q-avatar>
+              <q-tooltip>{{ q.message }}?</q-tooltip>
+            </q-btn>
+          </div>
         </q-card-section>
       </q-card-section>
       <q-card-section>
@@ -131,6 +158,7 @@
 <script lang="ts">
 import { date } from 'quasar';
 import {
+  Convo,
   DiscussionItem,
   IAcceptanceCriteria,
   ICeremony,
@@ -174,6 +202,7 @@ export default defineComponent({
       discussions: [] as DiscussionItem[],
       subTasks: [] as DiscussionItem[],
       theDiscussion: {} as DiscussionItem,
+      convo: [] as Convo[],
       membersAgreed: [] as IProfile[],
       membersDisagreed: [] as IProfile[],
       membersPending: [] as IProfile[],
@@ -216,7 +245,20 @@ export default defineComponent({
     convoBus.off('vote');
     convoBus.off('refresh', this.init);
   },
-  computed: {},
+  computed: {
+    unResolvedQuestions(): Convo[] {
+      return this.convo
+        .filter((c) => c.type == 'question' && !c.resolved)
+        .map((c) => {
+          c.from =
+            this.membersPending.find((m) => m.key == String(c.from)) ||
+            this.membersAgreed.find((m) => m.key == String(c.from)) ||
+            this.membersDisagreed.find((m) => m.key == String(c.from)) ||
+            c.from;
+          return c;
+        });
+    },
+  },
   methods: {
     async init() {
       this.activeProjectKey =
@@ -275,18 +317,18 @@ export default defineComponent({
     },
     async assesItem(forceSave?: boolean) {
       if (this.theDiscussion && this.activeProject) {
-        const convo = await convoStore.ofDiscussion(
+        this.convo = await convoStore.ofDiscussion(
           this.activeProjectKey,
           this.theDiscussion.key
         );
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
           this.activeProject,
-          convo
+          this.convo
         );
         this.membersVoted = await profileStore.fromKeyList([
           ...new Set(
-            (convo.filter((c) => c.type == 'vote') as IVote[])
+            (this.convo.filter((c) => c.type == 'vote') as IVote[])
               .reduce(
                 (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
                 [] as IVote[]

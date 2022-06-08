@@ -49,7 +49,7 @@
         track-color="transparent"
       >
         {{ i?.projectKey }}{{ (i.key.match(/\d+$/) || [])[0] }}
-        <q-badge v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
+        <q-badge color="red" v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
       </q-circular-progress>
       <q-tooltip
         ><div class="text-caption">

@@ -1,206 +1,207 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
-    <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)">
-      <div style="width: 100%; margin-bottom: 80px">
-        <div v-for="m in messages" :key="m.key" :id="m.key">
-          <q-chat-message
-            v-if="m.type == 'message' && typeof m.from == 'object'"
-            :name="m.from.name"
-            :avatar="m.from.avatar"
-            :sent="m.from.key == profileStore.presentUser?.key"
-          >
-            <template v-slot:stamp>
-              <div>
-                <q-btn
-                  @click="replyTo = m"
-                  dense
-                  color="primary"
-                  flat
-                  round
-                  size="sm"
-                  icon="reply"
-                />
-                {{ stampTime(m.date) }}
-                <q-icon
-                  :name="getStatus(m)"
-                  class="absolute-bottom-right rounded-borders"
-                  size="sm"
-                />
-              </div>
-            </template>
-            <div style="min-width: 120px">
-              {{ m.message }}
-            </div>
-          </q-chat-message>
-          <q-chat-message
-            v-else-if="m.type == 'vote' && typeof m.from == 'object'"
-            :name="m.from.name"
-            :avatar="m.from.avatar"
-            :sent="m.from.key == profileStore.presentUser?.key"
-          >
-            <template v-slot:stamp>
-              <div>
-                <q-btn
-                  @click="replyTo = m"
-                  dense
-                  color="primary"
-                  flat
-                  round
-                  size="sm"
-                  icon="reply"
-                />
-                {{ stampTime(m.date) }}
-                <q-icon
-                  :name="getStatus(m)"
-                  class="absolute-bottom-right rounded-borders"
-                  size="sm"
-                />
-              </div>
-            </template>
-            <div style="min-width: 150px">
-              {{ m.message }}
-              <q-badge v-if="revealVotes == 1" class="bg-green">{{
-                m.vote
-              }}</q-badge>
-            </div>
-          </q-chat-message>
-          <q-chat-message
-            v-else-if="m.type == 'question' && typeof m.from == 'object'"
-            :name="m.from.name"
-            :avatar="m.from.avatar"
-            :sent="m.from.key == profileStore.presentUser?.key"
-          >
-            <template v-slot:stamp>
-              <div>
-                <q-btn
-                  @click="replyTo = m"
-                  dense
-                  color="primary"
-                  flat
-                  round
-                  size="sm"
-                  icon="reply"
-                />
-                {{ stampTime(m.date) }}
-                <q-icon
-                  :name="getStatus(m)"
-                  class="absolute-bottom-right rounded-borders"
-                  size="sm"
-                />
-              </div>
-            </template>
-            <div style="min-width: 150px">
-              <q-icon v-if="m.resolved" name="check" size="sm" />
-              {{ m.message }}
-              <q-icon name="question_mark" size="sm" />
-            </div>
-          </q-chat-message>
-          <q-chat-message
-            v-else-if="m.type == 'response' && typeof m.from == 'object'"
-            :name="m.from.name"
-            :avatar="m.from.avatar"
-            :sent="m.from.key == profileStore.presentUser?.key"
-          >
-            <template v-slot:stamp>
-              <div>
-                <q-btn
-                  @click="replyTo = m"
-                  dense
-                  color="primary"
-                  flat
-                  round
-                  size="sm"
-                  icon="reply"
-                />
-                {{ stampTime(m.date) }}
-                <q-icon
-                  :name="getStatus(m)"
-                  class="absolute-bottom-right rounded-borders"
-                  size="sm"
-                />
-              </div>
-            </template>
-            <a
-              style="min-width: 150px; text-decoration: none"
-              class="text-grey-9 no"
-              v-for="r in [convoStore.getConvo(m.ref)]"
-              :key="r?.key"
-              :href="
-                activeProject +
-                '/' +
-                activeIteration +
-                '/' +
-                activeCeremony +
-                '/' +
-                activeItem +
-                '/convo#' +
-                r?.key
-              "
-            >
-              <q-avatar size="sm" v-if="typeof r?.from == 'object'">
-                <img :src="r?.from.avatar" />
-              </q-avatar>
-              &nbsp;
-              {{ r?.message }}
+    <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
+    <div style="width: 100%; margin-bottom: 80px">
+      <div v-for="m in messages" :key="m.key" :id="m.key">
+        <q-chat-message
+          v-if="m.type == 'message' && typeof m.from == 'object'"
+          :name="m.from.name"
+          :avatar="m.from.avatar"
+          :sent="m.from.key == profileStore.presentUser?.key"
+        >
+          <template v-slot:stamp>
+            <div>
+              <q-btn
+                @click="replyTo = m"
+                dense
+                color="primary"
+                flat
+                round
+                size="sm"
+                icon="reply"
+              />
+              {{ stampTime(m.date) }}
               <q-icon
-                name="question_mark"
-                v-if="r?.type == 'question'"
+                :name="getStatus(m)"
+                class="absolute-bottom-right rounded-borders"
                 size="sm"
               />
-              <q-icon name="reply" size="sm" />
-            </a>
-            <div style="min-width: 150px">
-              <q-card class="bg-transparent text-dark no-shadow">
-                <q-card-section horizontal>
-                  <q-card-actions vertical align="right">
-                    <q-btn
-                      icon="thumb_up_alt"
-                      size="sm"
-                      flat
-                      :color="
-                        profileStore.presentUser &&
-                        m.feedback &&
-                        m.feedback[profileStore.presentUser.key] == 'agree'
-                          ? 'primary'
-                          : 'dark'
-                      "
-                      dense
-                      @click="resolveQuestionOf(m, 'agree')"
-                      ><q-tooltip>{{
-                        Object.values(m.feedback).filter((m) => m == 'agree')
-                          .length
-                      }}</q-tooltip>
-                    </q-btn>
-                    <q-btn
-                      icon="thumb_down_alt"
-                      size="sm"
-                      flat
-                      :color="
-                        profileStore.presentUser &&
-                        m.feedback &&
-                        m.feedback[profileStore.presentUser.key] == 'disagree'
-                          ? 'primary'
-                          : 'dark'
-                      "
-                      dense
-                      @click="resolveQuestionOf(m, 'disagree')"
-                    >
-                      <q-tooltip>{{
-                        Object.values(m.feedback).filter((m) => m == 'disagree')
-                          .length
-                      }}</q-tooltip>
-                    </q-btn>
-                  </q-card-actions>
-                  <q-card-section>
-                    {{ m.message }}
-                  </q-card-section>
-                </q-card-section>
-              </q-card>
             </div>
-          </q-chat-message>
-        </div>
+          </template>
+          <div style="min-width: 120px">
+            {{ m.message }}
+          </div>
+        </q-chat-message>
+        <q-chat-message
+          v-else-if="m.type == 'vote' && typeof m.from == 'object'"
+          :name="m.from.name"
+          :avatar="m.from.avatar"
+          :sent="m.from.key == profileStore.presentUser?.key"
+        >
+          <template v-slot:stamp>
+            <div>
+              <q-btn
+                @click="replyTo = m"
+                dense
+                color="primary"
+                flat
+                round
+                size="sm"
+                icon="reply"
+              />
+              {{ stampTime(m.date) }}
+              <q-icon
+                :name="getStatus(m)"
+                class="absolute-bottom-right rounded-borders"
+                size="sm"
+              />
+            </div>
+          </template>
+          <div style="min-width: 150px">
+            {{ m.message }}
+            <q-badge v-if="revealVotes == 1" class="bg-green">{{
+              m.vote
+            }}</q-badge>
+          </div>
+        </q-chat-message>
+        <q-chat-message
+          v-else-if="m.type == 'question' && typeof m.from == 'object'"
+          :name="m.from.name"
+          :avatar="m.from.avatar"
+          :sent="m.from.key == profileStore.presentUser?.key"
+        >
+          <template v-slot:stamp>
+            <div>
+              <q-btn
+                @click="replyTo = m"
+                dense
+                color="primary"
+                flat
+                round
+                size="sm"
+                icon="reply"
+              />
+              {{ stampTime(m.date) }}
+              <q-icon
+                :name="getStatus(m)"
+                class="absolute-bottom-right rounded-borders"
+                size="sm"
+              />
+            </div>
+          </template>
+          <div style="min-width: 150px">
+            <q-icon v-if="m.resolved" name="check" size="sm" />
+            {{ m.message }}
+            <q-icon name="question_mark" size="sm" />
+          </div>
+        </q-chat-message>
+        <q-chat-message
+          v-else-if="m.type == 'response' && typeof m.from == 'object'"
+          :name="m.from.name"
+          :avatar="m.from.avatar"
+          :sent="m.from.key == profileStore.presentUser?.key"
+        >
+          <template v-slot:stamp>
+            <div>
+              <q-btn
+                @click="replyTo = m"
+                dense
+                color="primary"
+                flat
+                round
+                size="sm"
+                icon="reply"
+              />
+              {{ stampTime(m.date) }}
+              <q-icon
+                :name="getStatus(m)"
+                class="absolute-bottom-right rounded-borders"
+                size="sm"
+              />
+            </div>
+          </template>
+          <a
+            style="min-width: 150px; text-decoration: none"
+            class="text-grey-9 no"
+            v-for="r in [convoStore.getConvo(m.ref)]"
+            :key="r?.key"
+            :href="
+              activeProject +
+              '/' +
+              activeIteration +
+              '/' +
+              activeCeremony +
+              '/' +
+              activeItem +
+              '/convo#' +
+              r?.key
+            "
+          >
+            <q-avatar size="sm" v-if="typeof r?.from == 'object'">
+              <img :src="r?.from.avatar" />
+            </q-avatar>
+            &nbsp;
+            {{ r?.message }}
+            <q-icon
+              name="question_mark"
+              v-if="r?.type == 'question'"
+              size="sm"
+            />
+            <q-icon name="reply" size="sm" />
+          </a>
+          <div style="min-width: 150px">
+            <q-card class="bg-transparent text-dark no-shadow">
+              <q-card-section horizontal>
+                <q-card-actions vertical align="right">
+                  <q-btn
+                    icon="thumb_up_alt"
+                    size="sm"
+                    flat
+                    :color="
+                      profileStore.presentUser &&
+                      m.feedback &&
+                      m.feedback[profileStore.presentUser.key] == 'agree'
+                        ? 'primary'
+                        : 'dark'
+                    "
+                    dense
+                    @click="resolveQuestionOf(m, 'agree')"
+                    ><q-tooltip>{{
+                      Object.values(m.feedback).filter((m) => m == 'agree')
+                        .length
+                    }}</q-tooltip>
+                  </q-btn>
+                  <q-btn
+                    icon="thumb_down_alt"
+                    size="sm"
+                    flat
+                    :color="
+                      profileStore.presentUser &&
+                      m.feedback &&
+                      m.feedback[profileStore.presentUser.key] == 'disagree'
+                        ? 'primary'
+                        : 'dark'
+                    "
+                    dense
+                    @click="resolveQuestionOf(m, 'disagree')"
+                  >
+                    <q-tooltip>{{
+                      Object.values(m.feedback).filter((m) => m == 'disagree')
+                        .length
+                    }}</q-tooltip>
+                  </q-btn>
+                </q-card-actions>
+                <q-card-section>
+                  {{ m.message }}
+                </q-card-section>
+              </q-card-section>
+            </q-card>
+          </div>
+        </q-chat-message>
       </div>
-    </q-scroll-area>
+      <div id="end-of-messages"></div>
+    </div>
+
     <q-form @submit="sendMessage">
       <q-page-sticky expand position="bottom">
         <q-toolbar class="bg-grey-10" style="padding-right: 70px">
@@ -276,7 +277,7 @@
 </template>
 
 <script lang="ts">
-import { date, QScrollArea } from 'quasar';
+import { date } from 'quasar';
 import {
   IIteration,
   IProject,
@@ -328,13 +329,17 @@ export default defineComponent({
       revealVotes: undefined as number | undefined,
     };
   },
-  mounted() {
-    this.init();
+  async mounted() {
+    await this.init();
+    await this.updateMessages();
     this.timer = setInterval(() => this.updateMessages(), 1000);
     convoBus.on('question', this.askQuestion);
     convoBus.on('vote', this.confirmVote);
     convoBus.on('disagree', this.confirmDisagree);
     convoBus.on('refresh', this.init);
+
+    const elem = document.querySelector(this.$route.hash || '#end-of-messages');
+    elem?.scrollIntoView();
   },
   unmounted() {
     this.timer && clearInterval(this.timer);
@@ -345,17 +350,7 @@ export default defineComponent({
     convoBus.emit('onQuestion', false);
     convoBus.emit('onDisagree', false);
   },
-  activated() {
-    if (!this.$route.hash) {
-      const scroll = this.$refs.scrollAreaRef as QScrollArea;
 
-      scroll?.setScrollPosition(
-        'vertical',
-        scroll.getScrollTarget().scrollHeight,
-        0
-      );
-    }
-  },
   updated() {
     this.init();
   },

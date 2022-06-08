@@ -18,6 +18,40 @@
         )} - ${date.formatDate(c.end, 'hh:mm A')}`"
         :side="/(planning|retro|review)/.test(c.type) ? 'left' : 'right'"
       >
+        <div>
+          <q-circular-progress
+            v-for="i in discussionFromList(c.discussions)"
+            :key="i?.key"
+            :value="(i?.progress || 0) * 100"
+            show-value
+            font-size="12px"
+            class="text-white q-ma-sm text-uppercase cursor-pointer"
+            size="30px"
+            :thickness="0.15"
+            color="grey"
+            track-color="transparent"
+            @click="
+              $router.replace({
+                name: 'convo',
+                params: {
+                  project: activeProject,
+                  iteration: activeIteration,
+                  ceremony: c.key,
+                  item: i.key,
+                },
+              })
+            "
+          >
+            {{ i?.projectKey }}{{ (i.key.match(/\d+$/) || [])[0] }}
+            <q-badge v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
+            <q-tooltip
+              ><div class="text-caption">
+                {{ discussionStore.describeDiscussion(i) }}
+              </div>
+              <q-linear-progress :value="i.progress" />
+            </q-tooltip>
+          </q-circular-progress>
+        </div>
         <q-btn
           :to="{
             name: 'ceremony',
@@ -164,10 +198,12 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { ICeremony } from 'src/entities';
+import { DiscussionItem, ICeremony } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies';
+import { useDiscussionStore } from 'src/stores/discussions';
 import { defineComponent } from 'vue';
 const ceremonyStore = useCeremonyStore();
+const discussionStore = useDiscussionStore();
 
 export default defineComponent({
   name: 'IndexPage',
@@ -175,9 +211,11 @@ export default defineComponent({
   data() {
     return {
       date,
+      discussionStore,
       activeProject: '',
       activeIteration: '',
       ceremonies: [] as ICeremony[],
+      discussions: [] as DiscussionItem[],
     };
   },
   mounted() {
@@ -200,6 +238,12 @@ export default defineComponent({
       ).sort((a, b) => {
         return date.getDateDiff(a.start, b.start, 'hours');
       });
+      this.discussions = await discussionStore.ofProject(this.activeProject);
+    },
+    discussionFromList(list: string[]) {
+      return list
+        .map((key) => this.discussions.find((d) => d.key == key))
+        .filter((d) => d) as DiscussionItem[];
     },
   },
 });

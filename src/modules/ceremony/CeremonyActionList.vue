@@ -25,6 +25,7 @@
         :title="link.title"
         :icon="link.icon"
         :hide="link.hide"
+        :class="{ shake: !!link.emphasize }"
         :active="link.active || link == activeLink"
         @click="actOn(link)"
       />
@@ -81,6 +82,7 @@ export default defineComponent({
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
       item: undefined as DiscussionItem | undefined,
+      timer: undefined as NodeJS.Timeout | undefined,
     };
   },
   async mounted() {
@@ -91,6 +93,39 @@ export default defineComponent({
     convoBus.on('onDisagree', (e) => {
       this.activateLink('disagree', e as boolean);
     });
+
+    this.timer = setInterval(() => {
+      if (this.item && this.project && profileStore.presentUser) {
+        const report = discussionStore.checkCompleteness(
+          this.item,
+          this.project,
+          convoStore.convo
+        );
+        const presentUser = profileStore.presentUser?.key || '';
+        const list = report.reduce((p, r) => {
+          if (r.factor == 'details' && r.progress < 1) {
+            p.push('view');
+          } else if (r.factor == 'votes' && r.progress < 1) {
+            p.push('agree');
+          } else if (
+            r.factor == 'agreement' &&
+            this.item?.awareness[presentUser] != 'agree'
+          ) {
+            p.push('agree');
+          }
+          return p;
+        }, [] as string[]);
+        this.links.forEach((link) => {
+          if (list.includes(link.key)) {
+            link.emphasize =
+              !(link.active || this.activeLink == link) && !link.emphasize;
+          }
+        });
+      }
+    }, 1500);
+  },
+  unmounted() {
+    this.timer && clearInterval(this.timer);
   },
   async updated() {
     await this.init();
@@ -133,6 +168,9 @@ export default defineComponent({
         /(vote|attachment|question|record|agree|view|disagree)/i,
         !!this.activeItem
       );
+      this.item =
+        (this.activeItem && (await discussionStore.withKey(this.activeItem))) ||
+        undefined;
       if (/^(convo|ceremony)$/.test(String(this.$route.name) || '')) {
         this.activateLink('convo');
       } else if (/^(discussionDetails)$/.test(String(this.$route.name) || '')) {
@@ -178,10 +216,6 @@ export default defineComponent({
           },
         });
       } else if (action.key == 'agree') {
-        this.item =
-          (this.activeItem &&
-            (await discussionStore.withKey(this.activeItem))) ||
-          undefined;
         this.dialogAgree = true;
       } else {
         convoBus.emit(action.key);
@@ -208,4 +242,32 @@ export default defineComponent({
   },
 });
 </script>
-<style></style>
+<style>
+.shake {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+</style>

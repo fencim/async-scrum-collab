@@ -2,6 +2,7 @@
   <div>
     <q-btn
       round
+      :size="sizes"
       v-for="p in recent"
       :key="p.name"
       :href="p.href"
@@ -9,7 +10,7 @@
       @click.ctrl="$emit('ctrlClick', p)"
       @click="$emit('clickProfile', p)"
     >
-      <q-avatar size="32px">
+      <q-avatar :size="sizes || '32px'">
         <img :src="p.avatar" />
       </q-avatar>
       <q-tooltip>{{ p.name }}</q-tooltip>
@@ -40,6 +41,10 @@ export default defineComponent({
     profiles: {
       type: Object,
       required: true,
+    },
+    sizes: {
+      type: String,
+      required: false,
     },
   },
   computed: {

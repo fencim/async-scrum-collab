@@ -304,6 +304,7 @@ export default defineComponent({
         } while (this.discussions.find((d) => d.key == key));
         this.theDiscussion.key = key;
       }
+      this.theDiscussion.ceremonyKey = this.activeCeremonyKey;
       this.theDiscussion.projectKey = this.activeProjectKey;
       await discussionStore.saveDiscussion(this.theDiscussion);
 
@@ -329,9 +330,9 @@ export default defineComponent({
             type: 'message',
             message: `${profileStore.presentUser.name} updated this ${
               this.theDiscussion.type
-            } and progressed from ${
+            } and progressed from ${(
               (this.theDiscussion.progress || 0) * 100
-            }% to ${100 * (report[0].progress || 0)}%`,
+            ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(2)}%`,
           }
         );
       }

@@ -6,6 +6,7 @@ export type ActionItem = {
     link?: string;
     active?: boolean;
     hide?: boolean;
+    emphasize?: boolean;
 };
 
 export const ticketActionList: ActionItem[] = [

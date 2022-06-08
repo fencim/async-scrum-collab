@@ -30,7 +30,7 @@ export const useDiscussionStore = defineStore('discussion', {
     },
     async saveDiscussion(discussion: DiscussionItem) {
       if (discussion.type == 'story') {
-        discussion.acceptanceCriteria = [...discussion.acceptanceCriteria].map(ac => ({ ...ac }));
+        discussion.acceptanceCriteria = [...(discussion.acceptanceCriteria || [])].map(ac => ({ ...ac }));
         discussion.tasks = [...(discussion.tasks || [])];
       }
       await discussionService.setData(discussion.key, {
@@ -90,8 +90,12 @@ export const useDiscussionStore = defineStore('discussion', {
       const agreement = awareness.filter(agreeement => agreeement == 'agree');
 
       factors.push(this.completenessOfItem(item));
-      factors.push(this.logFactor(awareness.length, members.length, 'awareness'));
-      factors.push(this.logFactor(Object.values(vCast).length, members.length, 'votes'));
+      const awarenessProgress = Object.keys(item.awareness || {})
+        .filter(a => members.find(m => a == m)).length;
+      factors.push(this.logFactor(awarenessProgress, members.length, 'awareness'));
+      if (/(story|goal|objective|task)/.test(item.type)) {
+        factors.push(this.logFactor(Object.values(vCast).length, members.length, 'votes'));
+      }
       factors.push(this.logFactor(agreement.length, members.length, 'agreement'));
 
       const qProgress = questions.map((q) => {
@@ -118,9 +122,6 @@ export const useDiscussionStore = defineStore('discussion', {
 
       factors.push(this.logFactor(qProgress.resolved, qProgress.resolved + qProgress.pending, 'questions resolution'));
 
-      const awarenessProgress = Object.keys(item.awareness || {})
-        .filter(a => members.find(m => a == m)).length;
-      factors.push(this.logFactor(awarenessProgress, members.length, 'awareness'));
 
       factors.splice(0, 0, this.logFactor(
         factors.reduce((p, c) => (p + c.progress), 0),
@@ -224,7 +225,7 @@ export const useDiscussionStore = defineStore('discussion', {
           return {
             factor: 'details',
             progress: 0,
-            feedback: 'unknown item type'
+            feedback: 'unknown item type:' + item.type
           };
       }
     }

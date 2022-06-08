@@ -15,6 +15,7 @@
       behavior="desktop"
       mini
       side="left"
+      class="no-scroll"
     >
       <router-view name="menu" />
     </q-drawer>
@@ -27,8 +28,8 @@
       side="right"
     >
       <router-view name="actions" />
-      <q-page-sticky position="bottom-right" :offset="[5, 10]">
-        <q-btn round icon="home" to="/" />
+      <q-page-sticky position="bottom-right" :offset="[5, 20]">
+        <q-btn round size="lg" dense icon="home" to="/" />
       </q-page-sticky>
     </q-drawer>
 
