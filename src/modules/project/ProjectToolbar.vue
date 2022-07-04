@@ -13,12 +13,12 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'stores/profiles';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { useProjectStore } from 'src/stores/projects';
+import { useProjectStore } from 'src/stores/projects.store';
 import { IProfile, IProject } from 'src/entities';
 const projectStore = useProjectStore();
 

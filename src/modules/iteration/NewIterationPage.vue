@@ -70,9 +70,9 @@
 <script lang="ts">
 import { date } from 'quasar';
 import { IIteration, IProject, CeremonyType } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies';
-import { useIterationStore } from 'src/stores/iterations';
-import { useProjectStore } from 'src/stores/projects';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useIterationStore } from 'src/stores/iterations.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();

@@ -63,10 +63,11 @@
 
 <script lang="ts">
 import { DiscussionItem, ICeremony, IProject } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies';
-import { useDiscussionStore } from 'src/stores/discussions';
-import { useProjectStore } from 'src/stores/projects';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
+import { convoBus } from './convo-bus';
 
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
@@ -89,6 +90,10 @@ export default defineComponent({
   },
   mounted() {
     this.init();
+    convoBus.on('progressed', this.init);
+  },
+  unmounted() {
+    convoBus.off('progressed', this.init);
   },
   updated() {
     this.init();

@@ -34,12 +34,12 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'stores/profiles';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { useIterationStore } from 'src/stores/iterations';
-import { useProjectStore } from 'src/stores/projects';
+import { useIterationStore } from 'src/stores/iterations.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
 

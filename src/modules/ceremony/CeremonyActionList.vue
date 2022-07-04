@@ -47,15 +47,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import EssentialLink from 'src/components/EssentialLink.vue';
-import { useCeremonyStore } from 'src/stores/cermonies';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
-import { useProjectStore } from 'src/stores/projects';
-import { useIterationStore } from 'src/stores/iterations';
+import { useProjectStore } from 'src/stores/projects.store';
+import { useIterationStore } from 'src/stores/iterations.store';
 import { convoBus } from './convo-bus';
 import { ActionItem, ticketActionList } from './ceremony.action-list';
-import { useDiscussionStore } from 'src/stores/discussions';
-import { useProfilesStore } from 'src/stores/profiles';
-import { useConvoStore } from 'src/stores/convo';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { useConvoStore } from 'src/stores/convo.store';
 
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();

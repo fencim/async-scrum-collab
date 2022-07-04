@@ -29,15 +29,15 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'stores/profiles';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import HourGlass from 'src/components/HourGlass.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { useIterationStore } from 'src/stores/iterations';
-import { useProjectStore } from 'src/stores/projects';
-import { useCeremonyStore } from 'src/stores/cermonies';
+import { useIterationStore } from 'src/stores/iterations.store';
+import { useProjectStore } from 'src/stores/projects.store';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { ICeremony, IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
 

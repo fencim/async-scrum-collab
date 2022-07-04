@@ -5,15 +5,16 @@
     round
     size="xl"
     :to="`/${activeProject}`"
-    style="border: 2px solid gray; border-radius: 50px"
+    :style="project ? 'border: 2px solid gray; border-radius: 50px' : ''"
   >
     <q-img v-if="project" :src="project?.icon" sizes="xl" />
+    <q-img v-else src="icons/asc-icon.png" sizes="xl" />
   </q-btn>
 </template>
 
 <script lang="ts">
 import { IProject } from 'src/entities';
-import { useProjectStore } from 'src/stores/projects';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 export default defineComponent({

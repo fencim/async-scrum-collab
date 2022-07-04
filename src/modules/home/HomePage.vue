@@ -41,8 +41,8 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'src/stores/profiles';
-import { useProjectStore } from 'src/stores/projects';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 const profilesStore = useProfilesStore();

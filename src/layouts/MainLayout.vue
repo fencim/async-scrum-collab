@@ -40,11 +40,11 @@
 </template>
 
 <script lang="ts">
-import { useCeremonyStore } from 'src/stores/cermonies';
-import { useConvoStore } from 'src/stores/convo';
-import { useDiscussionStore } from 'src/stores/discussions';
-import { useProfilesStore } from 'src/stores/profiles';
-import { useProjectStore } from 'src/stores/projects';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useConvoStore } from 'src/stores/convo.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();

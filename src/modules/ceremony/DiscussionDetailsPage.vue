@@ -168,12 +168,12 @@ import {
   IVote,
 } from 'src/entities';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { useCeremonyStore } from 'src/stores/cermonies';
-import { useConvoStore } from 'src/stores/convo';
-import { useDiscussionStore } from 'src/stores/discussions';
-import { useIterationStore } from 'src/stores/iterations';
-import { useProfilesStore } from 'src/stores/profiles';
-import { useProjectStore } from 'src/stores/projects';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useConvoStore } from 'src/stores/convo.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useIterationStore } from 'src/stores/iterations.store';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { convoBus } from './convo-bus';
 

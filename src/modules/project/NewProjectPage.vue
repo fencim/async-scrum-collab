@@ -74,8 +74,8 @@
 
 <script lang="ts">
 import { IProject } from 'src/entities';
-import { useProfilesStore } from 'src/stores/profiles';
-import { useProjectStore } from 'src/stores/projects';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();

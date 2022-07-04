@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { IProject } from 'src/entities';
-import { useProjectStore } from 'src/stores/projects';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 export default defineComponent({

@@ -109,10 +109,10 @@
 <script lang="ts">
 import { date } from 'quasar';
 import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies';
-import { useDiscussionStore } from 'src/stores/discussions';
-import { useIterationStore } from 'src/stores/iterations';
-import { useProjectStore } from 'src/stores/projects';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useIterationStore } from 'src/stores/iterations.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 
 const projectStore = useProjectStore();
