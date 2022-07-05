@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'src/stores/profiles';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 const profileStore = useProfilesStore();
 export default defineComponent({

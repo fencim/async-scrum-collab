@@ -199,8 +199,8 @@
 <script lang="ts">
 import { date } from 'quasar';
 import { DiscussionItem, ICeremony } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies';
-import { useDiscussionStore } from 'src/stores/discussions';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
 import { defineComponent } from 'vue';
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();

@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'stores/profiles';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'components/ThePresentProject.vue';
