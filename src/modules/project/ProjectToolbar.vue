@@ -48,9 +48,9 @@ export default defineComponent({
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
       this.project = await projectStore.withKey(this.activeProject);
-      this.memebers = await this.profilesStore.fromKeyList(
-        this.project?.members || []
-      );
+      this.memebers = (
+        await this.profilesStore.fromKeyList(this.project?.members || [])
+      ).filter((p) => p);
     },
   },
 });

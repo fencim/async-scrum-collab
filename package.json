@@ -17,6 +17,8 @@
     "@nestjs/swagger": "^5.2.1",
     "@quasar/extras": "^1.0.0",
     "core-js": "^3.6.5",
+    "firebase": "^9.8.4",
+    "firebaseui": "^6.0.1",
     "mitt": "^3.0.0",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",

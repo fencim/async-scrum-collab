@@ -1,20 +1,34 @@
 import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
+
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{
-      path: '', components: {
-        default: () => import('src/modules/home/HomePage.vue'),
-        header: () => import('src/modules/home/HomeToolbar.vue'),
-        actions: () => import('src/modules/home/HomeActionList.vue'),
-      }
-    }, {
-      path: '/project/new', components: {
-        default: () => import('src/modules/project/NewProjectPage.vue'),
-      }
-    }],
+    children: [
+      {
+        path: 'login',
+        name: 'login',
+        component: () => import('src/modules/credential/LoginPage.vue')
+      }, {
+        path: 'register',
+        name: 'register',
+        component: () => import('src/modules/credential/RegisterPage.vue')
+      }, {
+        path: 'logout',
+        name: 'logout',
+        component: () => import('src/modules/credential/LogoutPage.vue')
+      }, {
+        path: '', components: {
+          default: () => import('src/modules/home/HomePage.vue'),
+          header: () => import('src/modules/home/HomeToolbar.vue'),
+          actions: () => import('src/modules/home/HomeActionList.vue'),
+        }
+      }, {
+        path: '/project/new', components: {
+          default: () => import('src/modules/project/NewProjectPage.vue'),
+        }
+      }],
   },
   {
     path: '/:project',

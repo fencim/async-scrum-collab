@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import { IProfile } from 'src/entities';
 import { profileService } from 'src/services';
+import { firebaseService } from 'src/services/firebase.service';
+import { sessionService } from 'src/services/session.services';
+
 
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({
@@ -10,80 +13,31 @@ export const useProfilesStore = defineStore('Profiles', {
 
   getters: {
     presentUser(): IProfile | undefined {
-      return this.theUser || this.profiles.find(p => p.key == 'AR1');
+      return this.theUser;
     }
   },
 
   actions: {
+    async authenticate() {
+      if (!this.getUser()) {
+        await firebaseService.autheticate();
+        this.getUser();
+      }
+    },
+    signout() {
+      return firebaseService.signout();
+    },
+    getUser() {
+      const user = firebaseService.auth();
+      this.theUser = user && {
+        avatar: user?.photoURL || '',
+        key: user?.email || '',
+        name: user?.displayName || user?.email || 'None'
+      } || undefined;
+
+      return this.theUser;
+    },
     async init() {
-      profileService.saveAllTo([
-        {
-          key: 'bot',
-          name: 'Auto Bot',
-          avatar: 'icons/bot2.png',
-        },
-        {
-          key: 'RL1',
-          name: 'Ruby Larson',
-          avatar: 'icons/avatar1.jpg',
-        },
-        {
-          key: 'IN1',
-          name: 'Ida Nitzsche',
-          avatar: 'icons/avatar2.jpg',
-        },
-        {
-          key: 'AK1',
-          name: 'Alfredo Kub',
-          avatar: 'icons/avatar3.jpg',
-        },
-        {
-          key: 'AR1',
-          name: 'Anissa Roob',
-          avatar: 'icons/avatar4.jpg',
-        },
-        {
-          key: 'EM1',
-          name: 'Erica Murphy',
-          avatar: 'icons/avatar5.jpg',
-        },
-        {
-          key: 'JK1',
-          name: 'Jermey Kuhn',
-          avatar: 'icons/avatar1.jpg',
-        },
-        {
-          key: 'BK1',
-          name: 'Belle Kub',
-          avatar: 'icons/avatar2.jpg',
-        },
-        {
-          key: 'LK1',
-          name: 'Leanne Kunze',
-          avatar: 'icons/avatar3.jpg',
-        },
-        {
-          key: 'OG1',
-          name: 'Oda Graham',
-          avatar: 'icons/avatar4.jpg',
-        },
-        {
-          key: 'RF1',
-          name: 'Rebeka Frami',
-          avatar: 'icons/avatar5.jpg',
-        },
-        {
-          key: 'HC1',
-          name: 'Hope Conn',
-          avatar: 'icons/avatar1.jpg',
-        },
-        {
-          key: 'MW1',
-          name: 'Michel Wiza',
-          avatar: 'icons/avatar2.jpg',
-        },
-      ]);
-      this.theUser = this.presentUser;
       this.profiles = await profileService.findAllFrom();
     },
     async get(key: string) {
@@ -94,6 +48,39 @@ export const useProfilesStore = defineStore('Profiles', {
     },
     setAsTheUser(profileKey: string) {
       this.theUser = this.profiles.find(p => p.key == profileKey);
-    }
+    },
+    async signIn(email: string, password: string) {
+      const cred = await firebaseService.signInWithEmailandPass(email, password);
+      await sessionService.setData('currentUser', cred.user.toJSON() as object);
+      this.theUser = this.getUser();
+      if (this.theUser) {
+        profileService.setData(this.theUser?.key, this.theUser)
+      }
+      return cred;
+    },
+    async register(profile: { email: string, password: string, displayName: string, photo?: File }) {
+      const { email, password, displayName, photo } = profile;
+      const user = await firebaseService.createUserWithEmailPass(email, password);
+      const photoURL = await (new Promise<string | undefined>((resolve, reject) => {
+        const reader = new FileReader();
+        const save = async () => {
+          const photoURL = reader.result as string || undefined;
+          resolve(photoURL);
+        };
+        reader.addEventListener('load', save)
+        reader.addEventListener('error', reject);
+        if (photo) {
+          reader.readAsDataURL(photo);
+        } else {
+          save();
+        }
+      }))
+      await firebaseService.updateProfile(displayName, photoURL);
+      this.theUser = this.getUser();
+      if (this.theUser) {
+        profileService.setData(this.theUser?.key, this.theUser)
+      }
+      return user;
+    },
   }
 });

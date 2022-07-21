@@ -1,4 +1,5 @@
 import { route } from 'quasar/wrappers';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import {
   createMemoryHistory,
   createRouter,
@@ -20,7 +21,7 @@ export default route(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
-
+  const profileStore = useProfilesStore();
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
@@ -32,6 +33,21 @@ export default route(function (/* { store, ssrContext } */) {
       process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE
     ),
   });
+  profileStore.authenticate()
+    .then(() => {
+      Router.beforeEach(async (to, from, next) => {
+        if (profileStore.getUser() || /^(login|register)$/.test(String(to.name))) {
+          next();
+        } else {
+          next({
+            name: 'login'
+          })
+        }
+      })
+      if (!profileStore.getUser()) {
+        Router.replace({ name: 'login' });
+      }
+    });
 
   return Router;
 });

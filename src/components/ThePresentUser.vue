@@ -1,7 +1,11 @@
 <template>
   <q-btn round>
     <q-avatar>
-      <img v-if="profile.presentUser" :src="profile.presentUser.avatar" />
+      <img
+        v-if="profile.presentUser && profile.presentUser"
+        :src="profile.presentUser.avatar"
+      />
+      <span>CU</span>
     </q-avatar>
     <q-menu>
       <div class="row no-wrap q-pa-md">
@@ -13,12 +17,25 @@
 
         <div class="column items-center">
           <q-avatar size="72px">
-            <img :src="'icons/avatar4.jpg'" />
+            <img
+              v-if="profile.presentUser && profile.presentUser"
+              :src="profile.presentUser.avatar"
+            />
+            <span>CU</span>
           </q-avatar>
 
-          <div class="text-subtitle1 q-mt-md q-mb-xs">John Doe</div>
+          <div class="text-subtitle1 q-mt-md q-mb-xs">
+            {{ profile.presentUser?.name }}
+          </div>
 
-          <q-btn color="primary" label="Logout" push size="sm" v-close-popup />
+          <q-btn
+            color="primary"
+            label="Logout"
+            :to="{ name: 'logout' }"
+            push
+            size="sm"
+            v-close-popup
+          />
         </div>
       </div>
     </q-menu>
