@@ -1,5 +1,7 @@
-export interface IProfile {
-    key: string;
-    name: string;
-    avatar: string;
+import { IBaseEntity } from './base.entity';
+
+export interface IProfile extends IBaseEntity {
+  key: string;
+  name: string;
+  avatar: string;
 }

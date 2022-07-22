@@ -5,7 +5,7 @@ class ProjectService extends LocalBaseService<IProject> {
   constructor() {
     super('project')
   }
-  saveCb?: ((data: IProject) => Promise<void>) | undefined = async (data) => {
+  createCb?: ((data: IProject) => Promise<void>) | undefined = async (data) => {
     console.log('save project', data);
   }
   updateCb?: ((data: IProject) => Promise<void>) | undefined = async (data) => {

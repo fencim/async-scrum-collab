@@ -19,103 +19,90 @@ type KeysOfLocalDb = keyof LocalDb;
 type IBaseModel = {
   key: string;
 } | object;
-interface IStoreModel<T extends IBaseModel> {
+interface IDocStore<T extends IBaseModel> {
   status: 'saved' | 'sent' | 'updated' | 'deleted';
   key: string;
   data: T
 }
-export type SaveCallBack<T extends IBaseModel> = (data: T) => Promise<void | boolean> | void;
+export type SaveCallBack<T extends IBaseModel> = (data: T) => Promise<void | boolean | T> | void;
 export abstract class LocalBaseService<T extends IBaseModel> {
   constructor(private entity: KeysOfLocalDb) { }
-  private async manageDocCallback(doc: IStoreModel<T>) {
+  private async manageDocCallback(doc: IDocStore<T>) {
     if (doc.status !== 'sent') {
-      let status: void | boolean = false;
-      if (doc.status == 'saved' && this.saveCb) {
-        status = await this.saveCb(doc.data);
+      let status: void | boolean | T = false;
+      if (doc.status == 'saved' && this.createCb) {
+        status = await this.createCb(doc.data);
+        if (status && typeof status == 'object') {
+          await this.updateData(doc.key, status);
+        }
       } else if (doc.status == 'updated' && this.updateCb) {
         status = await this.updateCb(doc.data);
       }
-      if (status === true) {
+      if (status) {
         await this.setDataStatus(doc.key, 'sent');
       }
     }
   }
-  saveCb?: SaveCallBack<T>;
+  createCb?: SaveCallBack<T>;
   deleteCb?: SaveCallBack<T>;
   deleteAllCb?: () => Promise<void>;
   getAllCb?: (filters?: Filters) => Promise<T[]>;
   updateCb?: SaveCallBack<T>;
   async findAllFrom(filters?: Filters): Promise<T[]> {
-    const result: IStoreModel<T>[] = await this.findAllDocFrom(filters);
-    const mapper = (doc: IStoreModel<T>) => {
+    const result: IDocStore<T>[] = await this.findAllDocFrom(filters);
+    const mapper = (doc: IDocStore<T>) => {
       this.manageDocCallback(doc);
       return doc.data;
     };
     return result.map(mapper) as T[];
   }
-  async findAllDocFrom(filters?: Filters): Promise<IStoreModel<T>[]> {
-    let result: IStoreModel<T>[] = [];
-    let onlineResult: T[] = [];
+  async findAllDocFrom(filters?: Filters): Promise<IDocStore<T>[]> {
+    let result: IDocStore<T>[] = [];
     if (this.getAllCb) {
-      try {
-        onlineResult = await this.getAllCb(filters);
-        if (onlineResult) {
-          result = (await localDb[this.entity].values<IStoreModel<T>>());
-          const intersection = result.filter(i => {
-            const match = onlineResult.find(o => this.getKeyOf(o) == i.key);
-            if (match) {
-              i.data = match;
-              return true;
-            }
-            return false;
-          });
-          const added = onlineResult.filter(o => !intersection.find(i => i.key == this.getKeyOf(o)));
-          const deleted = result.filter(i => !intersection.find(o => o.key == i.key));
-          //delete from local the deleted
-          await Promise.all(deleted.map((i) => {
-            return localDb[this.entity].deleteItem(i.key);
-          }));
-          //update intersection
-          result = (await Promise.all(intersection.map(async (i) => {
-            if (i.status == 'sent') {
-              return localDb[this.entity].setItem(i.key, i);
-            } else {
-              return i;
-            }
-          }))).concat(
-            await Promise.all(added.map((i) => {
-              const key = this.getKeyOf(i);
-              return localDb[this.entity].setItem(key, {
-                data: i,
-                key,
-                status: 'sent'
-              } as IStoreModel<T>);
-            })));
-
-        }
-      } catch {
-        result = (await localDb[this.entity].values<IStoreModel<T>>());
-      }
-    }
-
-
-    if (filters && result && typeof filters !== 'function') {
-      return result.filter((row) =>
-        Object.keys(filters).reduce((prev: boolean, cur) => {
-          return prev && (row.data as unknown as FilterPart)[cur] == filters[cur];
-        }, true)
-      );
+      result = (await localDb[this.entity].paginatedValues<IDocStore<T>>(filters)).contents || [];
+      this.getAllCb(filters).then(async (onlineResult) => {
+        const intersection = result.filter(i => {
+          const match = onlineResult.find(o => this.getKeyOf(o) == i.key);
+          if (match) {
+            i.data = match;
+            return true;
+          }
+          return false;
+        });
+        const added = onlineResult.filter(o => !intersection.find(i => i.key == this.getKeyOf(o)));
+        const deleted = result.filter(i => !intersection.find(o => o.key == i.key));
+        //delete from local the deleted
+        await Promise.all(deleted.map((i) => {
+          return localDb[this.entity].deleteItem(i.key);
+        }));
+        //update intersection
+        const updated = (await Promise.all(intersection.map(async (i) => {
+          if (i.status == 'sent') {
+            return localDb[this.entity].setItem(i.key, i);
+          } else {
+            return i;
+          }
+        }))).concat(
+          await Promise.all(added.map((i) => {
+            const key = this.getKeyOf(i);
+            return localDb[this.entity].setItem(key, {
+              data: i,
+              key,
+              status: 'sent'
+            } as IDocStore<T>);
+          })));
+        result.splice(0, result.length, ...(updated || []));
+      })
     }
     return result;
-
   }
 
   async findAll(filters?: Filters, page?: Pagination<T>): Promise<Pagination<T>> {
-    const mapper = (doc: IStoreModel<T>) => {
+    const mapper = (doc: IDocStore<T>) => {
       this.manageDocCallback(doc);
       return doc.data;
     };
-    const pageanated = (await localDb[this.entity].paginatedValues<IStoreModel<T>>(filters, page));
+    const pageanated = (await localDb[this.entity].paginatedValues<IDocStore<T>>(filters, page));
     return {
       ...pageanated,
       contents: await Promise.all((pageanated.contents || []).map(mapper))
@@ -148,7 +135,7 @@ export abstract class LocalBaseService<T extends IBaseModel> {
     if (existing && existing.status == 'sent') {
       existing.status = 'updated';
       existing.data = value;
-      await localDb[this.entity].setItem(key, existing as IStoreModel<T>);
+      await localDb[this.entity].setItem(key, existing as IDocStore<T>);
       this.manageDocCallback(existing);
       return existing.data;
     } else {
@@ -156,12 +143,21 @@ export abstract class LocalBaseService<T extends IBaseModel> {
         data: value,
         key: key,
         status: 'saved'
-      } as IStoreModel<T>);
+      } as IDocStore<T>);
       return doc.data;
     }
   }
+  async updateData(key: string, value: T) {
+    const existing = await this.getDoc(key);
+    if (existing) {
+      existing.data = value;
+      await localDb[this.entity].setItem(key, existing as IDocStore<T>);
+      this.manageDocCallback(existing);
+      return existing.data;
+    }
+  }
   async getDoc(key: string) {
-    return await localDb[this.entity].getItem<IStoreModel<T>>(key);
+    return await localDb[this.entity].getItem<IDocStore<T>>(key);
   }
   async getDocStatus(key: string) {
     return (await this.getDoc(key)).status;
@@ -174,7 +170,7 @@ export abstract class LocalBaseService<T extends IBaseModel> {
     return oldStatus;
   }
   async getData(key: string): Promise<T | undefined> {
-    const doc = await localDb[this.entity].getItem<IStoreModel<T>>(key);
+    const doc = await localDb[this.entity].getItem<IDocStore<T>>(key);
     this.manageDocCallback(doc);
     return doc.data;
   }

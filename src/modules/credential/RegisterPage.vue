@@ -3,7 +3,12 @@
     <q-form @submit="register">
       <q-card class="q-pa-sm">
         <q-card-section>
-          <div class="text-h6">Register</div>
+          <q-banner>
+            <template v-slot:avatar>
+              <q-icon name="how_to_reg" color="primary" />
+            </template>
+            <div class="text-h6">Register new Account</div>
+          </q-banner>
         </q-card-section>
         <q-input v-model="email" label="e-mail" :rules="['email']">
           <template v-slot:prepend><q-icon name="email" /></template>
@@ -18,7 +23,7 @@
           v-model="password"
           label="Password"
           type="password"
-          :rules="[(v) => (v && v.length) || 'Enter password']"
+          :rules="[(v) => (v && v.length > 6) || 'Enter password']"
         >
           <template v-slot:prepend><q-icon name="password" /></template>
         </q-input>
@@ -28,11 +33,21 @@
           accept=".jpg, image/*"
           :multiple="false"
           use-chips
+          :rules="[(v) => v || 'Upload Avatar']"
           label="Avatar"
         />
         <q-card-actions>
-          <q-btn type="submit" icon="how_to_reg" label="Signup" />
-          <q-btn icon="login" label="Login" :to="{ name: 'login' }" />
+          <q-card-section>
+            <q-btn type="submit" icon="how_to_reg" label="Submit" />
+          </q-card-section>
+          <q-card-section>
+            <q-btn
+              align="right"
+              icon="login"
+              label="Login Instead"
+              :to="{ name: 'login' }"
+            />
+          </q-card-section>
         </q-card-actions>
       </q-card>
     </q-form>
@@ -78,3 +93,4 @@ export default defineComponent({
 });
 </script>
 <style></style>
+

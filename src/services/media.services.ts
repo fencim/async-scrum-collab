@@ -5,7 +5,7 @@ class AttachmentService extends LocalBaseService<IMedia> {
     constructor() {
         super('media')
     }
-    saveCb?: ((data: IMedia) => Promise<void>) | undefined = async (data) => {
+    createCb?: ((data: IMedia) => Promise<void>) | undefined = async (data) => {
         console.log('save media', data);
     }
     updateCb?: ((data: IMedia) => Promise<void>) | undefined = async (data) => {

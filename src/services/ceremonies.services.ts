@@ -5,7 +5,7 @@ class CeremonyService extends LocalBaseService<ICeremony> {
   constructor() {
     super('ceremony')
   }
-  saveCb?: ((data: ICeremony) => Promise<void>) | undefined = async (data) => {
+  createCb?: ((data: ICeremony) => Promise<void>) | undefined = async (data) => {
     console.log('save ceremony', data);
   }
   updateCb?: ((data: ICeremony) => Promise<void>) | undefined = async (data) => {
