@@ -1,21 +1,45 @@
 import { IProject } from 'src/entities';
+import { firebaseService } from './firebase.service';
 import { LocalBaseService } from './localbase.services';
+import { Entity, Filters } from './localbase/state-db.controller';
 
 class ProjectService extends LocalBaseService<IProject> {
   constructor() {
     super('project')
   }
-  createCb?: ((data: IProject) => Promise<void>) | undefined = async (data) => {
-    console.log('save project', data);
+  getAllCb?: (filters?: Filters<Entity>) => Promise<IProject[]> = async (filter) => {
+    return await firebaseService.findAll('projects', filter as { [field: string]: string }) as IProject[];
   }
-  updateCb?: ((data: IProject) => Promise<void>) | undefined = async (data) => {
-    console.log('update project', data);
+  createCb?: ((data: IProject) => Promise<void | boolean | IProject>) | undefined = async (data) => {
+    try {
+      return await firebaseService.create('projects', data) as IProject;
+    } catch (e) {
+      console.log(e);
+    }
   }
-  deleteCb?: ((data: IProject) => Promise<void>) | undefined = async (data) => {
-    console.log('delete project', data);
+  updateCb?: ((data: IProject) => Promise<void | boolean>) | undefined = async (data) => {
+    try {
+      await firebaseService.update('projects', data.id || data.key, data);
+      return true;
+    } catch {
+      return false;
+    }
   }
-  deleteAllCb?: (() => Promise<void>) | undefined = async () => {
-    console.log('delete all projects');
+  deleteCb?: ((data: IProject) => Promise<void | boolean>) | undefined = async (data) => {
+    try {
+      await firebaseService.update('projects', data.id || data.key, data);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  deleteAllCb?: (() => Promise<void | boolean>) | undefined = async () => {
+    try {
+      await firebaseService.deleteCollection('projects');
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 export const projectService = new ProjectService();

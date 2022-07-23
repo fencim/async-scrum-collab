@@ -1,5 +1,13 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDoc, doc, getDocs, query, where, addDoc, updateDoc } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection, getDoc, doc, getDocs,
+  query, where, updateDoc,
+  connectFirestoreEmulator,
+  setDoc,
+  deleteDoc,
+  writeBatch
+} from 'firebase/firestore';
 import {
   getAuth,
   connectAuthEmulator,
@@ -27,12 +35,15 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = initializeApp({
+  ...firebaseConfig
+});
 const db = getFirestore(app);
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
 if (/development/i.test(process.env.NODE_ENV)) {
   connectAuthEmulator(auth, 'http://localhost:9099');
+  connectFirestoreEmulator(db, 'localhost', 8081);
 }
 type Models = entities.Convo | entities.IProfile |
   entities.IProject | entities.IProject | entities.IIteration |
@@ -113,9 +124,8 @@ class FirebaseSevice {
   }
   async create(modelName: ModelName, value: Models) {
     if (value) {
-      const collectionRef = collections[modelName]();
-      const docRef = await addDoc(collectionRef, value);
-      value.id = docRef.id;
+      const docRef = doc(db, modelName + '/' + value.key);
+      await setDoc(docRef, value);
     }
     return value;
   }
@@ -126,6 +136,16 @@ class FirebaseSevice {
         ...value
       });
     }
+  }
+  async delete(modelName: ModelName, id: string) {
+    const docRef = doc(db, modelName, id);
+    await deleteDoc(docRef);
+  }
+  async deleteCollection(modelName: ModelName) {
+    const batch = writeBatch(db);
+    const docRef = doc(db, modelName);
+    batch.delete(docRef);
+    return batch.commit();
   }
 }
 

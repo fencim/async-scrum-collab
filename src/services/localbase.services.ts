@@ -1,5 +1,5 @@
 import { KeyValueStorage } from './localbase';
-import { FilterPart, Filters, Pagination } from './localbase/state-db.controller';
+import { Filters, Pagination } from './localbase/state-db.controller';
 
 const dbVersion = undefined;
 
@@ -45,7 +45,7 @@ export abstract class LocalBaseService<T extends IBaseModel> {
   }
   createCb?: SaveCallBack<T>;
   deleteCb?: SaveCallBack<T>;
-  deleteAllCb?: () => Promise<void>;
+  deleteAllCb?: () => Promise<void | boolean>;
   getAllCb?: (filters?: Filters) => Promise<T[]>;
   updateCb?: SaveCallBack<T>;
   async findAllFrom(filters?: Filters): Promise<T[]> {

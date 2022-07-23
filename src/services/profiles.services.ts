@@ -23,14 +23,19 @@ class ProfileService extends LocalBaseService<IProfile> {
   }
   deleteCb?: ((data: IProfile) => Promise<void | boolean>) | undefined = async (data) => {
     try {
-      await firebaseService.update('profiles', data.id || data.key, data);
+      await firebaseService.delete('profiles', data.id || data.key);
       return true;
     } catch {
       return false;
     }
   }
-  deleteAllCb?: (() => Promise<void>) | undefined = async () => {
-    console.log('delete all profiles');
+  deleteAllCb?: (() => Promise<void | boolean>) | undefined = async () => {
+    try {
+      await firebaseService.deleteCollection('profiles');
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 export const profileService = new ProfileService();
