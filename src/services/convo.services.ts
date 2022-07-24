@@ -8,11 +8,11 @@ class ConvoService extends LocalBaseService<Convo> {
     super('convo')
   }
   getAllCb?: (filters?: Filters<Entity>) => Promise<Convo[]> = async (filter) => {
-    return await firebaseService.findAll('convos', filter as { [field: string]: string }) as IProject[];
+    return await firebaseService.findAll('convos', filter as { [field: string]: string }) as Convo[];
   }
-  createCb?: ((data: Convo) => Promise<void | Convo>) | undefined = async () => {
+  createCb?: ((data: Convo) => Promise<void | Convo>) | undefined = async (data) => {
     try {
-      return await firebaseService.create('convos', data) as IProject;
+      return await firebaseService.create('convos', data) as Convo;
     } catch (e) {
       console.log(e);
     }
