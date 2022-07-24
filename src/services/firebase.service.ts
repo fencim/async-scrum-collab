@@ -47,7 +47,7 @@ if (/development/i.test(process.env.NODE_ENV)) {
 }
 type Models = entities.Convo | entities.IProfile |
   entities.IProject | entities.IProject | entities.IIteration |
-  entities.DiscussionItem | entities.ICeremony | undefined;
+  entities.DiscussionItem | entities.ICeremony | entities.IMedia | undefined;
 
 const collections = {
   'profiles': () => collection(db, 'profiles'),

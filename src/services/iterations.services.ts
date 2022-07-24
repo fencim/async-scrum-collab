@@ -1,21 +1,45 @@
 import { IIteration } from 'src/entities';
+import { firebaseService } from './firebase.service';
 import { LocalBaseService } from './localbase.services';
+import { Entity, Filters } from './localbase/state-db.controller';
 
 class ProfileService extends LocalBaseService<IIteration> {
   constructor() {
     super('iteration')
   }
-  createCb?: ((data: IIteration) => Promise<void>) | undefined = async (data) => {
-    console.log('save iteration', data);
+  getAllCb?: (filters?: Filters<Entity>) => Promise<IIteration[]> = async (filter) => {
+    return await firebaseService.findAll('iterations', filter as { [field: string]: string }) as IIteration[];
   }
-  updateCb?: ((data: IIteration) => Promise<void>) | undefined = async (data) => {
-    console.log('update iteration', data);
+  createCb?: ((data: IIteration) => Promise<void | boolean | IIteration>) | undefined = async (data) => {
+    try {
+      return await firebaseService.create('iterations', data) as IIteration;
+    } catch (e) {
+      console.log(e);
+    }
   }
-  deleteCb?: ((data: IIteration) => Promise<void>) | undefined = async (data) => {
-    console.log('delete iteration', data);
+  updateCb?: ((data: IIteration) => Promise<void | boolean>) | undefined = async (data) => {
+    try {
+      await firebaseService.update('iterations', data.id || data.key, data);
+      return true;
+    } catch {
+      return false;
+    }
   }
-  deleteAllCb?: (() => Promise<void>) | undefined = async () => {
-    console.log('delete all iterations');
+  deleteCb?: ((data: IIteration) => Promise<void | boolean>) | undefined = async (data) => {
+    try {
+      await firebaseService.update('iterations', data.id || data.key, data);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  deleteAllCb?: (() => Promise<void | boolean>) | undefined = async () => {
+    try {
+      await firebaseService.deleteCollection('iterations');
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 export const iterationService = new ProfileService();
