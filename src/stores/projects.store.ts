@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { IProject } from 'src/entities';
-import { projectService } from 'src/services';
+import { projectResource } from 'src/resources';
 
 export const useProjectStore = defineStore('projectStore', {
   state: () => ({
@@ -10,10 +10,10 @@ export const useProjectStore = defineStore('projectStore', {
   },
   actions: {
     async init() {
-      this.projects = (await projectService.findAll()).contents || [];
+      this.projects = (await projectResource.findAll()).contents || [];
     },
     async withKey(key: string) {
-      return this.projects.find(p => p.key == key) || projectService.findOne({ key });
+      return this.projects.find(p => p.key == key) || projectResource.findOne({ key });
     },
     async saveProject(newProject: IProject, icon?: File) {
       return new Promise<IProject>((resolve, reject) => {
@@ -21,7 +21,7 @@ export const useProjectStore = defineStore('projectStore', {
         const save = async () => {
           newProject.icon = reader.result as string || newProject.icon;
           newProject.members = newProject.members || [];
-          await projectService.setData(newProject.key, {
+          await projectResource.setData(newProject.key, {
             ...newProject,
             members: [...newProject.members]
           });
@@ -49,7 +49,7 @@ export const useProjectStore = defineStore('projectStore', {
       }
       if (!project.members?.find(m => m == memberKey)) {
         project.members = (project.members || []).concat([memberKey]);
-        projectService.setData(projectKey, {
+        projectResource.setData(projectKey, {
           ...project,
           members: [...project.members]
         });

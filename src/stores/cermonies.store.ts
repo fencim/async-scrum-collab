@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ICeremony } from 'src/entities';
-import { ceremonyService } from 'src/services';
+import { ceremonyResource } from 'src/resources';
 
 export const useCeremonyStore = defineStore('ceremony', {
   state: () => ({
@@ -14,14 +14,14 @@ export const useCeremonyStore = defineStore('ceremony', {
   },
   actions: {
     async init() {
-      this.ceremonies = await ceremonyService.findAllFrom();
+      this.ceremonies = await ceremonyResource.findAllFrom();
     },
     setActiveCeremony(ceremony: ICeremony) {
       this.activeCeremony = ceremony;
     },
     async ofIteration(project: string, iterationKey: string) {
       if (!this.ceremonies || !this.ceremonies.length) {
-        return await ceremonyService.findAllFrom({
+        return await ceremonyResource.findAllFrom({
           projectKey: project,
           iterationKey
         });
@@ -30,7 +30,7 @@ export const useCeremonyStore = defineStore('ceremony', {
     },
     async withKey(project: string, iterationKey: string, key: string) {
       if (!this.ceremonies || !this.ceremonies.length) {
-        return await ceremonyService.findOne({
+        return await ceremonyResource.findOne({
           key,
           iterationKey,
           projectKey: project
@@ -47,7 +47,7 @@ export const useCeremonyStore = defineStore('ceremony', {
           return self.indexOf(value) === index;
         })
       };
-      await ceremonyService.setData(ceremony.key, save);
+      await ceremonyResource.setData(ceremony.key, save);
       const index = this.ceremonies.findIndex(i => i.key == ceremony.key);
       if (index < 0) {
         this.ceremonies.push(save);

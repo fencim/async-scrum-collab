@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
 import { IIteration } from 'src/entities';
-import { iterationService } from 'src/services';
+import { iterationResource } from 'src/resources';
 
 export const useIterationStore = defineStore('iteration', {
   state: () => ({
@@ -13,7 +13,7 @@ export const useIterationStore = defineStore('iteration', {
   },
   actions: {
     async ofProject(key: string) {
-      this.iterations = await iterationService.findAllFrom({
+      this.iterations = await iterationResource.findAllFrom({
         projectKey: key
       });
       return this.iterations.map(i => ({
@@ -27,7 +27,7 @@ export const useIterationStore = defineStore('iteration', {
 
     async withKey(project: string, key: string) {
       if (!this.iterations || !this.iterations.length) {
-        return await iterationService.findOne({
+        return await iterationResource.findOne({
           key,
           projectKey: project
         });
@@ -35,7 +35,7 @@ export const useIterationStore = defineStore('iteration', {
       return this.iterations.find(i => i.projectKey == project && i.key == key);
     },
     async saveIteration(iteration: IIteration) {
-      await iterationService.setData(iteration.key, iteration);
+      await iterationResource.setData(iteration.key, iteration);
       const index = this.iterations.findIndex(i => i.key == iteration.key);
       if (index < 0) {
         this.iterations.push(iteration);

@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { IProfile } from 'src/entities';
-import { profileService } from 'src/services';
-import { firebaseService } from 'src/services/firebase.service';
-import { sessionService } from 'src/services/session.services';
+import { profileResource } from 'src/resources';
+import { firebaseService } from 'src/resources/firebase.service';
+import { sessionResource } from 'src/resources/session.resource';
 
 
 export const useProfilesStore = defineStore('Profiles', {
@@ -38,10 +38,10 @@ export const useProfilesStore = defineStore('Profiles', {
       return this.theUser;
     },
     async init() {
-      this.profiles = await profileService.findAllFrom();
+      this.profiles = await profileResource.findAllFrom();
     },
     async get(key: string) {
-      return this.profiles.find(p => p.key == key) || profileService.findOne({ key });
+      return this.profiles.find(p => p.key == key) || profileResource.findOne({ key });
     },
     async fromKeyList(members: string[]) {
       return (await Promise.all(members.map(m => (this.get(m))))) as IProfile[];
@@ -51,10 +51,10 @@ export const useProfilesStore = defineStore('Profiles', {
     },
     async signIn(email: string, password: string) {
       const cred = await firebaseService.signInWithEmailandPass(email, password);
-      await sessionService.setData('currentUser', cred.user.toJSON() as object);
+      await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
       if (this.theUser) {
-        profileService.setData(this.theUser?.key, this.theUser)
+        profileResource.setData(this.theUser?.key, this.theUser)
       }
       return cred;
     },
@@ -78,7 +78,7 @@ export const useProfilesStore = defineStore('Profiles', {
       await firebaseService.updateProfile(displayName, photoURL);
       this.theUser = this.getUser();
       if (this.theUser) {
-        profileService.setData(this.theUser?.key, this.theUser)
+        profileResource.setData(this.theUser?.key, this.theUser)
       }
       return user;
     },

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { Convo, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
-import { discussionService } from 'src/services/discussions.services';
+import { discussionResource } from 'src/resources/discussions.services';
 
 export const useDiscussionStore = defineStore('discussion', {
   state: () => ({
@@ -11,7 +11,7 @@ export const useDiscussionStore = defineStore('discussion', {
   },
   actions: {
     async init() {
-      this.discussions = await discussionService.findAllFrom();
+      this.discussions = await discussionResource.findAllFrom();
     },
     async fromKeyList(projectKey: string, list: string[]): Promise<DiscussionItem[]> {
       const discussions = (await this.ofProject(projectKey));
@@ -20,20 +20,20 @@ export const useDiscussionStore = defineStore('discussion', {
       return discussionList;
     },
     async ofProject(projectKey: string) {
-      this.discussions = await discussionService.findAllFrom({
+      this.discussions = await discussionResource.findAllFrom({
         projectKey
       });
       return this.discussions;
     },
     async withKey(key: string) {
-      return discussionService.findOne({ key });
+      return discussionResource.findOne({ key });
     },
     async saveDiscussion(discussion: DiscussionItem) {
       if (discussion.type == 'story') {
         discussion.acceptanceCriteria = [...(discussion.acceptanceCriteria || [])].map(ac => ({ ...ac }));
         discussion.tasks = [...(discussion.tasks || [])];
       }
-      await discussionService.setData(discussion.key, {
+      await discussionResource.setData(discussion.key, {
         ...discussion
       });
       const index = this.discussions.findIndex(i => i.key == discussion.key);

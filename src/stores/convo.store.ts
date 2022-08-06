@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
 import { Convo } from 'src/entities';
-import { convoService } from 'src/services';
+import { convoResource } from 'src/resources';
 
 export const useConvoStore = defineStore('convo', {
   state: () => ({
@@ -11,10 +11,10 @@ export const useConvoStore = defineStore('convo', {
   },
   actions: {
     async init() {
-      this.convo = await convoService.findAllFrom();
+      this.convo = await convoResource.findAllFrom();
     },
     async ofDiscussion(projectKey: string, discussion: string) {
-      this.convo = (await convoService.findAllDocFrom({
+      this.convo = (await convoResource.findAllDocFrom({
         projectKey, discussion
       })).filter(d => d).map(d => ({
         ...d.data,
@@ -35,19 +35,19 @@ export const useConvoStore = defineStore('convo', {
         from,
         key: (discussion || projectKey) + '-m' + String(messages.length),
       } as Convo;
-      await convoService.setData(msg.key, msg);
+      await convoResource.setData(msg.key, msg);
       this.convo.push(msg);
     },
     async saveConvo(msg: Convo) {
       if (msg && msg.key) {
-        await convoService.setData(msg.key, {
+        await convoResource.setData(msg.key, {
           ...msg,
           from: typeof msg.from == 'object' ? msg.from.key : msg.from
         });
       }
     },
     async getConvoStatus(key: string) {
-      return convoService.getDocStatus(key);
+      return convoResource.getDocStatus(key);
     },
     getConvo(key: string) {
       return this.convo.find(c => c.key == key);
