@@ -10,7 +10,7 @@ export const useProjectStore = defineStore('projectStore', {
   },
   actions: {
     async init() {
-      this.projects = (await projectResource.findAll()).contents || [];
+      this.projects = (await projectResource.findAllFrom()) || [];
     },
     async withKey(key: string) {
       if (key) {

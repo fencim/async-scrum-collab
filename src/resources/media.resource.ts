@@ -14,8 +14,8 @@ class MediaResource extends BaseResource<IMedia> {
     await firebaseService.delete('medias', data.id || data.key);
     return true;
   }
-  protected deleteAllCb(): Promise<boolean | void> {
-    throw new Error('Method not implemented.');
+  protected async deleteAllCb(): Promise<boolean | void> {
+    return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | IMedia[]> {
     return await firebaseService.findAll('medias', filters as { [field: string]: string }) as IMedia[];

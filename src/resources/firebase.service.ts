@@ -1,12 +1,13 @@
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
-  collection, getDoc, doc, getDocs,
+  collection, doc, getDocs,
   query, where, updateDoc,
   connectFirestoreEmulator,
   setDoc,
   deleteDoc,
-  writeBatch
+  writeBatch,
+  getDocFromServer
 } from 'firebase/firestore';
 import {
   getAuth,
@@ -22,17 +23,8 @@ import {
 } from 'firebase/auth';
 
 import * as entities from '../entities';
-
-type WhereFilterOp = '<' | '<=' | '==' | '!=' | '>=' | '>' | 'array-contains' | 'in' | 'array-contains-any' | 'not-in';
-const firebaseConfig = {
-  apiKey: 'AIzaSyARflXs8OzyMDl6gUaMBmgFFI0E8M8Nso0',
-  authDomain: 'async-scrum-collab.firebaseapp.com',
-  projectId: 'async-scrum-collab',
-  storageBucket: 'async-scrum-collab.appspot.com',
-  messagingSenderId: '364156393105',
-  appId: '1:364156393105:web:f1dd39e82ab25d311ad130',
-  measurementId: 'G-J3YLZS17VE'
-};
+import { firebaseConfig } from './firebase-config';
+import { WhereFilterOp } from './firebase-operators';
 
 // Initialize Firebase
 const app = initializeApp({
@@ -58,10 +50,8 @@ const collections = {
   'convos': () => collection(db, 'convos'),
   'medias': () => collection(db, 'medias')
 };
-
 type Colls = typeof collections;
 type ModelName = keyof Colls;
-
 class FirebaseSevice {
   auth() {
     return auth.currentUser;
@@ -96,7 +86,7 @@ class FirebaseSevice {
   }
   async get(modelName: ModelName, id: string): Promise<Models> {
     const docRef = doc(db, modelName, id);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDocFromServer(docRef);
     if (docSnap.exists()) {
       return docSnap.data() as Models;
     }
@@ -108,8 +98,9 @@ class FirebaseSevice {
     const conditions = Object.keys(filter).map(f => {
       const match = supOps.exec(f);
       if (match) {
-        const operand = match[1];
-        const operator = match[2] as WhereFilterOp;
+        const OPERAND = 1, OPERATOR = 2;
+        const operand = match[OPERAND];
+        const operator = match[OPERATOR] as WhereFilterOp;
         return where(operand, operator, filter[f]);
       }
       return where(f, '==', filter[f])

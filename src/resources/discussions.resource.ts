@@ -16,7 +16,6 @@ class DiscussionResource extends BaseResource<DiscussionItem> {
     return true;
   }
   protected async deleteAllCb(): Promise<boolean | void> {
-    await firebaseService.deleteCollection('discussions');
     return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | DiscussionItem[]> {

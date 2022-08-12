@@ -14,8 +14,8 @@ class IterationResource extends BaseResource<IIteration> {
     await firebaseService.delete('iterations', data.id || data.key);
     return true;
   }
-  protected deleteAllCb(): Promise<boolean | void> {
-    throw new Error('Method not implemented.');
+  protected async deleteAllCb(): Promise<boolean | void> {
+    return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | IIteration[]> {
     return await firebaseService.findAll('iterations', filters as { [field: string]: string }) as IIteration[];

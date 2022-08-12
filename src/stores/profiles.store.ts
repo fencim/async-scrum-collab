@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { IProfile } from 'src/entities';
-import { profileResource } from 'src/resources';
+import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
 import { sessionResource } from 'src/resources/session.resource';
 
@@ -24,8 +24,15 @@ export const useProfilesStore = defineStore('Profiles', {
         this.getUser();
       }
     },
-    signout() {
-      return firebaseService.signout();
+    async signout() {
+      await firebaseService.signout();
+      await convoResource.deleteAll();
+      await discussionResource.deleteAll();
+      await iterationResource.deleteAll();
+      await mediaResource.deleteAll();
+      await projectResource.deleteAll();
+      await profileResource.deleteAll();
+      await sessionResource.deleteAll();
     },
     getUser() {
       const user = firebaseService.auth();
@@ -34,7 +41,9 @@ export const useProfilesStore = defineStore('Profiles', {
         key: user?.email || '',
         name: user?.displayName || user?.email || 'None'
       } || undefined;
-
+      if (this.theUser && this.theUser.key) {
+        profileResource.setData(this.theUser.key, this.theUser);
+      }
       return this.theUser;
     },
     async init() {
@@ -54,7 +63,7 @@ export const useProfilesStore = defineStore('Profiles', {
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
       if (this.theUser) {
-        profileResource.setData(this.theUser?.key, this.theUser)
+        await profileResource.setData(this.theUser?.key, this.theUser)
       }
       return cred;
     },

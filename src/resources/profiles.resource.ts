@@ -15,7 +15,6 @@ class ProfileResource extends BaseResource<IProfile> {
     return true;
   }
   protected async deleteAllCb(): Promise<boolean | void> {
-    await firebaseService.deleteCollection('profiles');
     return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | IProfile[]> {

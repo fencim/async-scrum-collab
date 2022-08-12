@@ -15,7 +15,6 @@ class ProjectResource extends BaseResource<IProject> {
     return true;
   }
   protected async deleteAllCb(): Promise<boolean | void> {
-    await firebaseService.deleteCollection('projects');
     return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | IProject[]> {

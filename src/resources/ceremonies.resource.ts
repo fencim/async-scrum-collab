@@ -19,7 +19,6 @@ class CeremonyResource extends BaseResource<ICeremony> {
     return true;
   }
   protected async deleteAllCb(): Promise<boolean | void> {
-    await firebaseService.deleteCollection('ceremonies');
     return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | ICeremony[]> {
