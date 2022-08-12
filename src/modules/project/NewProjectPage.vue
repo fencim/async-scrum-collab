@@ -91,6 +91,7 @@ export default defineComponent({
     };
   },
   async mounted() {
+    await profileStore.init();
     if (this.$route.params.project) {
       this.theProject =
         (await projectStore.withKey(this.$route.params.project as string)) ||

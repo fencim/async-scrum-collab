@@ -7,7 +7,7 @@ import { sessionResource } from 'src/resources/session.resource';
 
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({
-    profiles: [] as IProfile[],
+    profiles: [{ avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' }] as IProfile[],
     theUser: undefined as IProfile | undefined
   }),
 

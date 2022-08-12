@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 
 class MediaResource extends BaseResource<IMedia> {
+  protected async getCb(key: string): Promise<boolean | void | IMedia> {
+    return await firebaseService.get('medias', key) as IMedia;
+  }
   protected async createCb(data: IMedia): Promise<boolean | void | IMedia> {
     return await firebaseService.create('medias', data) as IMedia;
   }

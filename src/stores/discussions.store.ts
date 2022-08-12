@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { Convo, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
-import { discussionResource } from 'src/resources/discussions.services';
+import { discussionResource } from 'src/resources/discussions.resource';
 
 export const useDiscussionStore = defineStore('discussion', {
   state: () => ({

@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 
 class IterationResource extends BaseResource<IIteration> {
+  protected async getCb(key: string): Promise<boolean | void | IIteration> {
+    return await firebaseService.get('iterations', key) as IIteration;
+  }
   protected async createCb(data: IIteration): Promise<boolean | void | IIteration> {
     return await firebaseService.create('iterations', data) as IIteration;
   }

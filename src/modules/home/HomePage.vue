@@ -46,6 +46,7 @@ import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 const profilesStore = useProfilesStore();
+
 export default defineComponent({
   name: 'IndexPage',
   components: {},
@@ -54,7 +55,9 @@ export default defineComponent({
       projectStore,
     };
   },
-
+  async mounted() {
+    await projectStore.init();
+  },
   methods: {
     async joinProject(projectKey: string) {
       if (profilesStore.presentUser) {

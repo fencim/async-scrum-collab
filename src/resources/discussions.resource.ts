@@ -5,6 +5,9 @@ import { Entity, Filters } from './localbase/state-db.controller';
 
 
 class DiscussionResource extends BaseResource<DiscussionItem> {
+  protected async getCb(key: string): Promise<boolean | void | DiscussionItem> {
+    return await firebaseService.get('discussions', key) as DiscussionItem;
+  }
   protected async createCb(data: DiscussionItem): Promise<boolean | void | DiscussionItem> {
     return await firebaseService.create('discussions', data) as DiscussionItem;
   }

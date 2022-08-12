@@ -2,6 +2,9 @@ import { BaseResource } from './base.resource';
 type SessionValue = object;
 
 class SessionResource extends BaseResource<SessionValue> {
+  protected async getCb(): Promise<boolean | void | object> {
+    //
+  }
   protected createCb() {
     //
   }

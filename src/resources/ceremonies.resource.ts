@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 
 class CeremonyResource extends BaseResource<ICeremony> {
+  protected async getCb(key: string): Promise<boolean | void | ICeremony> {
+    return await firebaseService.get('ceremonies', key) as ICeremony;
+  }
   protected async createCb(data: ICeremony): Promise<boolean | void | ICeremony> {
     try {
       return await firebaseService.create('ceremonies', data) as ICeremony;

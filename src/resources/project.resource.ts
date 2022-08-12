@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 
 class ProjectResource extends BaseResource<IProject> {
+  protected async getCb(key: string): Promise<boolean | void | IProject> {
+    return await firebaseService.get('projects', key) as IProject;
+  }
   protected async createCb(data: IProject): Promise<boolean | void | IProject> {
     return await firebaseService.create('projects', data) as IProject;
   }

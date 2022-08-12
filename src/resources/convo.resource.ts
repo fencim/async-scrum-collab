@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 
 class ConvoResource extends BaseResource<Convo> {
+  protected async getCb(key: string): Promise<boolean | void | Convo> {
+    return await firebaseService.get('convos', key) as Convo
+  }
   protected async createCb(data: Convo): Promise<boolean | void | Convo> {
     return await firebaseService.create('convos', data) as Convo;
   }

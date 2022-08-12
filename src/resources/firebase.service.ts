@@ -102,7 +102,7 @@ class FirebaseSevice {
     }
     return undefined;
   }
-  async findAll(modelName: ModelName, filter: { [field: string]: string }): Promise<Models[]> {
+  async findAll(modelName: ModelName, filter: { [field: string]: string } = {}): Promise<Models[]> {
     const collectionRef = collections[modelName]();
     const supOps = /(.*) (==|<|<=|>=|!=|in)$/;
     const conditions = Object.keys(filter).map(f => {
@@ -114,8 +114,8 @@ class FirebaseSevice {
       }
       return where(f, '==', filter[f])
     })
-    const queryRef = query(collectionRef, ...conditions);
-    const docsRef = await getDocs(queryRef);
+    const queryRef = conditions.length > 0 && query(collectionRef, ...conditions);
+    const docsRef = await getDocs(queryRef || collectionRef);
     if (docsRef.empty) {
       return [];
     } else {

@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Filters, Entity } from './localbase/state-db.controller';
 
 class ProfileResource extends BaseResource<IProfile> {
+  protected async getCb(key: string): Promise<boolean | void | IProfile> {
+    return await firebaseService.get('profiles', key) as IProfile;
+  }
   protected async createCb(data: IProfile): Promise<boolean | void | IProfile> {
     return await firebaseService.create('profiles', data) as IProfile;
   }

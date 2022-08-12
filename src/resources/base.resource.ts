@@ -3,25 +3,32 @@ import { FilterFn2, Filters, Pagination } from './localbase/state-db.controller'
 
 const dbVersion = undefined;
 
-type IBaseResourceModel = {
-  id?: string;
-  key?: string;
-} | object;
+type IBaseResourceModel =
+  | {
+    id?: string;
+    key?: string;
+  }
+  | object;
+type DocStatus = 'saved' | 'synced' | 'updated' | 'deleted';
 interface IDocStore<T extends IBaseResourceModel> {
-  status: 'saved' | 'synced' | 'updated' | 'deleted';
+  status: DocStatus;
   key: string;
-  data: T
+  data: T;
 }
-export type SaveCallBack<T extends IBaseResourceModel> = (data: T) => (Promise<void | boolean | T> | void);
+
 export abstract class BaseResource<T extends IBaseResourceModel> {
+  requestDelay = 1000 * 1 /*second*/;
   constructor(entity: string, private keyField?: string, prefix = 'hrs') {
-    this.localBase = new KeyValueStorage(prefix + '-' + entity.toLowerCase(), dbVersion);
+    this.localBase = new KeyValueStorage(
+      prefix + '-' + entity.toLowerCase(),
+      dbVersion
+    );
   }
   private localBase: KeyValueStorage;
   private async manageDocCallback(doc: IDocStore<T>, prop?: string) {
-    if (doc.status !== 'synced') {
-      let status: void | boolean | T = false;
-      try {
+    let status: void | boolean | T = false;
+    try {
+      if (doc.status !== 'synced') {
         if (doc.status == 'saved' && this.createCb) {
           status = await this.createCb(doc.data);
           if (status && typeof status == 'object') {
@@ -35,19 +42,29 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         if (status) {
           await this.setDataStatus(doc.key, 'synced');
         }
-      } catch {
-        //offline try again later
+      } else if (this.getCb) {
+        const status = await this.getCb(doc.key);
+        if (status && typeof status == 'object') {
+          await this.setData(doc.key, status, 'synced');
+          doc.data = status;
+        }
       }
+    } catch {
+      //offline try again later
     }
   }
-  protected abstract createCb(data: T): (Promise<void | boolean | T> | void);
-  protected abstract deleteCb(data: T): (Promise<void | boolean | T> | void);
+  protected abstract createCb(data: T): Promise<void | boolean | T> | void;
+  protected abstract deleteCb(data: T): Promise<void | boolean | T> | void;
   protected abstract deleteAllCb(): Promise<void | boolean>;
   protected abstract getAllCb(filters?: Filters): Promise<T[] | void>;
-  protected abstract updateCb(data: T): (Promise<void | boolean | T> | void);
+  protected abstract getCb(key: string): Promise<T | void | boolean>;
+  protected abstract updateCb(data: T): Promise<void | boolean | T> | void;
   protected abstract patchCb(data: T, property: string): Promise<void | boolean | T>;
   protected arrayFilter<T = []>(filters?: Filters) {
-    if (typeof filters == 'function' && /^\w*\s*\(\s*\)/.test(filters.toString())) {
+    if (
+      typeof filters == 'function' &&
+      /^\w*\s*\(\s*\)/.test(filters.toString())
+    ) {
       return (filters as FilterFn2)() as T;
     }
   }
@@ -62,9 +79,11 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   async findAllDocFrom(filters?: Filters): Promise<IDocStore<T>[]> {
     let result: IDocStore<T>[] = [];
     if (this.getAllCb) {
-      result = (await this.localBase.paginatedValues<IDocStore<T>>(filters)).contents || [];
+      result =
+        (await this.localBase.paginatedValues<IDocStore<T>>(filters))
+          .contents || [];
       this.getAllCb(filters).then(async (onlineResult) => {
-        if (!onlineResult || !(onlineResult instanceof Array)) return;
+        if (!onlineResult) return;
         const intersection = result.filter(i => {
           const match = onlineResult.find(o => this.getKeyOf(o) == this.getKeyOf(i as T));
           if (match) {
@@ -98,44 +117,44 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
           })),
           ...localyAdded);
         result.splice(0, result.length, ...(updated || []));
-      })
-      //sleep for 500ms
-      await new Promise((r) => setTimeout(r, 500));
+      });
+      await new Promise((r) => setTimeout(r, this.requestDelay));
     }
     return result;
   }
 
-  async findAll(filters?: Filters, page?: Pagination<T>): Promise<Pagination<T>> {
+  async findAll(
+    filters?: Filters,
+    page?: Pagination<T>
+  ): Promise<Pagination<T>> {
     const mapper = (doc: IDocStore<T>) => {
       this.manageDocCallback(doc);
       return doc.data;
     };
-    const pageanated = (await this.localBase.paginatedValues<IDocStore<T>>(filters, page));
+    const pageanated = await this.localBase.paginatedValues<IDocStore<T>>(
+      filters,
+      page
+    );
     return {
       ...pageanated,
-      contents: await Promise.all((pageanated.contents || []).map(mapper))
+      contents: await Promise.all((pageanated.contents || []).map(mapper)),
     };
   }
-  async findOne(
-    filters?: Filters
-  ): Promise<T | undefined> {
+  async findOne(filters?: Filters): Promise<T | undefined> {
     const all = await this.findAllFrom(filters);
     return all && (all[0] as T);
   }
   async saveAllTo(values: T[]) {
     return Promise.all(
       values.map((v) => {
-        return v &&
-          this.setData(this.getKeyOf(v), v);
+        return v && this.setData(this.getKeyOf(v), v);
       })
     );
   }
   async saveEachTo(values: T[]) {
     while (values.length) {
       const v = values.splice(0, 1)[0];
-      v && await this.setData(this.getKeyOf(v),
-        v
-      );
+      v && (await this.setData(this.getKeyOf(v), v));
     }
   }
   /**
@@ -144,22 +163,22 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
    * @param value
    * @returns
    */
-  async setData(key: string, value: T, createOnly = false): Promise<T> {
+  async setData(key: string, value: T, createOnlyOrStatus: boolean | DocStatus = false): Promise<T> {
     const existing = await this.getDoc(key || this.getKeyOf(value));
-    if (createOnly && existing) {
+    if (createOnlyOrStatus === true && existing) {
       throw 'Record already exist';
     }
     if (existing && existing.status == 'synced') {
-      existing.status = 'updated';
+      existing.status = typeof createOnlyOrStatus == 'string' ? createOnlyOrStatus : 'updated';
       existing.data = value;
       await this.localBase.setItem(key, existing as IDocStore<T>);
-      this.manageDocCallback(existing);
+      if (existing.status != 'synced') this.manageDocCallback(existing);
       return existing.data;
     } else {
       const doc = await this.localBase.setItem(key, {
         data: value,
         key: key,
-        status: 'saved'
+        status: typeof createOnlyOrStatus == 'string' ? createOnlyOrStatus : 'saved',
       } as IDocStore<T>);
       this.manageDocCallback(doc);
       return doc.data;
@@ -198,7 +217,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     return await this.localBase.getItem<IDocStore<T>>(key);
   }
   async getDocStatus(key: string) {
-    return (await this.getDoc(key)).status;
+    return (await this.getDocByIdentity(key))?.status;
   }
   protected async setDataStatus(key: string, status: 'saved' | 'synced' | 'updated' = 'synced') {
     const doc = await this.getDoc(key);
@@ -208,9 +227,41 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     return oldStatus;
   }
   async getData(key: string): Promise<T | undefined> {
-    const doc = await this.localBase.getItem<IDocStore<T>>(key);
-    this.manageDocCallback(doc);
-    return doc.data;
+    const doc = await this.getDocByIdentity(key);
+    if (doc) {
+      this.manageDocCallback(doc);
+      await new Promise((r) => setTimeout(r, this.requestDelay));
+      return doc.data;
+    } else if (this.getCb) {
+      try {
+        const data = await this.getCb(key);
+        if (typeof data == 'object') {
+          const identity = this.getKeyOf(data);
+          await this.setData(identity, data, 'synced');
+          return data;
+        }
+      } catch {
+        return;
+      }
+    }
+  }
+
+  private async getDocByIdentity(key: string): Promise<IDocStore<T> | undefined> {
+    let item = await this.localBase.getItem<IDocStore<T>>(key);
+    if (this.keyField != 'key') {
+      item = item || await this.getDocByField('key', key);
+      item = item || await this.getDocByField('id', key);
+    }
+    return item;
+  }
+
+  private async getDocByField(idField: string, value: string): Promise<IDocStore<T> | undefined> {
+    const result = (await this.localBase.paginatedValues<IDocStore<T>>(
+      (doc) => { return (doc.data as unknown as { [key: string]: string })[idField] == value; }
+    )).contents;
+    if (result instanceof Array) {
+      return result[0];
+    }
   }
 
   async count() {
@@ -229,13 +280,16 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
 
   async deleteAll() {
     if (this.deleteAllCb) {
-      await this.deleteAllCb()
+      await this.deleteAllCb();
     }
     this.localBase.deleteAll();
   }
   private getKeyOf(v: T): string {
     if (typeof v == 'object') {
-      if (this.keyField && Object.prototype.hasOwnProperty.call(v, this.keyField)) {
+      if (
+        this.keyField &&
+        Object.prototype.hasOwnProperty.call(v, this.keyField)
+      ) {
         return (v as unknown as { [key: string]: string })[this.keyField];
       } else if (Object.prototype.hasOwnProperty.call(v, 'key')) {
         return (v as unknown as { key: string }).key;
@@ -255,7 +309,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     if (name.length == 0) return hash;
     for (let i = 0; i < name.length; i++) {
       const chr = name.charCodeAt(i);
-      hash = ((hash << 5) - hash) + chr;
+      hash = (hash << 5) - hash + chr;
       hash = hash & hash;
     }
     return hash;

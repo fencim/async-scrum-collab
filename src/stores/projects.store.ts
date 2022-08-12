@@ -13,7 +13,9 @@ export const useProjectStore = defineStore('projectStore', {
       this.projects = (await projectResource.findAll()).contents || [];
     },
     async withKey(key: string) {
-      return this.projects.find(p => p.key == key) || projectResource.findOne({ key });
+      if (key) {
+        return this.projects.find(p => p.key == key) || projectResource.findOne({ key });
+      }
     },
     async saveProject(newProject: IProject, icon?: File) {
       return new Promise<IProject>((resolve, reject) => {
