@@ -165,8 +165,9 @@
                     dense
                     @click="resolveQuestionOf(m, 'agree')"
                     ><q-tooltip>{{
-                      Object.values(m.feedback).filter((m) => m == 'agree')
-                        .length
+                      Object.values(m.feedback || {}).filter(
+                        (m) => m == 'agree'
+                      ).length
                     }}</q-tooltip>
                   </q-btn>
                   <q-btn
@@ -184,8 +185,9 @@
                     @click="resolveQuestionOf(m, 'disagree')"
                   >
                     <q-tooltip>{{
-                      Object.values(m.feedback).filter((m) => m == 'disagree')
-                        .length
+                      Object.values(m.feedback || {}).filter(
+                        (m) => m == 'disagree'
+                      ).length
                     }}</q-tooltip>
                   </q-btn>
                 </q-card-actions>
