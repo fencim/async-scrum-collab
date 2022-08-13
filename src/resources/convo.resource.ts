@@ -18,7 +18,7 @@ class ConvoResource extends BaseResource<Convo> {
     return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | Convo[]> {
-    await firebaseService.findAll('convos', filters as { [field: string]: string }) as Convo[]
+    return await firebaseService.findAll('convos', filters as { [field: string]: string }) as Convo[]
   }
   protected async updateCb(data: Convo): Promise<boolean | void | Convo> {
     await firebaseService.update('convos', data.id || data.key, data);

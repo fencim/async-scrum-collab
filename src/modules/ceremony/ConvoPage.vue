@@ -330,7 +330,7 @@ export default defineComponent({
   async mounted() {
     await this.init();
     await this.updateMessages();
-    this.timer = setInterval(() => this.updateMessages(), 1000);
+    this.timer = setInterval(() => this.updateMessages(), 5 * 1000);
     convoBus.on('question', this.askQuestion);
     convoBus.on('vote', this.confirmVote);
     convoBus.on('disagree', this.confirmDisagree);

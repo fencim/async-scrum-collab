@@ -10,9 +10,6 @@ export const useDiscussionStore = defineStore('discussion', {
 
   },
   actions: {
-    async init() {
-      this.discussions = await discussionResource.findAllFrom();
-    },
     async fromKeyList(projectKey: string, list: string[]): Promise<DiscussionItem[]> {
       const discussions = (await this.ofProject(projectKey));
       const discussionList = list.map(key => discussions.find(d => d.key == key))

@@ -3,11 +3,11 @@ import { IProfile } from 'src/entities';
 import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
 import { sessionResource } from 'src/resources/session.resource';
-
+const botProfile = { avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' };
 
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({
-    profiles: [{ avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' }] as IProfile[],
+    profiles: [botProfile] as IProfile[],
     theUser: undefined as IProfile | undefined
   }),
 
@@ -47,7 +47,7 @@ export const useProfilesStore = defineStore('Profiles', {
       return this.theUser;
     },
     async init() {
-      this.profiles = await profileResource.findAllFrom();
+      this.profiles = [botProfile, ...await profileResource.findAllFrom()];
     },
     async get(key: string) {
       return this.profiles.find(p => p.key == key) || profileResource.findOne({ key });

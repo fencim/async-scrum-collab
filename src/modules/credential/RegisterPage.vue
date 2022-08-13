@@ -23,10 +23,26 @@
           v-model="password"
           label="Password"
           type="password"
-          :rules="[(v) => (v && v.length > 6) || 'Enter password']"
+          :rules="[
+            (v) =>
+              /^(?=.*[A-Z])(?=.*[_!@#$&*])(?=.*[0-9])(?=.*[a-z]).{8,}$/.test(
+                v || ''
+              ) || 'Enter strong password',
+          ]"
         >
           <template v-slot:prepend><q-icon name="password" /></template>
         </q-input>
+        <q-input
+          v-model="confirmPass"
+          label="Confirm Password"
+          type="password"
+          :rules="[
+            (v) => (v && v === password) || 'Confirm password does not match',
+          ]"
+        >
+          <template v-slot:prepend><q-icon name="password" /></template>
+        </q-input>
+
         <q-file
           v-model="avatar"
           filled
@@ -67,6 +83,7 @@ export default defineComponent({
       displayName: '',
       email: '',
       password: '',
+      confirmPass: '',
       avatar: undefined as File | undefined,
     };
   },

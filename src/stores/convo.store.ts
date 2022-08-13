@@ -10,9 +10,6 @@ export const useConvoStore = defineStore('convo', {
   getters: {
   },
   actions: {
-    async init() {
-      this.convo = await convoResource.findAllFrom();
-    },
     async ofDiscussion(projectKey: string, discussion: string) {
       const docs = (await convoResource.findAllDocFrom({
         projectKey, discussion

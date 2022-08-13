@@ -13,9 +13,6 @@ export const useCeremonyStore = defineStore('ceremony', {
     }
   },
   actions: {
-    async init() {
-      this.ceremonies = await ceremonyResource.findAllFrom();
-    },
     setActiveCeremony(ceremony: ICeremony) {
       this.activeCeremony = ceremony;
     },

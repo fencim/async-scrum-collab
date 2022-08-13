@@ -41,11 +41,19 @@ export default defineComponent({
   },
   methods: {
     async signIn() {
-      await profileStore.signIn(this.email, this.password);
-      this.$q.notify({
-        message: 'Successfully signed',
-      });
-      this.$router.replace('/');
+      try {
+        await profileStore.signIn(this.email, this.password);
+        this.$q.notify({
+          message: 'Successfully signed',
+        });
+        this.$router.replace('/');
+      } catch (e) {
+        this.$q.notify({
+          message: String((e as { code: string }).code || e),
+          position: 'top',
+          color: 'negative',
+        });
+      }
     },
   },
 });

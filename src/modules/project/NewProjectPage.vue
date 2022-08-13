@@ -21,10 +21,10 @@
           <q-input
             v-model="theProject.key"
             label="Key"
-            maxlength="5"
+            maxlength="4"
+            mask="XXXX"
             :rules="[
-              (v) => (v && v.length > 0) || 'Enter Project Key',
-              (v) => (v && !/\s/.test(v)) || 'Space not allowed',
+              (v) => (v && /^[0-9A-Z]{4}$/i.test(v)) || '4 digit project code',
               (v) =>
                 (v &&
                   !projectStore.projects.find(

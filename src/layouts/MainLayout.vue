@@ -40,17 +40,12 @@
 </template>
 
 <script lang="ts">
-import { useCeremonyStore } from 'src/stores/cermonies.store';
-import { useConvoStore } from 'src/stores/convo.store';
-import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
-const ceremonyStore = useCeremonyStore();
-const discussionStore = useDiscussionStore();
-const convoStore = useConvoStore();
+
 export default defineComponent({
   name: 'MainLayout',
 
@@ -66,9 +61,6 @@ export default defineComponent({
   async created() {
     await profileStore.init();
     await projectStore.init();
-    await ceremonyStore.init();
-    await discussionStore.init();
-    await convoStore.init();
   },
   updated() {
     this.leftDrawerOpen = !!(this.$route.meta && this.$route.meta.actions);
