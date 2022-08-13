@@ -78,19 +78,26 @@ export default defineComponent({
   methods: {
     async register() {
       const { email, password, displayName, avatar } = this;
-      await profileStore.register({
-        email,
-        password,
-        displayName,
-        photo: avatar,
-      });
-      this.$q.notify({
-        message: 'Successfully registered',
-      });
-      this.$router.replace('/');
+      try {
+        await profileStore.register({
+          email,
+          password,
+          displayName,
+          photo: avatar,
+        });
+        this.$q.notify({
+          message: 'Successfully registered',
+        });
+        this.$router.replace('/');
+      } catch (e) {
+        this.$q.notify({
+          message: (e as { message: string }).message,
+          color: 'negative',
+          position: 'top',
+        });
+      }
     },
   },
 });
 </script>
 <style></style>
-

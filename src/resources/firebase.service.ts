@@ -1,15 +1,5 @@
 import { initializeApp } from 'firebase/app';
 import {
-  getFirestore,
-  collection, doc, getDocs,
-  query, where, updateDoc,
-  connectFirestoreEmulator,
-  setDoc,
-  deleteDoc,
-  writeBatch,
-  getDocFromServer
-} from 'firebase/firestore';
-import {
   getAuth,
   connectAuthEmulator,
   signInWithEmailAndPassword,
@@ -22,6 +12,19 @@ import {
   signOut
 } from 'firebase/auth';
 
+import {
+  getFirestore,
+  collection, doc, getDocs,
+  query, where, updateDoc,
+  connectFirestoreEmulator,
+  setDoc,
+  deleteDoc,
+  writeBatch,
+  getDocFromServer
+} from 'firebase/firestore';
+import { connectStorageEmulator, getDownloadURL, getStorage, ref, uploadBytesResumable, UploadTask } from 'firebase/storage';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+
 import * as entities from '../entities';
 import { firebaseConfig } from './firebase-config';
 import { WhereFilterOp } from './firebase-operators';
@@ -30,25 +33,34 @@ import { WhereFilterOp } from './firebase-operators';
 const app = initializeApp({
   ...firebaseConfig
 });
-const db = getFirestore(app);
+
 // Initialize Firebase Authentication and get a reference to the service
 const auth = getAuth(app);
+const fbStore = getFirestore(app);
+const fbDb = getDatabase(app);
+const fbStorage = getStorage(app);
+
 if (/development/i.test(process.env.NODE_ENV)) {
   connectAuthEmulator(auth, 'http://localhost:9099');
-  connectFirestoreEmulator(db, 'localhost', 8081);
+  connectFirestoreEmulator(fbStore, 'localhost', 8081);
+  connectDatabaseEmulator(fbDb, 'localhost', 9000);
+  connectStorageEmulator(fbStorage, 'localhost', 9199);
 }
+
+const imagesStorageRef = ref(fbStorage, 'images');
+
 type Models = entities.Convo | entities.IProfile |
   entities.IProject | entities.IProject | entities.IIteration |
   entities.DiscussionItem | entities.ICeremony | entities.IMedia | undefined;
 
 const collections = {
-  'profiles': () => collection(db, 'profiles'),
-  'projects': () => collection(db, 'projects'),
-  'iterations': () => collection(db, 'iterations'),
-  'ceremonies': () => collection(db, 'ceremonies'),
-  'discussions': () => collection(db, 'discussions'),
-  'convos': () => collection(db, 'convos'),
-  'medias': () => collection(db, 'medias')
+  'profiles': () => collection(fbStore, 'profiles'),
+  'projects': () => collection(fbStore, 'projects'),
+  'iterations': () => collection(fbStore, 'iterations'),
+  'ceremonies': () => collection(fbStore, 'ceremonies'),
+  'discussions': () => collection(fbStore, 'discussions'),
+  'convos': () => collection(fbStore, 'convos'),
+  'medias': () => collection(fbStore, 'medias')
 };
 type Colls = typeof collections;
 type ModelName = keyof Colls;
@@ -77,6 +89,17 @@ class FirebaseSevice {
     await sendEmailVerification(cred.user);
     return cred;
   }
+  async uploadImage(file: File, options?: { task?: UploadTask, path: string }) {
+    const fileRef = ref(imagesStorageRef, options?.path || file.name);
+    const uploadTask = uploadBytesResumable(fileRef, file);
+    if (options) options.task = uploadTask;
+    return new Promise<string>((resolve, reject) => {
+      uploadTask.then((snap) => {
+        resolve(getDownloadURL(snap.ref));
+      });
+      uploadTask.catch(reject);
+    })
+  }
   async updateProfile(displayName: string, photoURL?: string) {
     if (auth.currentUser) {
       await updateProfile(auth.currentUser, {
@@ -85,7 +108,7 @@ class FirebaseSevice {
     }
   }
   async get(modelName: ModelName, id: string): Promise<Models> {
-    const docRef = doc(db, modelName, id);
+    const docRef = doc(fbStore, modelName, id);
     const docSnap = await getDocFromServer(docRef);
     if (docSnap.exists()) {
       return docSnap.data() as Models;
@@ -115,13 +138,13 @@ class FirebaseSevice {
   }
   async create(modelName: ModelName, value: Models) {
     if (value) {
-      const docRef = doc(db, modelName + '/' + value.key);
+      const docRef = doc(fbStore, modelName + '/' + value.key);
       await setDoc(docRef, value);
     }
     return value;
   }
   async update(modelName: ModelName, id: string, value: Models) {
-    const docRef = doc(db, modelName, id);
+    const docRef = doc(fbStore, modelName, id);
     if (value) {
       await updateDoc(docRef, {
         ...value
@@ -129,12 +152,12 @@ class FirebaseSevice {
     }
   }
   async delete(modelName: ModelName, id: string) {
-    const docRef = doc(db, modelName, id);
+    const docRef = doc(fbStore, modelName, id);
     await deleteDoc(docRef);
   }
   async deleteCollection(modelName: ModelName) {
-    const batch = writeBatch(db);
-    const docRef = doc(db, modelName);
+    const batch = writeBatch(fbStore);
+    const docRef = doc(fbStore, modelName);
     batch.delete(docRef);
     return batch.commit();
   }

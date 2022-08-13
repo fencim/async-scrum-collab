@@ -70,18 +70,13 @@ export const useProfilesStore = defineStore('Profiles', {
     async register(profile: { email: string, password: string, displayName: string, photo?: File }) {
       const { email, password, displayName, photo } = profile;
       const user = await firebaseService.createUserWithEmailPass(email, password);
-      const photoURL = await (new Promise<string | undefined>((resolve, reject) => {
-        const reader = new FileReader();
-        const save = async () => {
-          const photoURL = reader.result as string || undefined;
-          resolve(photoURL);
-        };
-        reader.addEventListener('load', save)
-        reader.addEventListener('error', reject);
+      const photoURL = await (new Promise<string | undefined>((resolve) => {
         if (photo) {
-          reader.readAsDataURL(photo);
+          resolve(firebaseService.uploadImage(photo, {
+            path: email
+          }))
         } else {
-          save();
+          resolve(undefined);
         }
       }))
       await firebaseService.updateProfile(displayName, photoURL);
