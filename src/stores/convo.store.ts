@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
-import { Subscription, map, switchMap, Observable, from } from 'rxjs';
+import { Subscription, switchMap, from } from 'rxjs';
 import { Convo, ConvoList } from 'src/entities';
 import { convoResource } from 'src/resources';
 import { useProfilesStore } from './profiles.store';

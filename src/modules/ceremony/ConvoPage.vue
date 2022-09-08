@@ -9,36 +9,13 @@
           :curr-user="profileStore.presentUser?.key"
           @reply-to="replyTo = m"
         />
-        <q-chat-message
-          v-else-if="m.type == 'vote' && typeof m.from == 'object'"
-          :name="m.from.name"
-          :avatar="m.from.avatar"
-          :sent="m.from.key == profileStore.presentUser?.key"
-        >
-          <template v-slot:stamp>
-            <div>
-              <q-btn
-                @click="replyTo = m"
-                dense
-                color="primary"
-                flat
-                round
-                size="sm"
-                icon="reply"
-              />
-              {{ stampTime(m.date) }}
-              <q-icon
-                :name="getStatus(m)"
-                class="absolute-bottom-right rounded-borders"
-                size="sm"
-              />
-            </div>
-          </template>
-          <div style="min-width: 150px">
-            {{ m.message }}
-            <q-badge v-if="revealVotes" class="bg-green">{{ m.vote }}</q-badge>
-          </div>
-        </q-chat-message>
+        <chat-vote-message
+          v-else-if="m.type == 'vote'"
+          :msg="m"
+          @reply-to="replyTo = m"
+          :curr-user="profileStore.presentUser?.key"
+          :reveal-votes="revealVotes"
+        />
         <q-chat-message
           v-else-if="m.type == 'question' && typeof m.from == 'object'"
           :name="m.from.name"
@@ -256,6 +233,7 @@
 <script lang="ts">
 import { date } from 'quasar';
 import ChatMessage from 'src/components/chat/ChatMessage.vue';
+import ChatVoteMessage from 'src/components/chat/ChatVoteMessage.vue';
 import {
   IIteration,
   IProject,
@@ -283,7 +261,7 @@ const convoStore = useConvoStore();
 
 export default defineComponent({
   name: 'ConvoPage',
-  components: { ChatMessage },
+  components: { ChatMessage, ChatVoteMessage },
   data() {
     return {
       convoStore,
