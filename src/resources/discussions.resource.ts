@@ -5,6 +5,9 @@ import { Entity, Filters } from './localbase/state-db.controller';
 
 
 class DiscussionResource extends BaseResource<DiscussionItem> {
+  protected stream(filters?: Filters<Entity> | undefined): void {
+    throw new Error(`Method not implemented.${filters}`);
+  }
   protected async getCb(key: string): Promise<boolean | void | DiscussionItem> {
     return await firebaseService.get('discussions', key) as DiscussionItem;
   }

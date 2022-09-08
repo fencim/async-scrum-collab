@@ -1,7 +1,11 @@
 import { BaseResource } from './base.resource';
+import { Filters, Entity } from './localbase/state-db.controller';
 type SessionValue = object;
 
 class SessionResource extends BaseResource<SessionValue> {
+  protected stream(filters?: Filters<Entity> | undefined): void {
+    throw new Error(`Method not implemented.${filters}`);
+  }
   protected async getCb(): Promise<boolean | void | object> {
     //
   }

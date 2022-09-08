@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Convo, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
+import { ConvoList, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 
 export const useDiscussionStore = defineStore('discussion', {
@@ -69,7 +69,7 @@ export const useDiscussionStore = defineStore('discussion', {
           return (item && `${(item as DiscussionItem).type}`) || ('Unknown item');
       }
     },
-    checkCompleteness(item: DiscussionItem, project: IProject, convo: Convo[]) {
+    checkCompleteness(item: DiscussionItem, project: IProject, convo: ConvoList) {
       const factors: { factor: string, progress: number, feedback: string }[] = [];
       const members = project.members;
       const questions = convo.filter(c => c.type == 'question') as IQuestion[];

@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Filters, Entity } from './localbase/state-db.controller';
 
 class ProfileResource extends BaseResource<IProfile> {
+  protected stream(filters?: Filters<Entity> | undefined): void {
+    throw new Error(`Method not implemented.${filters}`);
+  }
   protected async getCb(key: string): Promise<boolean | void | IProfile> {
     return await firebaseService.get('profiles', key) as IProfile;
   }

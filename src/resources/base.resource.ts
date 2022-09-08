@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs';
 import { KeyValueStorage } from './localbase';
 import { FilterFn2, Filters, Pagination } from './localbase/state-db.controller';
 
@@ -9,11 +10,14 @@ type IBaseResourceModel =
     key?: string;
   }
   | object;
-type DocStatus = 'saved' | 'synced' | 'updated' | 'deleted';
+type DocStatus = 'new' | 'saved' | 'synced' | 'updated' | 'deleted';
 interface IDocStore<T extends IBaseResourceModel> {
   status: DocStatus;
   key: string;
   data: T;
+}
+type KeyValuePair = {
+  [key: string]: string;
 }
 
 export abstract class BaseResource<T extends IBaseResourceModel> {
@@ -25,21 +29,39 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     );
   }
   private localBase: KeyValueStorage;
-  private async manageDocCallback(doc: IDocStore<T>, prop?: string) {
-    let status: void | boolean | T = false;
+  private async manageDocCallback(doc: IDocStore<T>) {
+    let statusOrData: void | boolean | T = false;
     try {
       if (doc.status !== 'synced') {
         if (doc.status == 'saved' && this.createCb) {
-          status = await this.createCb(doc.data);
-          if (status && typeof status == 'object') {
-            await this.updateData(doc.key, status);
+          statusOrData = await this.createCb(doc.data);
+          if (statusOrData && typeof statusOrData == 'object') {
+            await this.updateData(doc.key, statusOrData);
           }
-        } else if (doc.status == 'updated' && this.updateCb && !prop) {
-          status = await this.updateCb(doc.data);
-        } else if (doc.status == 'updated' && this.patchCb && prop) {
-          status = await this.patchCb(doc.data, prop);
+        } else {
+          const props = Object.keys(doc.data).filter(prop => /^\*/.test(prop));
+          if (props.length == 0 && doc.status == 'updated' && this.updateCb) {
+            statusOrData = await this.updateCb(doc.data);
+          } else if (doc.status == 'updated' && this.patchCb) {
+            const failedPatch: string[] = [];
+            await Promise.all(props.map(async (prop) => {
+              const result = await this.patchCb(doc.data, prop.replace('*', ''));
+              if (result) {
+                const data = doc.data;
+                delete (data as unknown as KeyValuePair)['*' + String(prop)];
+              } else {
+                failedPatch.push(prop);
+              }
+            }));
+            statusOrData = failedPatch.length == 0;
+            if (statusOrData) {
+              await this.setData(doc.key, doc.data, 'synced');
+            } else if (failedPatch.length != props.length) {
+              await this.setData(doc.key, doc.data, 'updated');
+            }
+          }
         }
-        if (status) {
+        if (statusOrData) {
           await this.setDataStatus(doc.key, 'synced');
         }
       } else if (this.getCb) {
@@ -60,6 +82,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   protected abstract getCb(key: string): Promise<T | void | boolean>;
   protected abstract updateCb(data: T): Promise<void | boolean | T> | void;
   protected abstract patchCb(data: T, property: string): Promise<void | boolean | T>;
+  protected abstract stream(filters?: Filters): void | Observable<T[]>;
   protected arrayFilter<T = []>(filters?: Filters) {
     if (
       typeof filters == 'function' &&
@@ -87,16 +110,16 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         const intersection = result.filter(i => {
           const match = onlineResult.find(o => this.getKeyOf(o) == this.getKeyOf(i as T));
           if (match) {
-            i.data = match;
+            i.data = (i.status == 'synced') ? match : i.data;
             return true;
           }
           return false;
         });
         const addedOnline = onlineResult.filter(o => !intersection.find(i => i.key == this.getKeyOf(o)));
         const localyAdded = result.filter(i => i.status == 'saved');
-        const deleted = result.filter(i => !intersection.find(o => o.key == i.key || i.status != 'synced'));
+        const deleted = !filters && result.filter(i => !intersection.find(o => o.key == i.key || i.status != 'synced'));
         //delete from local the deleted
-        await Promise.all(deleted.map((i) => {
+        await Promise.all((deleted || []).map((i) => {
           return this.localBase.deleteItem(this.getKeyOf(i as T));
         }));
         //update intersection
@@ -151,10 +174,10 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
       })
     );
   }
-  async saveEachTo(values: T[]) {
+  async saveEachTo(values: T[], createOnlyOrStatus: boolean | DocStatus = false) {
     while (values.length) {
       const v = values.splice(0, 1)[0];
-      v && (await this.setData(this.getKeyOf(v), v));
+      v && (await this.setData(this.getKeyOf(v), v, createOnlyOrStatus));
     }
   }
   /**
@@ -164,24 +187,34 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
    * @returns
    */
   async setData(key: string, value: T, createOnlyOrStatus: boolean | DocStatus = false): Promise<T> {
-    const existing = await this.getDoc(key || this.getKeyOf(value));
+    const identity = key || this.getKeyOf(value);
+    const existing = identity && await this.getDoc(identity);
     if (createOnlyOrStatus === true && existing) {
       throw 'Record already exist';
     }
     if (existing && existing.status == 'synced') {
       existing.status = typeof createOnlyOrStatus == 'string' ? createOnlyOrStatus : 'updated';
       existing.data = value;
-      await this.localBase.setItem(key, existing as IDocStore<T>);
+      await this.localBase.setItem(identity, existing as IDocStore<T>);
       if (existing.status != 'synced') this.manageDocCallback(existing);
       return existing.data;
     } else {
-      const doc = await this.localBase.setItem(key, {
+      let doc = identity && await this.localBase.setItem(identity, {
         data: value,
-        key: key,
+        key: identity,
         status: typeof createOnlyOrStatus == 'string' ? createOnlyOrStatus : 'saved',
       } as IDocStore<T>);
-      this.manageDocCallback(doc);
-      return doc.data;
+      if (typeof doc == 'object') {
+        await this.manageDocCallback(doc);
+        return doc.data;
+      } else {
+        doc = {
+          data: value,
+          status: 'new'
+        } as IDocStore<T>;
+        await this.manageDocCallback(doc);
+        return doc.data;
+      }
     }
   }
   /**
@@ -205,12 +238,13 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   async updateProperty(key: string, prop: keyof T, value: unknown) {
     const existing = await this.getDoc(key);
     if (existing && typeof existing.data == 'object') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (existing.data as unknown as any)[prop] = value;
+      const oldData = (existing.data as unknown as KeyValuePair)[String(prop)];
+      (existing.data as unknown as KeyValuePair)['*' + String(prop)] = oldData;
+      (existing.data as unknown as KeyValuePair)[String(prop)] = value as string;
       await this.localBase.setItem(key, existing as IDocStore<T>);
       await this.setDataStatus(existing.key, /^(synced|updated)$/.test(existing.status) ? 'updated' : 'saved');
-      this.manageDocCallback(existing, prop as string);
-      return existing.data;
+      this.manageDocCallback(existing);
+      return existing;
     }
   }
   async getDoc(key: string) {
@@ -256,9 +290,9 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   }
 
   private async getDocByField(idField: string, value: string): Promise<IDocStore<T> | undefined> {
-    const result = (await this.localBase.paginatedValues<IDocStore<T>>(
-      (doc) => { return (doc.data as unknown as { [key: string]: string })[idField] == value; }
-    )).contents;
+    const result = (await this.localBase.paginatedValues<IDocStore<T>>((doc) => {
+      return ((doc.value as (IDocStore<T>)).data as { [key: string]: string })[idField] == value
+    })).contents;
     if (result instanceof Array) {
       return result[0];
     }
@@ -284,7 +318,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     }
     this.localBase.deleteAll();
   }
-  private getKeyOf(v: T): string {
+  getKeyOf(v: T): string {
     if (typeof v == 'object') {
       if (
         this.keyField &&
@@ -298,7 +332,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
       } else if (Object.prototype.hasOwnProperty.call(v, 'code')) {
         return (v as unknown as { code: string }).code;
       } else {
-        return this.hashName(JSON.stringify(v)).toString().replace('-', 'N');
+        return '';
       }
     } else {
       return this.hashName(String(v)).toString().replace('-', 'N');

@@ -4,6 +4,9 @@ import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 
 class MediaResource extends BaseResource<IMedia> {
+  protected stream(filters?: Filters<Entity> | undefined): void {
+    throw new Error(`Method not implemented.${filters}`);
+  }
   protected async getCb(key: string): Promise<boolean | void | IMedia> {
     return await firebaseService.get('medias', key) as IMedia;
   }

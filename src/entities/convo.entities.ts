@@ -43,3 +43,4 @@ export interface IReaction extends IMessage {
   reaction: 'approve' | string;
 }
 export type Convo = IInfo | IQuestion | IResponse | IPoll | IVote;
+export type ConvoList = Convo[];

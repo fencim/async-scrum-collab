@@ -158,7 +158,7 @@
 <script lang="ts">
 import { date } from 'quasar';
 import {
-  Convo,
+  ConvoList,
   DiscussionItem,
   IAcceptanceCriteria,
   ICeremony,
@@ -202,7 +202,6 @@ export default defineComponent({
       discussions: [] as DiscussionItem[],
       subTasks: [] as DiscussionItem[],
       theDiscussion: {} as DiscussionItem,
-      convo: [] as Convo[],
       membersAgreed: [] as IProfile[],
       membersDisagreed: [] as IProfile[],
       membersPending: [] as IProfile[],
@@ -246,7 +245,10 @@ export default defineComponent({
     convoBus.off('refresh', this.init);
   },
   computed: {
-    unResolvedQuestions(): Convo[] {
+    convo() {
+      return convoStore.convo;
+    },
+    unResolvedQuestions(): ConvoList {
       return this.convo
         .filter((c) => c.type == 'question' && !c.resolved)
         .map((c) => {
@@ -317,10 +319,7 @@ export default defineComponent({
     },
     async assesItem(forceSave?: boolean) {
       if (this.theDiscussion && this.activeProject) {
-        this.convo = await convoStore.ofDiscussion(
-          this.activeProjectKey,
-          this.theDiscussion.key
-        );
+        convoStore.ofDiscussion(this.activeProjectKey, this.theDiscussion.key);
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
           this.activeProject,

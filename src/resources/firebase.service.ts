@@ -20,7 +20,8 @@ import {
   setDoc,
   deleteDoc,
   writeBatch,
-  getDocFromServer
+  getDocFromServer,
+  onSnapshot
 } from 'firebase/firestore';
 import { connectStorageEmulator, getDownloadURL, getStorage, ref, uploadBytesResumable, UploadTask } from 'firebase/storage';
 import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
@@ -28,6 +29,7 @@ import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
 import * as entities from '../entities';
 import { firebaseConfig } from './firebase-config';
 import { WhereFilterOp } from './firebase-operators';
+import { Observable } from 'rxjs';
 
 // Initialize Firebase
 const app = initializeApp({
@@ -115,7 +117,31 @@ class FirebaseSevice {
     }
     return undefined;
   }
+  streamWith<T>(modelName: ModelName, filter: { [field: string]: string } = {}) {
+    const { queryRef, collectionRef } = this.getQueryFromFilter(modelName, filter);
+    return new Observable<T[]>((subscriber) => {
+      onSnapshot(queryRef || collectionRef, {
+        complete: () => subscriber.complete(),
+        next: (snapshot) => {
+          const records = snapshot.docs.map(doc => {
+            return { ...doc.data(), id: doc.id } as unknown as T;
+          });
+          subscriber.next(records);
+        },
+        error: (err) => subscriber.error(err)
+      })
+    });
+  }
   async findAll(modelName: ModelName, filter: { [field: string]: string } = {}): Promise<Models[]> {
+    const { queryRef, collectionRef } = this.getQueryFromFilter(modelName, filter);
+    const docsRef = await getDocs(queryRef || collectionRef);
+    if (docsRef.empty) {
+      return [];
+    } else {
+      return docsRef.docs.map(d => d.data() as Models);
+    }
+  }
+  private getQueryFromFilter(modelName: ModelName, filter: { [field: string]: string; }) {
     const collectionRef = collections[modelName]();
     const supOps = /(.*) (==|<|<=|>=|!=|in)$/;
     const conditions = Object.keys(filter).map(f => {
@@ -126,16 +152,12 @@ class FirebaseSevice {
         const operator = match[OPERATOR] as WhereFilterOp;
         return where(operand, operator, filter[f]);
       }
-      return where(f, '==', filter[f])
-    })
+      return where(f, '==', filter[f]);
+    });
     const queryRef = conditions.length > 0 && query(collectionRef, ...conditions);
-    const docsRef = await getDocs(queryRef || collectionRef);
-    if (docsRef.empty) {
-      return [];
-    } else {
-      return docsRef.docs.map(d => d.data() as Models);
-    }
+    return { queryRef, collectionRef };
   }
+
   async create(modelName: ModelName, value: Models) {
     if (value) {
       const docRef = doc(fbStore, modelName + '/' + value.key);
@@ -161,6 +183,7 @@ class FirebaseSevice {
     batch.delete(docRef);
     return batch.commit();
   }
+
 }
 
 export const firebaseService = new FirebaseSevice();

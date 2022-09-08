@@ -3,35 +3,12 @@
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
     <div style="width: 100%; margin-bottom: 80px">
       <div v-for="m in messages" :key="m.key" :id="m.key">
-        <q-chat-message
-          v-if="m.type == 'message' && typeof m.from == 'object'"
-          :name="m.from.name"
-          :avatar="m.from.avatar"
-          :sent="m.from.key == profileStore.presentUser?.key"
-        >
-          <template v-slot:stamp>
-            <div>
-              <q-btn
-                @click="replyTo = m"
-                dense
-                color="primary"
-                flat
-                round
-                size="sm"
-                icon="reply"
-              />
-              {{ stampTime(m.date) }}
-              <q-icon
-                :name="getStatus(m)"
-                class="absolute-bottom-right rounded-borders"
-                size="sm"
-              />
-            </div>
-          </template>
-          <div style="min-width: 120px">
-            {{ m.message }}
-          </div>
-        </q-chat-message>
+        <chat-message
+          v-if="m.type == 'message'"
+          :msg="m"
+          :curr-user="profileStore.presentUser?.key"
+          @reply-to="replyTo = m"
+        />
         <q-chat-message
           v-else-if="m.type == 'vote' && typeof m.from == 'object'"
           :name="m.from.name"
@@ -278,12 +255,12 @@
 
 <script lang="ts">
 import { date } from 'quasar';
+import ChatMessage from 'src/components/chat/ChatMessage.vue';
 import {
   IIteration,
   IProject,
   ICeremony,
   Convo,
-  IProfile,
   DiscussionItem,
   IResponse,
   IVote,
@@ -306,7 +283,7 @@ const convoStore = useConvoStore();
 
 export default defineComponent({
   name: 'ConvoPage',
-  components: {},
+  components: { ChatMessage },
   data() {
     return {
       convoStore,
@@ -320,7 +297,6 @@ export default defineComponent({
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
       discussion: undefined as DiscussionItem | undefined,
-      messages: [] as Convo[],
       replyTo: undefined as Convo | undefined,
       timer: 0 as NodeJS.Timeout | 0,
       askingQuestion: false,
@@ -331,8 +307,6 @@ export default defineComponent({
   },
   async mounted() {
     await this.init();
-    await this.updateMessages();
-    this.timer = setInterval(() => this.updateMessages(), 5 * 1000);
     convoBus.on('question', this.askQuestion);
     convoBus.on('vote', this.confirmVote);
     convoBus.on('disagree', this.confirmDisagree);
@@ -354,7 +328,11 @@ export default defineComponent({
   updated() {
     this.init();
   },
-
+  computed: {
+    messages() {
+      return convoStore.convo;
+    },
+  },
   methods: {
     async init() {
       this.activeProject =
@@ -390,20 +368,9 @@ export default defineComponent({
         this.confirmDisagree();
       }
       this.assesItem();
-    },
-    async updateMessages() {
-      this.messages = await Promise.all(
-        (
-          await convoStore.ofDiscussion(
-            this.activeProject,
-            this.activeItem || this.activeCeremony
-          )
-        ).map(async (m) => {
-          if (typeof m.from == 'string') {
-            m.from = ((await profileStore.get(m.from)) as IProfile) || m.from;
-          }
-          return m;
-        })
+      convoStore.ofDiscussion(
+        this.activeProject,
+        this.activeItem || this.activeCeremony
       );
     },
     async sendMessage() {
