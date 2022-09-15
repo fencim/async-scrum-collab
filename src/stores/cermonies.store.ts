@@ -18,7 +18,7 @@ export const useCeremonyStore = defineStore('ceremony', {
     },
     async ofIteration(project: string, iterationKey: string) {
       if (!this.ceremonies || !this.ceremonies.length) {
-        return await ceremonyResource.findAllFrom({
+        return this.ceremonies = await ceremonyResource.findAllFrom({
           projectKey: project,
           iterationKey
         });

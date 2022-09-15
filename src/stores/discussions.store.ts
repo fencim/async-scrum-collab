@@ -23,7 +23,8 @@ export const useDiscussionStore = defineStore('discussion', {
       return this.discussions;
     },
     async withKey(key: string) {
-      return discussionResource.findOne({ key });
+      if (key)
+        return discussionResource.findOne({ key });
     },
     async saveDiscussion(discussion: DiscussionItem) {
       if (discussion.type == 'story') {

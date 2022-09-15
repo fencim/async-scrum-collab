@@ -35,8 +35,8 @@ export const useProfilesStore = defineStore('Profiles', {
       await sessionResource.deleteAll();
     },
     getUser() {
-      const user = firebaseService.auth();
-      this.theUser = user && {
+      let user;
+      this.theUser = this.theUser || (user = firebaseService.auth()) && {
         avatar: user?.photoURL || '',
         key: user?.email || '',
         name: user?.displayName || user?.email || 'None'

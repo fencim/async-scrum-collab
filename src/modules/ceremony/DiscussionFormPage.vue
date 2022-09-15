@@ -313,26 +313,25 @@ export default defineComponent({
         await ceremonyStore.saveCeremony(this.activeCeremony);
       }
       if (this.activeProject && profileStore.presentUser) {
-        convoStore.ofDiscussion(this.activeProjectKey, this.theDiscussion.key);
-        //TODO: compute completeness
-        // const report = discussionStore.checkCompleteness(
-        //   this.theDiscussion,
-        //   this.activeProject
-        // );
+        const report = discussionStore.checkCompleteness(
+          this.theDiscussion,
+          this.activeProject,
+          convoStore.convo
+        );
 
-        // convoStore.sendMessage(
-        //   this.activeProjectKey,
-        //   this.theDiscussion.key,
-        //   'bot',
-        //   {
-        //     type: 'message',
-        //     message: `${profileStore.presentUser.name} updated this ${
-        //       this.theDiscussion.type
-        //     } and progressed from ${(
-        //       (this.theDiscussion.progress || 0) * 100
-        //     ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(2)}%`,
-        //   }
-        // );
+        convoStore.sendMessage(
+          this.activeProjectKey,
+          this.theDiscussion.key,
+          'bot',
+          {
+            type: 'message',
+            message: `${profileStore.presentUser.name} updated this ${
+              this.theDiscussion.type
+            } and progressed from ${(
+              (this.theDiscussion.progress || 0) * 100
+            ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(2)}%`,
+          }
+        );
       }
       if (this.$route.params.item) {
         await this.$router.replace({

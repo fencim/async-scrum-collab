@@ -2,11 +2,24 @@ import { DiscussionItem } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
+import { map, merge, Observable } from 'rxjs';
 
 
 class DiscussionResource extends BaseResource<DiscussionItem> {
-  protected stream(filters?: Filters<Entity> | undefined): void {
-    throw new Error(`Method not implemented.${filters}`);
+  protected stream(filters?: Filters<Entity> | undefined): Observable<DiscussionItem[]> {
+    const offline = new Observable<DiscussionItem[]>((subcriber) => {
+      this.findAllFrom(filters)
+        .then((list) => {
+          subcriber.next(list);
+          subcriber.complete();
+        });
+    });
+    return merge(offline, firebaseService
+      .streamWith<DiscussionItem>('discussions', filters && this.arrayFilter(filters) || {})
+      .pipe(map(list => {
+        //this.saveEachTo(list, 'synced');
+        return list;
+      })));
   }
   protected async getCb(key: string): Promise<boolean | void | DiscussionItem> {
     return await firebaseService.get('discussions', key) as DiscussionItem;

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
-import { Subscription, switchMap, from } from 'rxjs';
+import { Subscription, switchMap, from, Observable } from 'rxjs';
 import { Convo, ConvoList } from 'src/entities';
 import { convoResource } from 'src/resources';
 import { useProfilesStore } from './profiles.store';
@@ -8,11 +8,13 @@ interface IConvoState {
   convo: ConvoList;
   currentSub?: Subscription;
   currentTopic: string;
+  streams: { [topic: string]: Observable<ConvoList> }
 }
 export const useConvoStore = defineStore('convo', {
   state: () => ({
     convo: [],
-    currentTopic: ''
+    currentTopic: '',
+    streams: {}
   } as IConvoState),
   getters: {
   },
@@ -22,8 +24,8 @@ export const useConvoStore = defineStore('convo', {
       if (this.currentSub && !this.currentSub.closed && topic !== this.currentTopic) {
         this.currentSub.unsubscribe();
       } else if (this.currentSub && this.currentTopic == topic) return this.currentSub;
-
-      const stream = convoResource.stream({
+      this.convo = [];
+      const stream = this.streams[topic] || convoResource.stream({
         projectKey, discussion
       }).pipe(switchMap(list => {
         const profileStore = useProfilesStore();
@@ -31,8 +33,9 @@ export const useConvoStore = defineStore('convo', {
         return from(Promise.all(list.map(async (m) => {
           m.from = await profileStore.get(m.from as string) || m.from;
           return m;
-        })))
+        })));
       }));
+      this.streams[topic] = stream;
       stream.subscribe({
         next: (convo) => {
           this.convo = [...convo];
@@ -42,12 +45,10 @@ export const useConvoStore = defineStore('convo', {
         },
       })
       this.currentSub = stream.subscribe();
-      return this.currentSub;
+      return stream;
     },
     async sendMessage(projectKey: string, discussion: string, from: string, convo: Partial<Convo>) {
-      if (!this.convo || !this.convo.length) {
-        this.ofDiscussion(projectKey, discussion);
-      }
+
       const msg = {
         ...convo,
         projectKey,
@@ -57,7 +58,6 @@ export const useConvoStore = defineStore('convo', {
         key: (discussion || projectKey) + '-m' + String(this.convo.length),
       } as Convo;
       await convoResource.setData(msg.key, msg);
-      //this.convo.push(msg);
     },
     async saveConvo(msg: Convo) {
       if (msg && msg.key) {

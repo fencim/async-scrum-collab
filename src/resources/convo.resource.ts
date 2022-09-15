@@ -14,7 +14,9 @@ class ConvoResource extends BaseResource<Convo> {
         });
     });
     return merge(offline, firebaseService
-      .streamWith<Convo>('convos', filters && this.arrayFilter(filters) || {})
+      .streamWith<Convo>('convos', filters
+        && this.arrayFilter(filters) ||
+        (typeof filters == 'object' && filters as { [key: string]: string }) || {})
       .pipe(map(list => {
         //this.saveEachTo(list, 'synced');
         return list;

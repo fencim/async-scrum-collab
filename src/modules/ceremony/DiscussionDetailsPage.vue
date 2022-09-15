@@ -319,7 +319,7 @@ export default defineComponent({
     },
     async assesItem(forceSave?: boolean) {
       if (this.theDiscussion && this.activeProject) {
-        convoStore.ofDiscussion(this.activeProjectKey, this.theDiscussion.key);
+        
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
           this.activeProject,

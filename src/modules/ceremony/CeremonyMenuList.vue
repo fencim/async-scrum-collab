@@ -36,7 +36,7 @@
       :key="i?.key"
       active-class="bg-grey-9"
       :active="i?.key == activeItemKey"
-      :to="`/${activeProjectKey}/${activeIterationKey}/${activeCeremonyKey}/${i?.key}`"
+      :to="`/${activeProjectKey}/${activeIterationKey}/${activeCeremonyKey}/${i?.key}/convo`"
     >
       <q-circular-progress
         :value="(i?.progress || 0) * 100"

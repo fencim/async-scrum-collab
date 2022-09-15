@@ -143,17 +143,20 @@ class FirebaseSevice {
   }
   private getQueryFromFilter(modelName: ModelName, filter: { [field: string]: string; }) {
     const collectionRef = collections[modelName]();
+
     const supOps = /(.*) (==|<|<=|>=|!=|in)$/;
-    const conditions = Object.keys(filter).map(f => {
-      const match = supOps.exec(f);
-      if (match) {
-        const OPERAND = 1, OPERATOR = 2;
-        const operand = match[OPERAND];
-        const operator = match[OPERATOR] as WhereFilterOp;
-        return where(operand, operator, filter[f]);
-      }
-      return where(f, '==', filter[f]);
-    });
+    const conditions = Object.keys(filter)
+      .filter(f => typeof filter[f] !== 'undefined')
+      .map(f => {
+        const match = supOps.exec(f);
+        if (match) {
+          const OPERAND = 1, OPERATOR = 2;
+          const operand = match[OPERAND];
+          const operator = match[OPERATOR] as WhereFilterOp;
+          return where(operand, operator, filter[f]);
+        }
+        return where(f, '==', filter[f]);
+      });
     const queryRef = conditions.length > 0 && query(collectionRef, ...conditions);
     return { queryRef, collectionRef };
   }

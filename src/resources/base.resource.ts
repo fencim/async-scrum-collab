@@ -36,23 +36,30 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         if (doc.status == 'saved' && this.createCb) {
           statusOrData = await this.createCb(doc.data);
           if (statusOrData && typeof statusOrData == 'object') {
-            await this.updateData(doc.key, statusOrData);
+            await this.setData(doc.key, statusOrData, 'synced');
           }
         } else {
-          const props = Object.keys(doc.data).filter(prop => /^\*/.test(prop));
+          const props = Object.keys(doc.data).filter((prop) =>
+            /^\*/.test(prop)
+          );
           if (props.length == 0 && doc.status == 'updated' && this.updateCb) {
             statusOrData = await this.updateCb(doc.data);
           } else if (doc.status == 'updated' && this.patchCb) {
             const failedPatch: string[] = [];
-            await Promise.all(props.map(async (prop) => {
-              const result = await this.patchCb(doc.data, prop.replace('*', ''));
-              if (result) {
-                const data = doc.data;
-                delete (data as unknown as KeyValuePair)['*' + String(prop)];
-              } else {
-                failedPatch.push(prop);
-              }
-            }));
+            await Promise.all(
+              props.map(async (prop) => {
+                const result = await this.patchCb(
+                  doc.data,
+                  prop.replace('*', '')
+                );
+                if (result) {
+                  const data = doc.data;
+                  delete (data as KeyValuePair)['*' + String(prop)];
+                } else {
+                  failedPatch.push(prop);
+                }
+              })
+            );
             statusOrData = failedPatch.length == 0;
             if (statusOrData) {
               await this.setData(doc.key, doc.data, 'synced');
@@ -107,38 +114,56 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
           .contents || [];
       this.getAllCb(filters).then(async (onlineResult) => {
         if (!onlineResult) return;
-        const intersection = result.filter(i => {
-          const match = onlineResult.find(o => this.getKeyOf(o) == this.getKeyOf(i as T));
+        const intersection = result.filter((i) => {
+          const match = onlineResult.find(
+            (o) => this.getKeyOf(o) == this.getKeyOf(i as T)
+          );
           if (match) {
-            i.data = (i.status == 'synced') ? match : i.data;
+            i.data = i.status == 'synced' ? match : i.data;
             return true;
           }
           return false;
         });
-        const addedOnline = onlineResult.filter(o => !intersection.find(i => i.key == this.getKeyOf(o)));
-        const localyAdded = result.filter(i => i.status == 'saved');
-        const deleted = !filters && result.filter(i => !intersection.find(o => o.key == i.key || i.status != 'synced'));
+        const addedOnline = onlineResult.filter(
+          (o) => !intersection.find((i) => i.key == this.getKeyOf(o))
+        );
+        const localyAdded = result.filter((i) => i.status == 'saved');
+        const deleted =
+          !filters &&
+          result.filter(
+            (i) =>
+              !intersection.find((o) => o.key == i.key || i.status != 'synced')
+          );
         //delete from local the deleted
-        await Promise.all((deleted || []).map((i) => {
-          return this.localBase.deleteItem(this.getKeyOf(i as T));
-        }));
+        await Promise.all(
+          (deleted || []).map((i) => {
+            return this.localBase.deleteItem(this.getKeyOf(i as T));
+          })
+        );
         //update intersection
-        const updated = (await Promise.all(intersection.map(async (i) => {
-          if (i.status == 'synced') {
-            return this.localBase.setItem(this.getKeyOf(i as T), i);
-          } else {
-            return i;
-          }
-        }))).concat(
-          ...await Promise.all(addedOnline.map((i) => {
-            const key = this.getKeyOf(i);
-            return this.localBase.setItem(key, {
-              data: i,
-              key,
-              status: 'synced'
-            } as IDocStore<T>);
-          })),
-          ...localyAdded);
+        const updated = (
+          await Promise.all(
+            intersection.map(async (i) => {
+              if (i.status == 'synced') {
+                return this.localBase.setItem(this.getKeyOf(i as T), i);
+              } else {
+                return i;
+              }
+            })
+          )
+        ).concat(
+          ...(await Promise.all(
+            addedOnline.map((i) => {
+              const key = this.getKeyOf(i);
+              return this.localBase.setItem(key, {
+                data: i,
+                key,
+                status: 'synced',
+              } as IDocStore<T>);
+            })
+          )),
+          ...localyAdded
+        );
         result.splice(0, result.length, ...(updated || []));
       });
       await new Promise((r) => setTimeout(r, this.requestDelay));
@@ -253,7 +278,10 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   async getDocStatus(key: string) {
     return (await this.getDocByIdentity(key))?.status;
   }
-  protected async setDataStatus(key: string, status: 'saved' | 'synced' | 'updated' = 'synced') {
+  protected async setDataStatus(
+    key: string,
+    status: 'saved' | 'synced' | 'updated' = 'synced'
+  ) {
     const doc = await this.getDoc(key);
     const oldStatus = doc.status;
     doc.status = status;
@@ -280,11 +308,13 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     }
   }
 
-  private async getDocByIdentity(key: string): Promise<IDocStore<T> | undefined> {
+  private async getDocByIdentity(
+    key: string
+  ): Promise<IDocStore<T> | undefined> {
     let item = await this.localBase.getItem<IDocStore<T>>(key);
     if (this.keyField != 'key') {
-      item = item || await this.getDocByField('key', key);
-      item = item || await this.getDocByField('id', key);
+      item = item || (await this.getDocByField('key', key));
+      item = item || (await this.getDocByField('id', key));
     }
     return item;
   }
