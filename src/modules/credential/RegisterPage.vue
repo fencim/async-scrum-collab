@@ -44,6 +44,7 @@
         </q-input>
 
         <q-file
+          v-if="!avatar"
           v-model="avatar"
           filled
           accept=".jpg, image/*"
@@ -52,6 +53,10 @@
           :rules="[(v) => v || 'Upload Avatar']"
           label="Avatar"
         />
+        <div v-else>
+          <span>Avatar</span>
+          <the-image-cropper :file="[avatar]" @cropImage="cropImage" />
+        </div>
         <q-card-actions>
           <q-card-section>
             <q-btn type="submit" icon="how_to_reg" label="Submit" />
@@ -73,11 +78,12 @@
 <script lang="ts">
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
+import TheImageCropper from 'src/components/TheImageCropper.vue';
 const profileStore = useProfilesStore();
 
 export default defineComponent({
   name: 'CredentialPage',
-  components: {},
+  components: { TheImageCropper },
   data() {
     return {
       displayName: '',
@@ -87,6 +93,12 @@ export default defineComponent({
       avatar: undefined as File | undefined,
     };
   },
+  setup() {
+    return {
+      croppedAvatar: undefined as File | undefined,
+      cropImg: '',
+    };
+  },
   mounted() {
     this.displayName = '';
     this.email = '';
@@ -94,13 +106,13 @@ export default defineComponent({
   },
   methods: {
     async register() {
-      const { email, password, displayName, avatar } = this;
+      const { email, password, displayName, croppedAvatar, avatar } = this;
       try {
         await profileStore.register({
           email,
           password,
           displayName,
-          photo: avatar,
+          photo: croppedAvatar || avatar,
         });
         this.$q.notify({
           message: 'Successfully registered',
@@ -113,6 +125,26 @@ export default defineComponent({
           position: 'top',
         });
       }
+    },
+    cropImage(img: string) {
+      this.cropImg = img;
+      if (this.cropImg) {
+        this.croppedAvatar = this.dataURLtoFile(
+          this.cropImg,
+          this.avatar?.name || ''
+        );
+      }
+    },
+    dataURLtoFile(dataUrl: string, fileName: string) {
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], fileName, { type: mime });
     },
   },
 });

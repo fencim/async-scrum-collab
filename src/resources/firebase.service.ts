@@ -9,7 +9,9 @@ import {
   signInWithCredential,
   AuthCredential,
   User,
-  signOut
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 
 import {
@@ -41,6 +43,8 @@ const auth = getAuth(app);
 const fbStore = getFirestore(app);
 const fbDb = getDatabase(app);
 const fbStorage = getStorage(app);
+
+const googleProvider = new GoogleAuthProvider();
 
 if (/development/i.test(process.env.NODE_ENV)) {
   connectAuthEmulator(auth, 'http://localhost:9099');
@@ -85,6 +89,9 @@ class FirebaseSevice {
   }
   async signInWithEmailandPass(email: string, password: string) {
     return await signInWithEmailAndPassword(auth, email, password);
+  }
+  async signInWithGoolgeAccount() {
+    return await signInWithPopup(auth, googleProvider);
   }
   async createUserWithEmailPass(email: string, password: string) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);

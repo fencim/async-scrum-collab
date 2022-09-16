@@ -58,6 +58,15 @@ export const useProfilesStore = defineStore('Profiles', {
     setAsTheUser(profileKey: string) {
       this.theUser = this.profiles.find(p => p.key == profileKey);
     },
+    async signInWithGoogle() {
+      const cred = await firebaseService.signInWithGoolgeAccount();
+      await sessionResource.setData('currentUser', cred.user.toJSON() as object);
+      this.theUser = this.getUser();
+      if (this.theUser) {
+        await profileResource.setData(this.theUser?.key, this.theUser)
+      }
+      return cred;
+    },
     async signIn(email: string, password: string) {
       const cred = await firebaseService.signInWithEmailandPass(email, password);
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);

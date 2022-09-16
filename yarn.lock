@@ -267,10 +267,10 @@
     "chalk" "^2.0.0"
     "js-tokens" "^4.0.0"
 
-"@babel/parser@^7.16.4", "@babel/parser@^7.16.7", "@babel/parser@^7.18.0":
-  "integrity" "sha512-rL50YcEuHbbauAFAysNsJA4/f89fGTOBRNs9P81sniKnKAr4xULe5AecolcsKbi88xu0ByWYDj/S1AJ3FSFuSQ=="
-  "resolved" "http://192.168.2.101:8081/repository/npm-group/@babel/parser/-/parser-7.18.3.tgz"
-  "version" "7.18.3"
+"@babel/parser@^7.16.4", "@babel/parser@^7.16.7", "@babel/parser@^7.18.0", "@babel/parser@^7.18.4":
+  "integrity" "sha512-h7RCSorm1DdTVGJf3P2Mhj3kdnkmF/EiysUkzS2TdgAYqyjFdMQJbVuXOBej2SBJaXan/lIVtT6KkGbyyq753A=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/@babel/parser/-/parser-7.19.1.tgz"
+  "version" "7.19.1"
 
 "@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@^7.17.12":
   "integrity" "sha512-xCJQXl4EeQ3J9C4yOmpTrtVGmzpm2iSzyxbkZHw7UCnZBftHpF/hpII80uWVyVrc40ytIClHjgWGTG1g/yB+aw=="
@@ -1938,6 +1938,13 @@
   "resolved" "http://192.168.2.101:8081/repository/npm-group/@types/trusted-types/-/trusted-types-2.0.2.tgz"
   "version" "2.0.2"
 
+"@types/vue-cropperjs@^4.1.2":
+  "integrity" "sha512-w+I4SFQvpLM2H3n+pXq9b1Y6mENcoOQ+UvQTRlfeOFe9+cyEmfP7FMwCmUvA+83GPhu/+1F8Ik0/wURv7Dop7Q=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/@types/vue-cropperjs/-/vue-cropperjs-4.1.2.tgz"
+  "version" "4.1.2"
+  dependencies:
+    "vue" "^2.0.0"
+
 "@types/webpack-bundle-analyzer@4.4.1":
   "integrity" "sha512-yQAj3l7bIYL+QRRlNJt6gyP+zrXZOlgaR4wsX0WY4yzZIbv41ZibREfZvuYjxY0iVtvQQlbhx0AeokkCuqUAQg=="
   "resolved" "http://192.168.2.101:8081/repository/npm-group/@types/webpack-bundle-analyzer/-/webpack-bundle-analyzer-4.4.1.tgz"
@@ -2051,6 +2058,15 @@
   dependencies:
     "@vue/compiler-core" "3.2.36"
     "@vue/shared" "3.2.36"
+
+"@vue/compiler-sfc@2.7.10":
+  "integrity" "sha512-55Shns6WPxlYsz4WX7q9ZJBL77sKE1ZAYNYStLs6GbhIOMrNtjMvzcob6gu3cGlfpCR4bT7NXgyJ3tly2+Hx8Q=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/@vue/compiler-sfc/-/compiler-sfc-2.7.10.tgz"
+  "version" "2.7.10"
+  dependencies:
+    "@babel/parser" "^7.18.4"
+    "postcss" "^8.4.14"
+    "source-map" "^0.6.1"
 
 "@vue/compiler-sfc@3.2.36":
   "integrity" "sha512-AvGb4bTj4W8uQ4BqaSxo7UwTEqX5utdRSMyHy58OragWlt8nEACQ9mIeQh3K4di4/SX+41+pJrLIY01lHAOFOA=="
@@ -3066,6 +3082,11 @@
     "crc-32" "^1.2.0"
     "readable-stream" "^3.4.0"
 
+"cropperjs@^1.5.12", "cropperjs@^1.5.6":
+  "integrity" "sha512-re7UdjE5UnwdrovyhNzZ6gathI4Rs3KGCBSc8HCIjUo5hO42CtzyblmWLj6QWVw7huHyDMfpKxhiO2II77nhDw=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/cropperjs/-/cropperjs-1.5.12.tgz"
+  "version" "1.5.12"
+
 "cross-spawn@^7.0.2", "cross-spawn@^7.0.3", "cross-spawn@7.0.3":
   "integrity" "sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w=="
   "resolved" "http://192.168.2.101:8081/repository/npm-group/cross-spawn/-/cross-spawn-7.0.3.tgz"
@@ -3211,6 +3232,11 @@
   "integrity" "sha512-/WwNkdXfckNgw6S5R125rrW8ez139lBHWouiBvX8dfMFtcn6V81REDqnH7+CRpRipfYlyU1CmOnOxrmGcFOjeA=="
   "resolved" "http://192.168.2.101:8081/repository/npm-group/csstype/-/csstype-2.6.20.tgz"
   "version" "2.6.20"
+
+"csstype@^3.1.0":
+  "integrity" "sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/csstype/-/csstype-3.1.1.tgz"
+  "version" "3.1.1"
 
 "debug@^3.1.1":
   "integrity" "sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ=="
@@ -5984,7 +6010,7 @@
   "resolved" "http://192.168.2.101:8081/repository/npm-group/postcss-value-parser/-/postcss-value-parser-4.2.0.tgz"
   "version" "4.2.0"
 
-"postcss@^7.0.0 || ^8.0.1", "postcss@^8.0.0", "postcss@^8.0.9", "postcss@^8.1.0", "postcss@^8.1.10", "postcss@^8.2.15", "postcss@^8.2.2", "postcss@^8.3.11", "postcss@^8.3.5", "postcss@^8.4.4":
+"postcss@^7.0.0 || ^8.0.1", "postcss@^8.0.0", "postcss@^8.0.9", "postcss@^8.1.0", "postcss@^8.1.10", "postcss@^8.2.15", "postcss@^8.2.2", "postcss@^8.3.11", "postcss@^8.3.5", "postcss@^8.4.14", "postcss@^8.4.4":
   "integrity" "sha512-E398TUmfAYFPBSdzgeieK2Y1+1cpdxJx8yXbK/m57nRhKSmk1GB2tO4lbLBtlkfPQTDKfe4Xqv1ASWPpayPEig=="
   "resolved" "http://192.168.2.101:8081/repository/npm-group/postcss/-/postcss-8.4.14.tgz"
   "version" "8.4.14"
@@ -7226,6 +7252,13 @@
   "resolved" "http://192.168.2.101:8081/repository/npm-group/vary/-/vary-1.1.2.tgz"
   "version" "1.1.2"
 
+"vue-cropperjs@^5.0.0":
+  "integrity" "sha512-RhnC8O33uRZNkn74aiHZwNHnBJOXWlS4P6gsRI0lw4cZlWjKSCywZI9oSI9POlIPI6OYv30jvnHMXGch85tw7w=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/vue-cropperjs/-/vue-cropperjs-5.0.0.tgz"
+  "version" "5.0.0"
+  dependencies:
+    "cropperjs" "^1.5.6"
+
 "vue-demi@*":
   "integrity" "sha512-BREuTgTYlUr0zw0EZn3hnhC3I6gPWv+Kwh4MCih6QcAeaTlaIX0DwOVN0wHej7hSvDPecz4jygy/idsgKfW58Q=="
   "resolved" "http://192.168.2.101:8081/repository/npm-group/vue-demi/-/vue-demi-0.12.5.tgz"
@@ -7268,7 +7301,15 @@
     "hash-sum" "^1.0.2"
     "loader-utils" "^1.0.2"
 
-"vue@^2.6.14 || ^3.2.0", "vue@^3.0.0", "vue@^3.0.0-0 || ^2.6.0", "vue@^3.2.0", "vue@^3.2.29", "vue@3.2.36":
+"vue@^2.0.0":
+  "integrity" "sha512-HmFC70qarSHPXcKtW8U8fgIkF6JGvjEmDiVInTkKZP0gIlEPhlVlcJJLkdGIDiNkIeA2zJPQTWJUI4iWe+AVfg=="
+  "resolved" "http://192.168.2.101:8081/repository/npm-group/vue/-/vue-2.7.10.tgz"
+  "version" "2.7.10"
+  dependencies:
+    "@vue/compiler-sfc" "2.7.10"
+    "csstype" "^3.1.0"
+
+"vue@^2.6.14 || ^3.2.0", "vue@^3.0.0", "vue@^3.0.0-0 || ^2.6.0", "vue@^3.2.0", "vue@^3.2.29", "vue@>=3.0.0", "vue@3.2.36":
   "integrity" "sha512-5yTXmrE6gW8IQgttzHW5bfBiFA6mx35ZXHjGLDmKYzW6MMmYvCwuKybANRepwkMYeXw2v1buGg3/lPICY5YlZw=="
   "resolved" "http://192.168.2.101:8081/repository/npm-group/vue/-/vue-3.2.36.tgz"
   "version" "3.2.36"

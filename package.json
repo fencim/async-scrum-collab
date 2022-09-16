@@ -17,6 +17,7 @@
     "@nestjs/swagger": "^5.2.1",
     "@quasar/extras": "^1.0.0",
     "core-js": "^3.6.5",
+    "cropperjs": "^1.5.12",
     "firebase": "^9.8.4",
     "firebaseui": "^6.0.1",
     "mitt": "^3.0.0",
@@ -24,11 +25,13 @@
     "quasar": "^2.6.0",
     "rxjs": "^7.5.6",
     "vue": "^3.0.0",
+    "vue-cropperjs": "^5.0.0",
     "vue-router": "^4.0.0"
   },
   "devDependencies": {
     "@quasar/app-webpack": "^3.0.0",
     "@types/node": "^12.20.21",
+    "@types/vue-cropperjs": "^4.1.2",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "eslint": "^8.10.0",

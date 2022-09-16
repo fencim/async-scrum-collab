@@ -18,6 +18,7 @@
         </q-input>
         <q-card-actions>
           <q-btn type="submit" icon="login" label="Login" />
+          <q-btn icon="login" label="With Google" @click="withGoogle" />
           <q-btn icon="how_to_reg" :to="{ name: 'register' }" label="Signup" />
         </q-card-actions>
       </q-card>
@@ -43,6 +44,21 @@ export default defineComponent({
     async signIn() {
       try {
         await profileStore.signIn(this.email, this.password);
+        this.$q.notify({
+          message: 'Successfully signed',
+        });
+        this.$router.replace('/');
+      } catch (e) {
+        this.$q.notify({
+          message: String((e as { code: string }).code || e),
+          position: 'top',
+          color: 'negative',
+        });
+      }
+    },
+    async withGoogle() {
+      try {
+        await profileStore.signInWithGoogle();
         this.$q.notify({
           message: 'Successfully signed',
         });

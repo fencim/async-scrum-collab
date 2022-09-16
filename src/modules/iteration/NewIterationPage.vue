@@ -141,8 +141,8 @@ export default defineComponent({
   computed: {
     ceremonies(): Schedule[] {
       const schedules: Schedule[] = [];
-      const start = new Date(this.range.from);
-      const end = new Date(this.range.to);
+      const start = new Date(this.range?.from);
+      const end = new Date(this.range?.to);
       const [plan, review, retro]: Schedule[] = [
         {
           key: this.theIteration.key + 'plan',
