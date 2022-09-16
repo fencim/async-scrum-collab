@@ -54,7 +54,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
                 );
                 if (result) {
                   const data = doc.data;
-                  delete (data as KeyValuePair)['*' + String(prop)];
+                  delete (data as KeyValuePair)[prop];
                 } else {
                   failedPatch.push(prop);
                 }
