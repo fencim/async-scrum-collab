@@ -18,14 +18,14 @@
         <div class="column items-center">
           <q-avatar size="72px">
             <img
-              v-if="profile.presentUser && profile.presentUser"
-              :src="profile.presentUser.avatar"
+              v-if="profile.theUser && profile.theUser"
+              :src="profile.theUser.avatar"
             />
             <span>CU</span>
           </q-avatar>
 
           <div class="text-subtitle1 q-mt-md q-mb-xs">
-            {{ profile.presentUser?.name }}
+            {{ profile.theUser?.name }}
           </div>
 
           <q-btn

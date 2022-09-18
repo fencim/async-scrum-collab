@@ -1,9 +1,12 @@
+import axios from 'axios';
 import { IMedia } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
+import { KeyValueStorage } from './localbase';
 
 class MediaResource extends BaseResource<IMedia> {
+  cache = new KeyValueStorage('cache');
   protected stream(filters?: Filters<Entity> | undefined): void {
     throw new Error(`Method not implemented.${filters}`);
   }
@@ -33,7 +36,38 @@ class MediaResource extends BaseResource<IMedia> {
   constructor() {
     super('media')
   }
+  async cacheHttpUrl(httpUrl: string) {
+    const item = await this.cache.getItem(httpUrl);
+    if (item) return item as string;
+    try {
+      const file = await this.getFileFromHttp(httpUrl);
+      const dataUrl = await this.getDataUrl(file);
+      await this.cache.setItem(httpUrl, dataUrl);
+      return dataUrl;
+    } catch {
+      return httpUrl;
+    }
+  }
+  async getFileFromHttp(url: string) {
+    const response = await axios.get(url, { responseType: 'blob' });
 
-
+    return response.data as Blob;
+  }
+  async getDataUrl(file: Blob): Promise<string | undefined> {
+    if (file) {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.addEventListener(
+          'load',
+          () => {
+            resolve(reader.result as string);
+          },
+          false
+        );
+        reader.addEventListener('error', (e) => reject(e));
+        reader.readAsDataURL(file);
+      });
+    }
+  }
 }
 export const mediaResource = new MediaResource();

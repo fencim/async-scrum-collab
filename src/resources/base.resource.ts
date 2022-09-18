@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { KeyValueStorage } from './localbase';
+import { DeferredPromise, KeyValueStorage } from './localbase';
 import { FilterFn2, Filters, Pagination } from './localbase/state-db.controller';
 
 const dbVersion = undefined;
@@ -22,7 +22,7 @@ type KeyValuePair = {
 
 export abstract class BaseResource<T extends IBaseResourceModel> {
   requestDelay = 1000 * 1 /*second*/;
-  constructor(entity: string, private keyField?: string, prefix = 'hrs') {
+  constructor(entity: string, private keyField?: string, prefix = 'asc') {
     this.localBase = new KeyValueStorage(
       prefix + '-' + entity.toLowerCase(),
       dbVersion
@@ -97,6 +97,13 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     ) {
       return (filters as FilterFn2)() as T;
     }
+  }
+  private criticalSection = Promise.resolve(true);
+  private async enterCritical() {
+    await this.criticalSection;
+    const deffered = new DeferredPromise<boolean>();
+    this.criticalSection = deffered.promise;
+    return deffered;
   }
   async findAllFrom(filters?: Filters): Promise<T[]> {
     const result: IDocStore<T>[] = await this.findAllDocFrom(filters);
@@ -212,15 +219,18 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
    * @returns
    */
   async setData(key: string, value: T, createOnlyOrStatus: boolean | DocStatus = false): Promise<T> {
+    const section = await this.enterCritical();
     const identity = key || this.getKeyOf(value);
     const existing = identity && await this.getDoc(identity);
     if (createOnlyOrStatus === true && existing) {
+      section.resolve(true);
       throw 'Record already exist';
     }
     if (existing && existing.status == 'synced') {
       existing.status = typeof createOnlyOrStatus == 'string' ? createOnlyOrStatus : 'updated';
       existing.data = value;
       await this.localBase.setItem(identity, existing as IDocStore<T>);
+      section.resolve(true);
       if (existing.status != 'synced') this.manageDocCallback(existing);
       return existing.data;
     } else {
@@ -229,6 +239,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         key: identity,
         status: typeof createOnlyOrStatus == 'string' ? createOnlyOrStatus : 'saved',
       } as IDocStore<T>);
+      section.resolve(true);
       if (typeof doc == 'object') {
         await this.manageDocCallback(doc);
         return doc.data;

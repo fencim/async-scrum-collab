@@ -36,13 +36,23 @@ export const useProfilesStore = defineStore('Profiles', {
     },
     getUser() {
       let user;
+      let justLoggedIn = !this.theUser;
       this.theUser = this.theUser || (user = firebaseService.auth()) && {
-        avatar: user?.photoURL || '',
+        avatar: (user?.photoURL || ''),
         key: user?.email || '',
         name: user?.displayName || user?.email || 'None'
       } || undefined;
-      if (this.theUser && this.theUser.key) {
-        profileResource.setData(this.theUser.key, this.theUser);
+      justLoggedIn = justLoggedIn && !!this.theUser;
+      if (justLoggedIn && this.theUser && this.theUser.key) {
+        profileResource.setData(this.theUser.key, this.theUser, 'synced');
+      }
+      if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
+        mediaResource.cacheHttpUrl(this.theUser.avatar)
+          .then((cachedUrl) => {
+            if (this.theUser && cachedUrl) {
+              this.theUser.avatar = cachedUrl || this.theUser.avatar;
+            }
+          })
       }
       return this.theUser;
     },
@@ -53,7 +63,17 @@ export const useProfilesStore = defineStore('Profiles', {
       return this.profiles.find(p => p.key == key) || profileResource.findOne({ key });
     },
     async fromKeyList(members: string[]) {
-      return (await Promise.all(members.map(m => (this.get(m))))) as IProfile[];
+      const profiles = (await Promise.all(members.map(async (m) => {
+        const p = await this.get(m);
+        if (p && p.avatar) {
+          const cachedUrl = await mediaResource.cacheHttpUrl(p.avatar);
+          if (typeof cachedUrl == 'string' && cachedUrl) {
+            p.avatar = cachedUrl || p.avatar;
+          }
+        }
+        return p;
+      }))) as IProfile[];
+      return profiles;
     },
     setAsTheUser(profileKey: string) {
       this.theUser = this.profiles.find(p => p.key == profileKey);
@@ -62,18 +82,12 @@ export const useProfilesStore = defineStore('Profiles', {
       const cred = await firebaseService.signInWithGoolgeAccount();
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
-      if (this.theUser) {
-        await profileResource.setData(this.theUser?.key, this.theUser)
-      }
       return cred;
     },
     async signIn(email: string, password: string) {
       const cred = await firebaseService.signInWithEmailandPass(email, password);
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
-      if (this.theUser) {
-        await profileResource.setData(this.theUser?.key, this.theUser)
-      }
       return cred;
     },
     async register(profile: { email: string, password: string, displayName: string, photo?: File }) {
