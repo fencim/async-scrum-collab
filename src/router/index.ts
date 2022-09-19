@@ -1,5 +1,6 @@
 import { route } from 'quasar/wrappers';
 import { useProfilesStore } from 'src/stores/profiles.store';
+import { useProjectStore } from 'src/stores/projects.store';
 import {
   createMemoryHistory,
   createRouter,
@@ -22,6 +23,7 @@ export default route(function (/* { store, ssrContext } */) {
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
   const profileStore = useProfilesStore();
+  const projectStore = useProjectStore();
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
@@ -37,6 +39,11 @@ export default route(function (/* { store, ssrContext } */) {
     .then(() => {
       Router.beforeEach(async (to, from, next) => {
         if (profileStore.getUser() || /^(login|register)$/.test(String(to.name))) {
+          if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
+            await projectStore.selectProject(to.params['project'] as string);
+          } else {
+            projectStore.selectProject('');
+          }
           next();
         } else {
           next({

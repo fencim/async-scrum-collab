@@ -6,7 +6,7 @@
       <div class="text-overline q-px-sm bg-grey-10 rounded-borders">
         {{ project?.description }}
       </div>
-      <recent-active-members :profiles="memebers" />
+      <recent-active-members :profiles="members" />
     </q-toolbar-title>
     <the-present-user />
   </q-toolbar>
@@ -19,9 +19,9 @@ import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
-import { IProfile, IProject } from 'src/entities';
+import { IProject } from 'src/entities';
 const projectStore = useProjectStore();
-
+const profileStore = useProfilesStore();
 export default defineComponent({
   name: 'ProjectToolbar',
 
@@ -29,12 +29,16 @@ export default defineComponent({
   data() {
     return {
       projectStore,
-      profilesStore: useProfilesStore(),
+      profileStore,
       showToday: true,
       activeProject: '',
       project: undefined as IProject | undefined,
-      memebers: [] as IProfile[],
     };
+  },
+  computed: {
+    members() {
+      return profileStore.members;
+    },
   },
   mounted() {
     this.init();
@@ -47,10 +51,7 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.withKey(this.activeProject);
-      this.memebers = (
-        await this.profilesStore.fromKeyList(this.project?.members || [])
-      ).filter((p) => p);
+      this.project = projectStore.activeProject;
     },
   },
 });

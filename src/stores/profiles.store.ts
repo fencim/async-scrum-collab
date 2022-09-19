@@ -4,12 +4,17 @@ import { convoResource, discussionResource, iterationResource, mediaResource, pr
 import { firebaseService } from 'src/resources/firebase.service';
 import { sessionResource } from 'src/resources/session.resource';
 const botProfile = { avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' };
-
+interface IProfileState {
+  profiles: IProfile[];
+  members: IProfile[];
+  theUser?: IProfile;
+}
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({
     profiles: [botProfile] as IProfile[],
+    members: [],
     theUser: undefined as IProfile | undefined
-  }),
+  } as IProfileState),
 
   getters: {
     presentUser(): IProfile | undefined {
@@ -39,12 +44,12 @@ export const useProfilesStore = defineStore('Profiles', {
       let justLoggedIn = !this.theUser;
       this.theUser = this.theUser || (user = firebaseService.auth()) && {
         avatar: (user?.photoURL || ''),
-        key: user?.email || '',
+        key: user?.uid || user?.email || '',
         name: user?.displayName || user?.email || 'None'
       } || undefined;
       justLoggedIn = justLoggedIn && !!this.theUser;
       if (justLoggedIn && this.theUser && this.theUser.key) {
-        profileResource.setData(this.theUser.key, this.theUser, 'synced');
+        profileResource.setData(this.theUser.key, this.theUser);
       }
       if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
         mediaResource.cacheHttpUrl(this.theUser.avatar)
@@ -62,7 +67,7 @@ export const useProfilesStore = defineStore('Profiles', {
     async get(key: string) {
       return this.profiles.find(p => p.key == key) || profileResource.findOne({ key });
     },
-    async fromKeyList(members: string[]) {
+    async selectProjectMembers(members: string[]) {
       const profiles = (await Promise.all(members.map(async (m) => {
         const p = await this.get(m);
         if (p && p.avatar) {

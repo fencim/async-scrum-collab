@@ -266,7 +266,7 @@ export default defineComponent({
       this.activeProjectKey =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.activeProject = await projectStore.withKey(this.activeProjectKey);
+      this.activeProject = projectStore.activeProject;
 
       this.activeIterationKey =
         (this.$route.params.iteration &&
@@ -304,28 +304,26 @@ export default defineComponent({
       if (this.theDiscussion) {
         const awareness = this.theDiscussion.awareness || {};
         const awareMembers = Object.keys(awareness);
-        this.membersAgreed = await profileStore.fromKeyList(
-          awareMembers.filter((m) => awareness[m] == 'agree')
+        this.membersAgreed = profileStore.members.filter(
+          (m) => awareness[m.key] == 'agree'
         );
-        this.membersDisagreed = await profileStore.fromKeyList(
-          awareMembers.filter((m) => awareness[m] == 'disagree')
+        this.membersDisagreed = profileStore.members.filter(
+          (m) => awareness[m.key] == 'disagree'
         );
-        this.membersPending = await profileStore.fromKeyList(
-          (this.activeProject?.members || []).filter(
-            (m) => !awareMembers.includes(m)
-          )
+
+        this.membersPending = profileStore.members.filter(
+          (m) => !awareMembers.includes(m.key)
         );
       }
     },
     async assesItem(forceSave?: boolean) {
       if (this.theDiscussion && this.activeProject) {
-        
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
           this.activeProject,
           this.convo
         );
-        this.membersVoted = await profileStore.fromKeyList([
+        const voted = [
           ...new Set(
             (this.convo.filter((c) => c.type == 'vote') as IVote[])
               .reduce(
@@ -334,7 +332,10 @@ export default defineComponent({
               )
               .map((c) => c.from as string)
           ),
-        ]);
+        ];
+        this.membersVoted = profileStore.members.filter((m) =>
+          voted.includes(m.key)
+        );
         this.progressReport = report;
         if (this.theDiscussion.progress != report[0].progress || forceSave) {
           this.theDiscussion.progress = report[0].progress;

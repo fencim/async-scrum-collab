@@ -144,7 +144,7 @@ export default defineComponent({
   async mounted() {
     this.activeProjectKey =
       (this.$route.params.project && String(this.$route.params.project)) || '';
-    this.activeProject = await projectStore.withKey(this.activeProjectKey);
+    this.activeProject = projectStore.activeProject;
 
     this.activeIterationKey =
       (this.$route.params.iteration && String(this.$route.params.iteration)) ||

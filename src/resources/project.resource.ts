@@ -2,10 +2,24 @@ import { IProject } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
+import { map, merge, Observable } from 'rxjs';
 
 class ProjectResource extends BaseResource<IProject> {
-  protected stream(filters?: Filters<Entity> | undefined): void {
-    throw new Error(`Method not implemented.${filters}`);
+  stream(filters?: Filters<Entity> | undefined): Observable<IProject[]> {
+    const offline = new Observable<IProject[]>((subcriber) => {
+      this.findAllFrom(filters)
+        .then((list) => {
+          subcriber.next(list);
+          subcriber.complete();
+        });
+    });
+    const online = firebaseService.streamWith<IProject>('projects', filters && this.arrayFilter(filters) ||
+      (typeof filters == 'object' && filters as { [key: string]: string }) || {})
+      .pipe(map(list => {
+        this.saveEachTo(list, 'synced');
+        return list;
+      }));
+    return merge(offline, online);
   }
   protected async getCb(key: string): Promise<boolean | void | IProject> {
     return await firebaseService.get('projects', key) as IProject;

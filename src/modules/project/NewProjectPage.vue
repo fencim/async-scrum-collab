@@ -6,7 +6,6 @@
           <q-avatar>
             <img src="icons/favicon-128x128.png" />
           </q-avatar>
-
           <q-toolbar-title
             ><span class="text-weight-bold">{{
               $route.params.project ? 'Edit' : 'New'
@@ -23,6 +22,7 @@
             label="Key"
             maxlength="4"
             mask="XXXX"
+            :disable="saving"
             :rules="[
               (v) => (v && /^[0-9A-Z]{4}$/i.test(v)) || '4 digit project code',
               (v) =>
@@ -36,15 +36,18 @@
           <q-input
             v-model="theProject.name"
             label="Name"
+            :disable="saving"
             :rules="[(v) => (v && v.length > 0) || 'Enter Project Name']"
           />
           <q-input
             v-model="theProject.description"
             label="Description"
             filled
+            :disable="saving"
             type="textarea"
           />
           <q-file
+            v-if="!icon"
             v-model="icon"
             filled
             accept=".jpg, image/*"
@@ -52,12 +55,18 @@
             use-chips
             label="Select logo"
           />
+          <div v-else>
+            <span>Icon</span>
+            <the-image-cropper :file="[icon]" @cropImage="cropImage" />
+          </div>
+
           <q-select
             class="col-12"
             emit-value
             label="Members"
             map-options
             multiple
+            :disable="saving"
             v-model="theProject.members"
             :options="profile.profiles"
             :option-label="'name'"
@@ -65,7 +74,7 @@
           />
         </q-card-section>
         <q-card-actions align="right">
-          <q-btn type="submit">Save</q-btn>
+          <q-btn type="submit" :loading="saving">Save</q-btn>
         </q-card-actions>
       </q-card>
     </q-form>
@@ -77,11 +86,12 @@ import { IProject } from 'src/entities';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
+import TheImageCropper from 'src/components/TheImageCropper.vue';
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();
 export default defineComponent({
   name: 'SaveProjectPage',
-  components: {},
+  components: { TheImageCropper },
   data() {
     return {
       projectStore,
@@ -90,18 +100,58 @@ export default defineComponent({
       icon: undefined as File | undefined,
     };
   },
+  setup() {
+    return {
+      croppedImg: undefined as File | undefined,
+      cropImg: '',
+      saving: false,
+    };
+  },
   async mounted() {
     await profileStore.init();
     if (this.$route.params.project) {
-      this.theProject =
-        (await projectStore.withKey(this.$route.params.project as string)) ||
-        this.theProject;
+      this.theProject = projectStore.activeProject as IProject;
     }
   },
   methods: {
     async submitNewProject() {
-      await projectStore.saveProject(this.theProject, this.icon);
-      this.$router.replace('/' + this.theProject.key);
+      try {
+        this.saving = true;
+        const project = await projectStore.saveProject(
+          this.theProject as IProject,
+          this.croppedImg || this.icon
+        );
+        if (profileStore.theUser) {
+          projectStore.addMember(project.key, profileStore.theUser.key);
+        }
+        this.$router.replace('/' + this.theProject?.key);
+      } catch (e) {
+        this.$q.notify({
+          message: String((e as { code: string }).code || e),
+          position: 'top',
+          color: 'negative',
+        });
+      }
+    },
+    cropImage(img: string) {
+      this.cropImg = img;
+      if (this.cropImg) {
+        this.croppedImg = this.dataURLtoFile(
+          this.cropImg,
+          this.icon?.name || ''
+        );
+      }
+    },
+    dataURLtoFile(dataUrl: string, fileName: string) {
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], fileName, { type: mime });
     },
   },
 });

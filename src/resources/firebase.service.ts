@@ -99,7 +99,7 @@ class FirebaseSevice {
     return cred;
   }
   async uploadImage(file: File, options?: { task?: UploadTask, path: string }) {
-    const fileRef = ref(imagesStorageRef, options?.path || file.name);
+    const fileRef = ref(imagesStorageRef, options ? `${options.path}/${file.name}` : file.name);
     const uploadTask = uploadBytesResumable(fileRef, file);
     if (options) options.task = uploadTask;
     return new Promise<string>((resolve, reject) => {

@@ -210,7 +210,7 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.withKey(this.activeProject);
+      this.project = await projectStore.activeProject;
 
       this.activeIteration =
         (this.$route.params.iteration &&

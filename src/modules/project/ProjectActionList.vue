@@ -33,7 +33,7 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.withKey(this.activeProject);
+      this.project = projectStore.activeProject;
     },
   },
 });

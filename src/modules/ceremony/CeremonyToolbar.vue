@@ -72,18 +72,18 @@ export default defineComponent({
   },
   mounted() {
     this.init();
-    this.timer = setInterval(async () => {
-      this.members = await profileStore.fromKeyList(
-        this.project?.members || []
-      );
-      const index = this.members.findIndex(
-        (p) => p.key == profileStore.presentUser?.key
-      );
-      if (index > 0) {
-        const [user] = this.members.splice(index, 1);
-        this.members.splice(0, 0, user);
-      }
-    }, 1000);
+    // this.timer = setInterval(async () => {
+    //   this.members = await profileStore.fromKeyList(
+    //     this.project?.members || []
+    //   );
+    //   const index = this.members.findIndex(
+    //     (p) => p.key == profileStore.presentUser?.key
+    //   );
+    //   if (index > 0) {
+    //     const [user] = this.members.splice(index, 1);
+    //     this.members.splice(0, 0, user);
+    //   }
+    // }, 1000);
   },
   unmounted() {
     this.timer && clearInterval(this.timer);
@@ -101,7 +101,7 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.withKey(this.activeProject);
+      this.project = projectStore.activeProject;
       this.activeIteration =
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||

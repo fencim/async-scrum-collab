@@ -2,20 +2,40 @@ import { defineStore } from 'pinia';
 import { IProject } from 'src/entities';
 import { projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
-
+import { useProfilesStore } from './profiles.store';
+interface IProjectState {
+  projects: IProject[];
+  activeProject?: IProject;
+}
 export const useProjectStore = defineStore('projectStore', {
   state: () => ({
-    projects: [] as IProject[]
-  }),
+    projects: []
+  } as IProjectState),
   getters: {
   },
   actions: {
     async init() {
+      projectResource.stream().subscribe({
+        next: (projects) => {
+          this.projects = projects;
+          if (this.activeProject) {
+            this.selectProject(this.activeProject.key);
+          }
+        }
+      })
       this.projects = (await projectResource.findAllFrom()) || [];
     },
-    async withKey(key: string) {
+    async selectProject(key: string) {
       if (key) {
-        return this.projects.find(p => p.key == key) || projectResource.findOne({ key });
+        const project = this.projects.find(p => p.key == key) || await projectResource.findOne({ key });
+        this.activeProject = project;
+        if (project) {
+          const profileStore = useProfilesStore();
+          profileStore.selectProjectMembers(project.members);
+        }
+        return project;
+      } else {
+        this.activeProject = undefined;
       }
     },
     async saveProject(newProject: IProject, icon?: File) {
@@ -43,7 +63,7 @@ export const useProjectStore = defineStore('projectStore', {
       return newProject;
     },
     async addMember(projectKey: string, memberKey: string) {
-      const project = await this.withKey(projectKey);
+      const project = await this.selectProject(projectKey);
       if (!project) {
         throw 'Project does not exits';
       }

@@ -110,7 +110,7 @@ export default defineComponent({
   async mounted() {
     this.activeProjectKey =
       (this.$route.params.project && String(this.$route.params.project)) || '';
-    this.activeProject = await projectStore.withKey(this.activeProjectKey);
+    this.activeProject = projectStore.activeProject;
     const editing = this.$route.params.iteration as string;
     if (!editing) {
       this.iterations = await iterationStore.ofProject(this.activeProjectKey);

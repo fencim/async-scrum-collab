@@ -2,10 +2,10 @@
   <q-btn round>
     <q-avatar>
       <img
-        v-if="profile.presentUser && profile.presentUser"
-        :src="profile.presentUser.avatar"
+        v-if="profile.theUser && profile.theUser.avatar"
+        :src="profile.theUser.avatar"
       />
-      <span>CU</span>
+      <span>{{ initials(profile.theUser?.name) }}</span>
     </q-avatar>
     <q-menu>
       <div class="row no-wrap q-pa-md">
@@ -18,10 +18,10 @@
         <div class="column items-center">
           <q-avatar size="72px">
             <img
-              v-if="profile.theUser && profile.theUser"
+              v-if="profile.theUser && profile.theUser.avatar"
               :src="profile.theUser.avatar"
             />
-            <span>CU</span>
+            <span v-else>{{ initials(profile.theUser?.name) }}</span>
           </q-avatar>
 
           <div class="text-subtitle1 q-mt-md q-mb-xs">
@@ -54,7 +54,12 @@ export default defineComponent({
       profile: profileStore,
     };
   },
-  methods: {},
+  methods: {
+    initials(name?: string) {
+      const m = (name || 'C U').match(/\b\w/g);
+      return `${m && m[0]}${m && m[1]}`;
+    },
+  },
 });
 </script>
 <style></style>

@@ -16,7 +16,7 @@
         }}
         days)
       </div>
-      <recent-active-members :profiles="memebers" />
+      <recent-active-members :profiles="members" />
     </q-toolbar-title>
     <q-btn
       dense
@@ -40,9 +40,10 @@ import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { IIteration, IProfile, IProject } from 'src/entities';
+import { IIteration, IProject } from 'src/entities';
 import { date } from 'quasar';
 
+const profilesStore = useProfilesStore();
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
 
@@ -53,14 +54,18 @@ export default defineComponent({
   data() {
     return {
       date,
-      profilesStore: useProfilesStore(),
+      profilesStore,
       showToday: true,
       activeProject: '',
       activeIteration: '',
       project: undefined as IProject | undefined,
       iteration: undefined as IIteration | undefined,
-      memebers: [] as IProfile[],
     };
+  },
+  computed: {
+    members() {
+      return profilesStore.members;
+    },
   },
   mounted() {
     this.init();
@@ -73,7 +78,7 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.withKey(this.activeProject);
+      this.project = await projectStore.activeProject;
       this.activeIteration =
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||
@@ -81,9 +86,6 @@ export default defineComponent({
       this.iteration = await iterationStore.withKey(
         this.activeProject,
         this.activeIteration
-      );
-      this.memebers = await this.profilesStore.fromKeyList(
-        this.project?.members || []
       );
     },
   },

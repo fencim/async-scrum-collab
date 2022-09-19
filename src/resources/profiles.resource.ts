@@ -2,10 +2,24 @@ import { IProfile } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Filters, Entity } from './localbase/state-db.controller';
+import { Observable, map, merge } from 'rxjs';
 
 class ProfileResource extends BaseResource<IProfile> {
-  protected stream(filters?: Filters<Entity> | undefined): void {
-    throw new Error(`Method not implemented.${filters}`);
+  protected stream(filters?: Filters<Entity> | undefined): Observable<IProfile[]> {
+    const offline = new Observable<IProfile[]>((subcriber) => {
+      this.findAllFrom(filters)
+        .then((list) => {
+          subcriber.next(list);
+          subcriber.complete();
+        });
+    });
+    const online = firebaseService.streamWith<IProfile>('projects', filters && this.arrayFilter(filters) ||
+      (typeof filters == 'object' && filters as { [key: string]: string }) || {})
+      .pipe(map(list => {
+        //this.saveEachTo(list, 'synced');
+        return list;
+      }));
+    return merge(offline, online);
   }
   protected async getCb(key: string): Promise<boolean | void | IProfile> {
     return await firebaseService.get('profiles', key) as IProfile;
