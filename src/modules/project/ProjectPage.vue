@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-import { IIteration, IProject } from 'src/entities';
+import { IProject } from 'src/entities';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
@@ -29,8 +29,12 @@ export default defineComponent({
       activeProject: '',
       project: undefined as IProject | undefined,
       activeIteration: '',
-      iterations: [] as IIteration[],
     };
+  },
+  computed: {
+    iterations() {
+      return iterationStore.iterations;
+    },
   },
   mounted() {
     this.init();
@@ -48,7 +52,6 @@ export default defineComponent({
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||
         '';
-      this.iterations = await iterationStore.ofProject(this.activeProject);
     },
   },
 });

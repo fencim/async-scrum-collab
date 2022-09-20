@@ -78,15 +78,12 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.activeProject;
+      this.project = projectStore.activeProject;
       this.activeIteration =
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||
         '';
-      this.iteration = await iterationStore.withKey(
-        this.activeProject,
-        this.activeIteration
-      );
+      this.iteration = iterationStore.activeIteration;
     },
   },
 });

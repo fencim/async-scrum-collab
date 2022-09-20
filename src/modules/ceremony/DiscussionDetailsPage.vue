@@ -272,10 +272,7 @@ export default defineComponent({
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||
         '';
-      this.activeIteration = await iterationStore.withKey(
-        this.activeProjectKey,
-        this.activeIterationKey
-      );
+      this.activeIteration = iterationStore.activeIteration;
 
       this.discussions = await discussionStore.ofProject(this.activeProjectKey);
 

@@ -5,7 +5,11 @@ import { Entity, Filters } from './localbase/state-db.controller';
 import { map, merge, Observable } from 'rxjs';
 
 class ProjectResource extends BaseResource<IProject> {
+  private activeStream?: Observable<IProject[]>;
   stream(filters?: Filters<Entity> | undefined): Observable<IProject[]> {
+    if (this.activeStream && this.activeStream) {
+      return this.activeStream;
+    }
     const offline = new Observable<IProject[]>((subcriber) => {
       this.findAllFrom(filters)
         .then((list) => {
@@ -19,7 +23,13 @@ class ProjectResource extends BaseResource<IProject> {
         this.saveEachTo(list, 'synced');
         return list;
       }));
-    return merge(offline, online);
+    this.activeStream = merge(offline, online);
+    this.activeStream.subscribe({
+      error: () => {
+        this.activeStream = undefined;
+      }
+    });
+    return this.activeStream;
   }
   protected async getCb(key: string): Promise<boolean | void | IProject> {
     return await firebaseService.get('projects', key) as IProject;

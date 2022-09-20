@@ -55,9 +55,6 @@ export default defineComponent({
       projectStore,
     };
   },
-  async mounted() {
-    await projectStore.init();
-  },
   methods: {
     async joinProject(projectKey: string) {
       if (profilesStore.presentUser) {

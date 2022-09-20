@@ -78,6 +78,7 @@ export const useProfilesStore = defineStore('Profiles', {
         }
         return p;
       }))) as IProfile[];
+      this.members = profiles;
       return profiles;
     },
     setAsTheUser(profileKey: string) {

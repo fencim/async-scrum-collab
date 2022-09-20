@@ -1,4 +1,5 @@
 import { route } from 'quasar/wrappers';
+import { useIterationStore } from 'src/stores/iterations.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import {
@@ -24,6 +25,7 @@ export default route(function (/* { store, ssrContext } */) {
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
   const profileStore = useProfilesStore();
   const projectStore = useProjectStore();
+  const iterationStore = useIterationStore();
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
@@ -38,11 +40,15 @@ export default route(function (/* { store, ssrContext } */) {
   profileStore.authenticate()
     .then(() => {
       Router.beforeEach(async (to, from, next) => {
-        if (profileStore.getUser() || /^(login|register)$/.test(String(to.name))) {
+        if (profileStore.getUser() || (to.meta && to.meta.anonymous)) {
           if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
             await projectStore.selectProject(to.params['project'] as string);
           } else {
             projectStore.selectProject('');
+          }
+          if (projectStore.activeProject && to.params && to.params['iteration']
+            && (!iterationStore.activeIteration || iterationStore.activeIteration.key != to.params['iteration'])) {
+            iterationStore.selectIteration(projectStore.activeProject.key, to.params['iteration'] as string);
           }
           next();
         } else {

@@ -31,7 +31,7 @@ import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
 import * as entities from '../entities';
 import { firebaseConfig } from './firebase-config';
 import { WhereFilterOp } from './firebase-operators';
-import { Observable } from 'rxjs';
+import { Observable, retry } from 'rxjs';
 
 // Initialize Firebase
 const app = initializeApp({
@@ -137,7 +137,9 @@ class FirebaseSevice {
         },
         error: (err) => subscriber.error(err)
       })
-    });
+    }).pipe(retry({
+      delay: 1000 * 5
+    }));
   }
   async findAll(modelName: ModelName, filter: { [field: string]: string } = {}): Promise<Models[]> {
     const { queryRef, collectionRef } = this.getQueryFromFilter(modelName, filter);

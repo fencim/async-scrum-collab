@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { IProject } from 'src/entities';
 import { projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
+import { useDiscussionStore } from './discussions.store';
 import { useProfilesStore } from './profiles.store';
 interface IProjectState {
   projects: IProject[];
@@ -32,6 +33,8 @@ export const useProjectStore = defineStore('projectStore', {
         if (project) {
           const profileStore = useProfilesStore();
           profileStore.selectProjectMembers(project.members);
+          const discussionStore = useDiscussionStore();
+          discussionStore.ofProject(project.key);
         }
         return project;
       } else {

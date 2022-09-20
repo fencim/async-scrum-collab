@@ -67,26 +67,10 @@ export default defineComponent({
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
       members: [] as IProfile[],
-      timer: 0 as NodeJS.Timeout | 0,
     };
   },
   mounted() {
     this.init();
-    // this.timer = setInterval(async () => {
-    //   this.members = await profileStore.fromKeyList(
-    //     this.project?.members || []
-    //   );
-    //   const index = this.members.findIndex(
-    //     (p) => p.key == profileStore.presentUser?.key
-    //   );
-    //   if (index > 0) {
-    //     const [user] = this.members.splice(index, 1);
-    //     this.members.splice(0, 0, user);
-    //   }
-    // }, 1000);
-  },
-  unmounted() {
-    this.timer && clearInterval(this.timer);
   },
   updated() {
     this.init();
@@ -106,10 +90,7 @@ export default defineComponent({
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||
         '';
-      this.iteration = await iterationStore.withKey(
-        this.activeProject,
-        this.activeIteration
-      );
+      this.iteration = iterationStore.activeIteration;
       this.activeCeremony =
         (this.$route.params.ceremony && String(this.$route.params.ceremony)) ||
         '';

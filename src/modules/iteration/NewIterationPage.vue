@@ -97,7 +97,6 @@ export default defineComponent({
       activeProject: undefined as IProject | undefined,
       theIteration: {} as IIteration,
       icon: undefined as File | undefined,
-      iterations: [] as IIteration[],
       scheduleCeremonies: true,
       saving: false,
       planSched: [] as Schedule[],
@@ -113,8 +112,8 @@ export default defineComponent({
     this.activeProject = projectStore.activeProject;
     const editing = this.$route.params.iteration as string;
     if (!editing) {
-      this.iterations = await iterationStore.ofProject(this.activeProjectKey);
-      const lastIteration = this.iterations[this.iterations.length - 1];
+      const iterations = iterationStore.iterations;
+      const lastIteration = iterations[iterations.length - 1];
       const dateNow = lastIteration
         ? new Date(date.formatDate(lastIteration.end))
         : new Date();
@@ -123,14 +122,12 @@ export default defineComponent({
       }
       this.theIteration.projectKey = this.activeProjectKey;
       this.theIteration.key =
-        this.activeProjectKey + 'S' + String(this.iterations.length);
+        this.activeProjectKey + 'S' + String(iterations.length);
       this.theIteration.start = date.formatDate(dateNow, 'YYYY/MM/DD');
       dateNow.setDate(dateNow.getDate() + 11);
       this.theIteration.end = date.formatDate(dateNow, 'YYYY/MM/DD');
-    } else {
-      this.theIteration =
-        (await iterationStore.withKey(this.activeProjectKey, editing)) ||
-        this.theIteration;
+    } else if (iterationStore.activeIteration) {
+      this.theIteration = { ...iterationStore.activeIteration };
     }
     this.range = {
       from: this.theIteration.start,
@@ -139,6 +136,9 @@ export default defineComponent({
     this.planSched = this.ceremonies;
   },
   computed: {
+    iterations() {
+      return iterationStore.iterations;
+    },
     ceremonies(): Schedule[] {
       const schedules: Schedule[] = [];
       const start = new Date(this.range?.from);

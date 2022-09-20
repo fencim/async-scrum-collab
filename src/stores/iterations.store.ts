@@ -1,38 +1,50 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
+import { map } from 'rxjs';
 import { IIteration } from 'src/entities';
 import { iterationResource } from 'src/resources';
-
-export const useIterationStore = defineStore('iteration', {
+interface IIterationState {
+  iterations: IIteration[];
+  activeIteration?: IIteration;
+}
+export const useIterationStore = defineStore(
+  'iteration', {
   state: () => ({
-    iterations: [] as IIteration[]
-  }),
-
-  getters: {
-
-  },
+    iterations: []
+  } as IIterationState),
   actions: {
     async ofProject(key: string) {
-      this.iterations = await iterationResource.findAllFrom({
-        projectKey: key
-      });
-      return this.iterations.map(i => ({
-        ...i,
-        start: date.formatDate(i.start, 'MMM D, YYYY'),
-        end: date.formatDate(i.end, 'MMM D, YYYY')
-      })).sort((a, b) => {
-        return date.getDateDiff(a.end, b.end, 'days')
-      });
+      iterationResource.stream({ projectKey: key })
+        .pipe(map(stream => {
+          return stream.map(i => ({
+            ...i,
+            start: date.formatDate(i.start, 'MMM D, YYYY'),
+            end: date.formatDate(i.end, 'MMM D, YYYY')
+          })).sort((a, b) => {
+            return date.getDateDiff(a.end, b.end, 'days')
+          });
+        }))
+        .subscribe({
+          error: (e) => {
+            console.log(e);
+          },
+          next: (stream) => {
+            this.iterations = stream;
+          }
+        });
     },
 
-    async withKey(project: string, key: string) {
+    async selectIteration(project: string, key: string) {
       if (!this.iterations || !this.iterations.length) {
-        return await iterationResource.findOne({
-          key,
-          projectKey: project
-        });
+        this.activeIteration = this.iterations.find(i => i.projectKey == project && i.key == key)
+          || await iterationResource.findOne({
+            key,
+            projectKey: project
+          });
+        return this.activeIteration;
+      } else {
+        this.activeIteration = undefined;
       }
-      return this.iterations.find(i => i.projectKey == project && i.key == key);
     },
     async saveIteration(iteration: IIteration) {
       await iterationResource.setData(iteration.key, iteration);

@@ -216,10 +216,7 @@ export default defineComponent({
         (this.$route.params.iteration &&
           String(this.$route.params.iteration)) ||
         '';
-      this.iteration = await iterationStore.withKey(
-        this.activeProject,
-        this.activeIteration
-      );
+      this.iteration = iterationStore.activeIteration;
       this.activeCeremony =
         (this.$route.params.ceremony && String(this.$route.params.ceremony)) ||
         '';

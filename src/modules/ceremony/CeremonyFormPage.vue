@@ -133,13 +133,17 @@ export default defineComponent({
       activeIterationKey: '',
       activeIteration: undefined as IIteration | undefined,
       ceremonies: [] as ICeremony[],
-      discussions: [] as DiscussionItem[],
       theCeremony: {} as ICeremony,
       icon: undefined as File | undefined,
       scheduleCeremonies: true,
       saving: false,
       duration: 12,
     };
+  },
+  computed: {
+    discussions() {
+      return iterationStore.iterations;
+    },
   },
   async mounted() {
     this.activeProjectKey =
@@ -149,15 +153,11 @@ export default defineComponent({
     this.activeIterationKey =
       (this.$route.params.iteration && String(this.$route.params.iteration)) ||
       '';
-    this.activeIteration = await iterationStore.withKey(
-      this.activeProjectKey,
-      this.activeIterationKey
-    );
+    this.activeIteration = iterationStore.activeIteration;
     this.ceremonies = await ceremonyStore.ofIteration(
       this.activeProjectKey,
       this.activeIterationKey
     );
-    this.discussions = await discussionStore.ofProject(this.activeProjectKey);
     const editing = this.$route.params.ceremony as string;
     if (editing) {
       this.theCeremony =
@@ -192,7 +192,6 @@ export default defineComponent({
       };
     }
   },
-  computed: {},
   methods: {
     describeDiscussion(item: DiscussionItem) {
       return discussionStore.describeDiscussion(item);

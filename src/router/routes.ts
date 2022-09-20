@@ -9,10 +9,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'login',
         name: 'login',
+        meta: { anonymous: true },
         component: () => import('src/modules/credential/LoginPage.vue')
       }, {
         path: 'register',
         name: 'register',
+        meta: { anonymous: true },
         component: () => import('src/modules/credential/RegisterPage.vue')
       }, {
         path: 'logout',
@@ -121,6 +123,7 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
+    meta: { anonymous: true },
     component: () => import('pages/ErrorNotFound.vue'),
   },
 ];
