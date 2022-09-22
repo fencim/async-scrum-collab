@@ -5,9 +5,10 @@ import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable, map, merge } from 'rxjs';
 
 class IterationResource extends BaseResource<IIteration> {
-  streamMap = new Map<Filters<Entity>, Observable<IIteration[]>>();
+  streamMap = new Map<string, Observable<IIteration[]>>();
   stream(filters?: Filters<Entity> | undefined): Observable<IIteration[]> {
-    let activeStream = this.streamMap.get(filters || {});
+    const filterStr = this.filterToStr(filters);
+    let activeStream = this.streamMap.get(filterStr);
     if (activeStream) {
       return activeStream;
     }
@@ -27,9 +28,10 @@ class IterationResource extends BaseResource<IIteration> {
     activeStream = merge(offline, online);
     activeStream.subscribe({
       error: () => {
-        this.streamMap.delete(filters || {});
+        this.streamMap.delete(filterStr);
       }
     });
+    this.streamMap.set(filterStr, activeStream);
     return activeStream;
   }
   protected async getCb(key: string): Promise<boolean | void | IIteration> {

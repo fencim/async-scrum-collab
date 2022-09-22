@@ -13,12 +13,14 @@
             >
               <q-card-section>
                 <q-btn round size="lg" dense>
-                  <q-img v-if="props.row.icon" :src="props.row.icon" />
-                  <q-img
-                    v-else
-                    src="img:icons/For-Presentation-150x150.png"
-                    style="border: 5px solid gray; border-radius: 50px"
-                  />
+                  <q-avatar size="xl">
+                    <q-img v-if="props.row.icon" :src="props.row.icon" />
+                    <q-img
+                      v-else
+                      src="img:icons/For-Presentation-150x150.png"
+                      style="border: 5px solid gray; border-radius: 50px"
+                    />
+                  </q-avatar>
                 </q-btn>
               </q-card-section>
               <q-card-section class="text-subtitle1 q-pa-sm">

@@ -117,11 +117,11 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { DiscussionItem, ICeremony, IIteration } from 'src/entities';
+import { DiscussionItem, IIteration } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { defineComponent } from 'vue';
+import { defineComponent, PropType } from 'vue';
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
@@ -135,7 +135,7 @@ export default defineComponent({
       required: true,
     },
     iteration: {
-      type: Object,
+      type: Object as PropType<IIteration>,
       required: true,
     },
   },
@@ -146,17 +146,16 @@ export default defineComponent({
       ceremonyStore,
       discussionStore,
       discussions: [] as DiscussionItem[],
-      ceremonies: [] as ICeremony[],
     };
   },
+  computed: {
+    ceremonies() {
+      return ceremonyStore.ceremonies.filter(
+        (c) => c.iterationKey == this.iteration.key && c.type != 'scrum'
+      );
+    },
+  },
   async mounted() {
-    this.ceremonies = (
-      await ceremonyStore.ofIteration(this.project, this.iteration.key)
-    )
-      .filter((c) => c.type != 'scrum')
-      .sort((a, b) => {
-        return date.getDateDiff(a.start, b.start, 'hours');
-      });
     this.discussions = await discussionStore.ofProject(this.project);
   },
   methods: {

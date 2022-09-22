@@ -2,10 +2,37 @@ import { ICeremony } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
+import { Observable, map, merge } from 'rxjs';
 
 class CeremonyResource extends BaseResource<ICeremony> {
-  protected stream(filters?: Filters<Entity> | undefined): void {
-    throw new Error(`Method not implemented.${filters}`);
+  private streamMap = new Map<string, Observable<ICeremony[]>>();
+  stream(filters?: Filters<Entity> | undefined): Observable<ICeremony[]> {
+    const filterStr = this.filterToStr(filters);
+    let activeStream = this.streamMap.get(filterStr);
+    if (activeStream) {
+      return activeStream;
+    }
+    const offline = new Observable<ICeremony[]>((subcriber) => {
+      this.findAllFrom(filters)
+        .then((list) => {
+          subcriber.next(list);
+          subcriber.complete();
+        });
+    });
+    const online = firebaseService.streamWith<ICeremony>('ceremonies', filters && this.arrayFilter(filters) ||
+      (typeof filters == 'object' && filters as { [key: string]: string }) || {})
+      .pipe(map(list => {
+        this.saveEachTo(list, 'synced');
+        return list;
+      }));
+    activeStream = merge(offline, online);
+    activeStream.subscribe({
+      error: () => {
+        this.streamMap.delete(filterStr);
+      }
+    });
+    this.streamMap.set(filterStr, activeStream);
+    return activeStream;
   }
   protected async getCb(key: string): Promise<boolean | void | ICeremony> {
     return await firebaseService.get('ceremonies', key) as ICeremony;

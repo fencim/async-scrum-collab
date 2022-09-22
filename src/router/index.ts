@@ -37,30 +37,32 @@ export default route(function (/* { store, ssrContext } */) {
       process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE
     ),
   });
-  profileStore.authenticate()
-    .then(() => {
-      Router.beforeEach(async (to, from, next) => {
-        if (profileStore.getUser() || (to.meta && to.meta.anonymous)) {
-          if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
-            await projectStore.selectProject(to.params['project'] as string);
-          } else {
-            projectStore.selectProject('');
-          }
-          if (projectStore.activeProject && to.params && to.params['iteration']
-            && (!iterationStore.activeIteration || iterationStore.activeIteration.key != to.params['iteration'])) {
-            iterationStore.selectIteration(projectStore.activeProject.key, to.params['iteration'] as string);
-          }
-          next();
-        } else {
-          next({
-            name: 'login'
-          })
-        }
-      })
-      if (!profileStore.getUser()) {
-        Router.replace({ name: 'login' });
+
+
+
+  Router.beforeEach(async (to, from, next) => {
+    if (!profileStore.getUser()) await profileStore.authenticate();
+    if (profileStore.getUser() || (to.meta && to.meta.anonymous)) {
+      if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
+        await projectStore.selectProject(to.params['project'] as string);
+      } else if (!to.params['project']) {
+        await projectStore.selectProject('');
       }
-    });
+      if (projectStore.activeProject && to.params && to.params['iteration']
+        && (!iterationStore.activeIteration || iterationStore.activeIteration.key != to.params['iteration'])) {
+        await iterationStore.selectIteration(projectStore.activeProject.key, to.params['iteration'] as string);
+      }
+      else if (!to.params['iteration']) {
+        await iterationStore.selectIteration('', '');
+      }
+      document.title = 'Async SCRUM Collab: ' + String(to.name).toUpperCase();
+      next();
+    } else {
+      next({
+        name: 'login'
+      })
+    }
+  })
 
   return Router;
 });

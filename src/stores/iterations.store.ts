@@ -25,26 +25,27 @@ export const useIterationStore = defineStore(
           });
         }))
         .subscribe({
-          error: (e) => {
-            console.log(e);
-          },
           next: (stream) => {
             this.iterations = stream;
+            // if (this.activeIteration) {
+            //   this.selectIteration(key, this.activeIteration.key);
+            // }
           }
         });
     },
 
     async selectIteration(project: string, key: string) {
-      if (!this.iterations || !this.iterations.length) {
+      if (project && key) {
         this.activeIteration = this.iterations.find(i => i.projectKey == project && i.key == key)
           || await iterationResource.findOne({
             key,
             projectKey: project
           });
-        return this.activeIteration;
       } else {
         this.activeIteration = undefined;
       }
+      return this.activeIteration;
+
     },
     async saveIteration(iteration: IIteration) {
       await iterationResource.setData(iteration.key, iteration);

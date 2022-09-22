@@ -6,7 +6,13 @@ import { map, merge, Observable } from 'rxjs';
 
 
 class DiscussionResource extends BaseResource<DiscussionItem> {
+  private streamMap = new Map<string, Observable<DiscussionItem[]>>();
   protected stream(filters?: Filters<Entity> | undefined): Observable<DiscussionItem[]> {
+    const filterStr = this.filterToStr(filters);
+    let activeStream = this.streamMap.get(filterStr);
+    if (activeStream) {
+      return activeStream;
+    }
     const offline = new Observable<DiscussionItem[]>((subcriber) => {
       this.findAllFrom(filters)
         .then((list) => {
@@ -14,12 +20,20 @@ class DiscussionResource extends BaseResource<DiscussionItem> {
           subcriber.complete();
         });
     });
-    return merge(offline, firebaseService
+    const online = firebaseService
       .streamWith<DiscussionItem>('discussions', filters && this.arrayFilter(filters) || {})
       .pipe(map(list => {
-        //this.saveEachTo(list, 'synced');
+        this.saveEachTo(list, 'synced');
         return list;
-      })));
+      }));
+    activeStream = merge(offline, online);
+    activeStream.subscribe({
+      error: () => {
+        this.streamMap.delete(filterStr);
+      }
+    });
+    this.streamMap.set(filterStr, activeStream);
+    return activeStream;
   }
   protected async getCb(key: string): Promise<boolean | void | DiscussionItem> {
     return await firebaseService.get('discussions', key) as DiscussionItem;

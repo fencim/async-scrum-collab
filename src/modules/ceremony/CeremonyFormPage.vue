@@ -132,7 +132,6 @@ export default defineComponent({
       activeProject: undefined as IProject | undefined,
       activeIterationKey: '',
       activeIteration: undefined as IIteration | undefined,
-      ceremonies: [] as ICeremony[],
       theCeremony: {} as ICeremony,
       icon: undefined as File | undefined,
       scheduleCeremonies: true,
@@ -144,6 +143,9 @@ export default defineComponent({
     discussions() {
       return iterationStore.iterations;
     },
+    ceremonies() {
+      return ceremonyStore.ceremonies;
+    },
   },
   async mounted() {
     this.activeProjectKey =
@@ -154,10 +156,6 @@ export default defineComponent({
       (this.$route.params.iteration && String(this.$route.params.iteration)) ||
       '';
     this.activeIteration = iterationStore.activeIteration;
-    this.ceremonies = await ceremonyStore.ofIteration(
-      this.activeProjectKey,
-      this.activeIterationKey
-    );
     const editing = this.$route.params.ceremony as string;
     if (editing) {
       this.theCeremony =

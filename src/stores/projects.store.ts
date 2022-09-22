@@ -2,7 +2,9 @@ import { defineStore } from 'pinia';
 import { IProject } from 'src/entities';
 import { projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
+import { useCeremonyStore } from './cermonies.store';
 import { useDiscussionStore } from './discussions.store';
+import { useIterationStore } from './iterations.store';
 import { useProfilesStore } from './profiles.store';
 interface IProjectState {
   projects: IProject[];
@@ -22,6 +24,9 @@ export const useProjectStore = defineStore('projectStore', {
           if (this.activeProject) {
             this.selectProject(this.activeProject.key);
           }
+        },
+        complete: () => {
+          console.log('project stream done ==========================');
         }
       })
       this.projects = (await projectResource.findAllFrom()) || [];
@@ -35,6 +40,10 @@ export const useProjectStore = defineStore('projectStore', {
           profileStore.selectProjectMembers(project.members);
           const discussionStore = useDiscussionStore();
           discussionStore.ofProject(project.key);
+          const iterationStore = useIterationStore();
+          await iterationStore.ofProject(project.key);
+          const ceremonyStore = useCeremonyStore();
+          await ceremonyStore.ofIteration(project.key);
         }
         return project;
       } else {

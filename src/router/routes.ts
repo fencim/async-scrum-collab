@@ -21,12 +21,14 @@ const routes: RouteRecordRaw[] = [
         name: 'logout',
         component: () => import('src/modules/credential/LogoutPage.vue')
       }, {
+        name: 'Home',
         path: '', components: {
           default: () => import('src/modules/home/HomePage.vue'),
           header: () => import('src/modules/home/HomeToolbar.vue'),
           actions: () => import('src/modules/home/HomeActionList.vue'),
         }
       }, {
+        name: 'New Project',
         path: '/project/new', components: {
           default: () => import('src/modules/project/NewProjectPage.vue'),
         }
@@ -37,49 +39,47 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
+        name: 'Project',
         path: '', components: {
           default: () => import('src/modules/project/ProjectPage.vue'),
           header: () => import('src/modules/project/ProjectToolbar.vue'),
           actions: () => import('src/modules/project/ProjectActionList.vue')
         }
       }, {
+        name: 'Edit Project',
         path: 'edit', components: {
           default: () => import('src/modules/project/NewProjectPage.vue'),
         }
       }, {
+        name: 'New Iteration',
         path: 'iteration/new', components: {
           default: () => import('src/modules/iteration/NewIterationPage.vue'),
         }
-      }],
-  },
-  {
-    path: '/:project/:iteration',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [
+      },
       {
         name: 'iteration',
-        path: '', components: {
+        path: ':iteration', components: {
           default: () => import('src/modules/iteration/DailyTimelinePage.vue'),
           header: () => import('src/modules/iteration/IterationToolbar.vue'),
 
         }
       }, {
         name: 'iterationform',
-        path: 'edit', components: {
+        path: ':iteration/edit', components: {
           default: () => import('src/modules/iteration/NewIterationPage.vue'),
         }
       }, {
-        path: ':ceremony/edit', components: {
+        path: ':iteration/:ceremony/edit', components: {
           default: () => import('src/modules/ceremony/CeremonyFormPage.vue'),
         }
       }, {
-        path: ':ceremony/discussion/new', components: {
+        path: ':iteration/:ceremony/discussion/new', components: {
           default: () => import('src/modules/ceremony/DiscussionFormPage.vue'),
         }
       },
       {
         name: 'editDiscussion',
-        path: ':ceremony/:item/edit', components: {
+        path: ':iteration/:ceremony/:item/edit', components: {
           default: () => import('src/modules/ceremony/DiscussionFormPage.vue'),
           header: () => import('src/modules/ceremony/CeremonyToolbar.vue'),
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
@@ -89,7 +89,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         name: 'convo',
-        path: ':ceremony/:item?/convo', components: {
+        path: ':iteration/:ceremony/:item?/convo', components: {
           default: () => import('src/modules/ceremony/ConvoPage.vue'),
           header: () => import('src/modules/ceremony/CeremonyToolbar.vue'),
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
@@ -99,7 +99,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         name: 'ceremony',
-        path: ':ceremony/convo', components: {
+        path: ':iteration/:ceremony/convo', components: {
           default: () => import('src/modules/ceremony/ConvoPage.vue'),
           header: () => import('src/modules/ceremony/CeremonyToolbar.vue'),
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
@@ -109,7 +109,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         name: 'discussionDetails',
-        path: ':ceremony/:item', components: {
+        path: ':iteration/:ceremony/:item', components: {
           default: () => import('src/modules/ceremony/DiscussionDetailsPage.vue'),
 
           header: () => import('src/modules/ceremony/CeremonyToolbar.vue'),
@@ -123,7 +123,6 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    meta: { anonymous: true },
     component: () => import('pages/ErrorNotFound.vue'),
   },
 ];

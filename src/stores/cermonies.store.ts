@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia';
+import { date } from 'quasar';
+import { map } from 'rxjs';
 import { ICeremony } from 'src/entities';
 import { ceremonyResource } from 'src/resources';
 
@@ -16,26 +18,28 @@ export const useCeremonyStore = defineStore('ceremony', {
     setActiveCeremony(ceremony: ICeremony) {
       this.activeCeremony = ceremony;
     },
-    async ofIteration(project: string, iterationKey: string) {
-      if (!this.ceremonies || !this.ceremonies.length) {
-        return this.ceremonies = await ceremonyResource.findAllFrom({
-          projectKey: project,
-          iterationKey
-        });
-      }
-      return this.ceremonies.filter(c => c.projectKey == project && c.iterationKey == iterationKey);
+    async ofIteration(project: string, iterationKey?: string) {
+      ceremonyResource.stream({
+        projectKey: project,
+        iterationKey
+      }).pipe(map(stream => {
+        return stream.sort((a, b) => {
+          return date.getDateDiff(a.start, b.start, 'hours');
+        })
+      })).subscribe({
+        next: ((stream) => {
+          this.ceremonies = stream;
+        })
+      });
     },
     async withKey(project: string, iterationKey: string, key: string) {
-      if (!this.ceremonies || !this.ceremonies.length) {
-        return await ceremonyResource.findOne({
+      return this.ceremonies.find(c => c.projectKey == project &&
+        c.iterationKey == iterationKey &&
+        c.key == key) || await ceremonyResource.findOne({
           key,
           iterationKey,
           projectKey: project
         });
-      }
-      return this.ceremonies.find(c => c.projectKey == project &&
-        c.iterationKey == iterationKey &&
-        c.key == key);
     },
     async saveCeremony(ceremony: ICeremony) {
       const save = {

@@ -9,7 +9,11 @@
               : 'dark'
             : 'info'
         "
-        v-for="c in ceremonies"
+        v-for="c in ceremonyStore.ceremonies.filter(
+          (c) =>
+            iterationStore.activeIteration &&
+            iterationStore.activeIteration.key == c.iterationKey
+        )"
         :key="c.key"
         :title="c.type.toUpperCase()"
         :subtitle="`${date.formatDate(
@@ -35,7 +39,7 @@
                 name: 'convo',
                 params: {
                   project: activeProject,
-                  iteration: activeIteration,
+                  iteration: iterationStore.activeIteration?.key,
                   ceremony: c.key,
                   item: i.key,
                 },
@@ -198,48 +202,33 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { DiscussionItem, ICeremony } from 'src/entities';
+import { DiscussionItem } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useIterationStore } from 'src/stores/iterations.store';
 import { defineComponent } from 'vue';
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
+const iterationStore = useIterationStore();
 
 export default defineComponent({
-  name: 'IndexPage',
+  name: 'DailyTimelinePage',
   components: {},
   data() {
     return {
       date,
-      discussionStore,
       activeProject: '',
-      activeIteration: '',
-      ceremonies: [] as ICeremony[],
       discussions: [] as DiscussionItem[],
     };
   },
-  mounted() {
-    this.init();
+  setup() {
+    return {
+      iterationStore,
+      discussionStore,
+      ceremonyStore,
+    };
   },
   methods: {
-    async init() {
-      this.activeProject =
-        (this.$route.params.project && String(this.$route.params.project)) ||
-        '';
-      this.activeIteration =
-        (this.$route.params.iteration &&
-          String(this.$route.params.iteration)) ||
-        '';
-      this.ceremonies = (
-        await ceremonyStore.ofIteration(
-          this.activeProject,
-          this.activeIteration
-        )
-      ).sort((a, b) => {
-        return date.getDateDiff(a.start, b.start, 'hours');
-      });
-      this.discussions = await discussionStore.ofProject(this.activeProject);
-    },
     discussionFromList(list: string[]) {
       return list
         .map((key) => this.discussions.find((d) => d.key == key))

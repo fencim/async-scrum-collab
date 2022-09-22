@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { DeferredPromise, KeyValueStorage } from './localbase';
-import { FilterFn2, Filters, Pagination } from './localbase/state-db.controller';
+import { Entity, FilterFn2, FilterPart, Filters, Pagination } from './localbase/state-db.controller';
 
 const dbVersion = undefined;
 
@@ -207,8 +207,9 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     );
   }
   async saveEachTo(values: T[], createOnlyOrStatus: boolean | DocStatus = false) {
-    while (values.length) {
-      const v = values.splice(0, 1)[0];
+    const records = [...values];
+    while (records.length) {
+      const v = records.splice(0, 1)[0];
       v && (await this.setData(this.getKeyOf(v), v, createOnlyOrStatus));
     }
   }
@@ -388,5 +389,13 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
       hash = hash & hash;
     }
     return hash;
+  }
+  filterToStr(filters?: Filters<Entity> | undefined) {
+    if (!filters) return 'all';
+    const f = (typeof filters == 'function') ? (filters as FilterFn2)() as FilterPart :
+      filters as FilterPart;
+    return Object.keys(f)
+      .reduce((p, c, i) => (p + `${i > 0 ? ';' : ''}${c}:${f[c]} `), '');
+
   }
 }
