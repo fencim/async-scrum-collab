@@ -24,7 +24,9 @@
               size="sm"
               flat
               :color="
-                msg.feedback[currUser || ''] == 'agree' ? 'primary' : 'dark'
+                (msg.feedback || {})[currUser || ''] == 'agree'
+                  ? 'primary'
+                  : 'dark'
               "
               dense
               @click="resolveQuestionOf(msg, 'agree')"
@@ -38,7 +40,9 @@
               size="sm"
               flat
               :color="
-                msg.feedback[currUser || ''] == 'disagree' ? 'primary' : 'dark'
+                (msg.feedback || {})[currUser || ''] == 'disagree'
+                  ? 'primary'
+                  : 'dark'
               "
               dense
               @click="resolveQuestionOf(msg, 'disagree')"

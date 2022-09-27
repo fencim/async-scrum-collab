@@ -1,7 +1,7 @@
 <template>
-  <q-page class="justify-evenly q-pa-sm">
+  <q-page class="justify-between q-pa-sm column">
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
-    <div style="width: 100%; margin-bottom: 80px">
+    <div id="messages-container" class="col-auto" style="width: 100%">
       <div v-for="m in messages" :key="m.key" :id="m.key">
         <chat-message
           v-if="m.type == 'message'"
@@ -28,6 +28,7 @@
           :msg="m"
           @reply-to="replyTo = m"
           :curr-user="profileStore.presentUser?.key"
+          @resolve-question="resolveQuestionOf"
           :href="
             activeProject +
             '/' +
@@ -41,46 +42,45 @@
           :ref-msg="convoStore.getConvo(m.ref)"
         />
       </div>
-      <div id="end-of-messages"></div>
+      <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
     </div>
     <q-form @submit="sendMessage">
-      <q-page-sticky expand position="bottom">
-        <q-toolbar class="bg-grey-10" style="padding-right: 70px">
-          <q-btn icon="poll " flat round />
-          <q-btn icon="attachment" flat round />
-          <q-toolbar-title class="q-pa-sm">
-            <q-input
-              autofocus
-              v-model="message"
-              rounded
-              :label-slot="!!replyTo || confirmDisagreement"
-            >
-              <template v-slot:label>
-                <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
-                  <img :src="replyTo?.from.avatar" />
-                </q-avatar>
-                <q-avatar size="sm" v-else-if="confirmDisagreement">
-                  <q-icon name="thumb_down_alt" />
-                </q-avatar>
-                &nbsp;
-                <span
-                  v-if="replyTo && !confirmDisagreement"
-                  class="text-weight-bold text-deep-orange"
-                  >{{ replyTo?.message
-                  }}<q-icon
-                    name="question_mark"
-                    v-if="replyTo?.type == 'question'"
-                /></span>
-                <span v-else>Why disagree?</span>
-              </template>
-              <template v-slot:append>
-                <q-icon name="question_mark" v-if="askingQuestion" />
-              </template>
-            </q-input>
-          </q-toolbar-title>
-          <q-btn type="submit" icon="send" flat round />
-        </q-toolbar>
-      </q-page-sticky>
+      <q-toolbar class="bg-grey-10 col" style="padding-right: 70px">
+        <q-btn icon="poll " flat round />
+        <q-btn icon="attachment" flat round />
+        <q-toolbar-title class="q-pa-sm">
+          <q-input
+            id="input-message"
+            autofocus
+            v-model="message"
+            rounded
+            :label-slot="!!replyTo || confirmDisagreement"
+          >
+            <template v-slot:label>
+              <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
+                <img :src="replyTo?.from.avatar" />
+              </q-avatar>
+              <q-avatar size="sm" v-else-if="confirmDisagreement">
+                <q-icon name="thumb_down_alt" />
+              </q-avatar>
+              &nbsp;
+              <span
+                v-if="replyTo && !confirmDisagreement"
+                class="text-weight-bold text-deep-orange"
+                >{{ replyTo?.message
+                }}<q-icon
+                  name="question_mark"
+                  v-if="replyTo?.type == 'question'"
+              /></span>
+              <span v-else>Why disagree?</span>
+            </template>
+            <template v-slot:append>
+              <q-icon name="question_mark" v-if="askingQuestion" />
+            </template>
+          </q-input>
+        </q-toolbar-title>
+        <q-btn type="submit" icon="send" flat round />
+      </q-toolbar>
     </q-form>
     <q-dialog v-model="dialogVote">
       <q-card class="q-pa-sm text-center">
@@ -138,7 +138,7 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { defineComponent } from 'vue';
+import { defineComponent, nextTick } from 'vue';
 import { convoBus } from './convo-bus';
 
 const profileStore = useProfilesStore();
@@ -183,9 +183,9 @@ export default defineComponent({
     convoBus.on('vote', this.confirmVote);
     convoBus.on('disagree', this.confirmDisagree);
     convoBus.on('refresh', this.init);
-
-    const elem = document.querySelector(this.$route.hash || '#end-of-messages');
-    elem?.scrollIntoView();
+    console.log('Scroll to bottom');
+    await nextTick();
+    this.scrollToBottom();
   },
   unmounted() {
     this.timer && clearInterval(this.timer);
@@ -197,8 +197,11 @@ export default defineComponent({
     convoBus.emit('onDisagree', false);
   },
 
-  updated() {
+  async updated() {
     this.init();
+    console.log('Scroll to bottom');
+    await nextTick();
+    this.scrollToBottom();
   },
   computed: {
     messages() {
@@ -243,6 +246,7 @@ export default defineComponent({
       }
       this.assesItem();
     },
+
     async sendMessage() {
       if (this.askingQuestion) {
         convoStore.sendMessage(
@@ -289,6 +293,14 @@ export default defineComponent({
       }
       this.message = '';
       convoBus.emit('progressed');
+    },
+    scrollToBottom() {
+      const elem = document.querySelector(this.$route.hash || '#input-message');
+      elem?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+        inline: 'end',
+      });
     },
     stampTime(dateTime: string) {
       const now = new Date();
