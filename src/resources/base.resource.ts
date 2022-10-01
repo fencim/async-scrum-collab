@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { map, merge, Observable } from 'rxjs';
 import { DeferredPromise, KeyValueStorage } from './localbase';
 import { Entity, FilterFn2, FilterPart, Filters, Pagination } from './localbase/state-db.controller';
 
@@ -11,7 +11,7 @@ type IBaseResourceModel =
   }
   | object;
 type DocStatus = 'new' | 'saved' | 'synced' | 'updated' | 'deleted';
-interface IDocStore<T extends IBaseResourceModel> {
+export interface IDocStore<T extends IBaseResourceModel> {
   status: DocStatus;
   key: string;
   data: T;
@@ -89,7 +89,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   protected abstract getCb(key: string): Promise<T | void | boolean>;
   protected abstract updateCb(data: T): Promise<void | boolean | T> | void;
   protected abstract patchCb(data: T, property: string): Promise<void | boolean | T>;
-  protected abstract stream(filters?: Filters): void | Observable<T[]>;
+  protected abstract streamCb(filters?: Filters): void | Observable<T[]>;
   protected arrayFilter<T = []>(filters?: Filters) {
     if (
       typeof filters == 'function' &&
@@ -105,6 +105,49 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     this.criticalSection = deffered.promise;
     return deffered;
   }
+  private streamMap = new Map<string, Observable<T[]>>();
+  streamWith(filters?: Filters<Entity> | undefined): Observable<T[]> {
+    const filterStr = this.filterToStr(filters);
+    let activeStream = this.streamMap.get(filterStr);
+    if (activeStream) {
+      return activeStream;
+    }
+    const onlineObservable = this.streamCb(filters);
+    let offlineDocs: IDocStore<T>[] | undefined;
+    const offline = new Observable<T[]>((subcriber) => {
+      this.findAllDocOffline(filters)
+        .then((response) => {
+          offlineDocs = response.contents;
+          if (offlineDocs) {
+            subcriber.next(offlineDocs.map(d => d.data));
+          } else {
+            subcriber.next([]);
+          }
+          subcriber.complete();
+        });
+    });
+    if (!(onlineObservable instanceof Observable)) {
+      return offline;
+    }
+
+    const online = onlineObservable
+      .pipe(map(list => {
+        if (offlineDocs) {
+          this.syncFromOnline(offlineDocs, list, filters);
+        } else {
+          this.saveEachTo(list, 'synced');
+        }
+        return list;
+      }));
+    activeStream = merge(offline, online);
+    activeStream.subscribe({
+      error: () => {
+        this.streamMap.delete(filterStr);
+      }
+    });
+    this.streamMap.set(filterStr, activeStream);
+    return activeStream;
+  }
   async findAllFrom(filters?: Filters): Promise<T[]> {
     const result: IDocStore<T>[] = await this.findAllDocFrom(filters);
     const mapper = (doc: IDocStore<T>) => {
@@ -113,71 +156,112 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     };
     return result.map(mapper) as T[];
   }
+  protected dataFilterPart(filters?: Filters) {
+    if (!filters || typeof filters != 'object') return filters;
+    return Object.keys(filters).reduce((prev, cur) => {
+      if (typeof filters[cur] != 'undefined')
+        prev['data.' + cur] = filters[cur];
+      return prev;
+    }, {} as FilterPart);
+  }
   async findAllDocFrom(filters?: Filters): Promise<IDocStore<T>[]> {
     let result: IDocStore<T>[] = [];
     if (this.getAllCb) {
       result =
-        (await this.localBase.paginatedValues<IDocStore<T>>(filters))
+        (await this.localBase.paginatedValues<IDocStore<T>>(this.dataFilterPart(filters)))
           .contents || [];
       this.getAllCb(filters).then(async (onlineResult) => {
-        if (!onlineResult) return;
-        const intersection = result.filter((i) => {
-          const match = onlineResult.find(
-            (o) => this.getKeyOf(o) == this.getKeyOf(i as T)
-          );
-          if (match) {
-            i.data = i.status == 'synced' ? match : i.data;
-            return true;
-          }
-          return false;
-        });
-        const addedOnline = onlineResult.filter(
-          (o) => !intersection.find((i) => i.key == this.getKeyOf(o))
-        );
-        const localyAdded = result.filter((i) => i.status == 'saved');
-        const deleted =
-          !filters &&
-          result.filter(
-            (i) =>
-              !intersection.find((o) => o.key == i.key || i.status != 'synced')
-          );
-        //delete from local the deleted
-        await Promise.all(
-          (deleted || []).map((i) => {
-            return this.localBase.deleteItem(this.getKeyOf(i as T));
-          })
-        );
-        //update intersection
-        const updated = (
-          await Promise.all(
-            intersection.map(async (i) => {
-              if (i.status == 'synced') {
-                return this.localBase.setItem(this.getKeyOf(i as T), i);
-              } else {
-                return i;
-              }
-            })
-          )
-        ).concat(
-          ...(await Promise.all(
-            addedOnline.map((i) => {
-              const key = this.getKeyOf(i);
-              return this.localBase.setItem(key, {
-                data: i,
-                key,
-                status: 'synced',
-              } as IDocStore<T>);
-            })
-          )),
-          ...localyAdded
-        );
-        result.splice(0, result.length, ...(updated || []));
+        await this.syncFromOnline(result, onlineResult, filters);
       });
       await new Promise((r) => setTimeout(r, this.requestDelay));
     }
     return result;
   }
+  protected async syncFromOnline(result: IDocStore<T>[], onlineResult: T[] | void, filters?: Filters) {
+    if (!onlineResult) return;
+    const intersection = result.filter((i) => {
+      const match = onlineResult.find(
+        (o) => this.getKeyOf(o) == this.getKeyOf(i as T)
+      );
+      if (match) {
+        i.data = i.status == 'synced' ? match : i.data;
+        return true;
+      }
+      return false;
+    });
+    const addedOnline = onlineResult.filter(
+      (o) => !intersection.find((i) => i.key == this.getKeyOf(o))
+    );
+    const localyAdded = result.filter((i) => i.status == 'saved');
+    const deleted =
+      result.filter(
+        (i) =>
+          !intersection.find((o) => o.key == i.key || i.status != 'synced')
+          && this.matchesFilter(i.data, filters)
+      );
+    //delete from local the deleted
+    await Promise.all(
+      (deleted || []).map((i) => {
+        return this.localBase.deleteItem(this.getKeyOf(i as T));
+      })
+    );
+    //update intersection
+    const updated = (
+      await Promise.all(
+        intersection.map(async (i) => {
+          if (i.status == 'synced') {
+            return this.localBase.setItem(this.getKeyOf(i as T), i);
+          } else {
+            return i;
+          }
+        })
+      )
+    ).concat(
+      ...(await Promise.all(
+        addedOnline.map((i) => {
+          const key = this.getKeyOf(i);
+          return this.localBase.setItem(key, {
+            data: i,
+            key,
+            status: 'synced',
+          } as IDocStore<T>);
+        })
+      )),
+      ...localyAdded
+    );
+    result.splice(0, result.length, ...(updated || []));
+  }
 
+  protected isMatch(a: T, b: T) {
+    return this.getKeyOf(a) == this.getKeyOf(b)
+  }
+  protected matchesFilter(a: T, filters?: Filters) {
+    if (!filters) return true;
+    const f = (typeof filters == 'function') ? (filters as FilterFn2)() as FilterPart | [] :
+      filters as FilterPart;
+    if (!Array.isArray(f) && typeof f == 'object') {
+      const props = Object.keys(f);
+      for (const prop of props) {
+        if (typeof f[prop] != 'undefined' && (a as FilterPart)[prop] != f[prop]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  async findAllDocOffline(
+    filters?: Filters,
+    page?: Pagination<IDocStore<T>>
+  ): Promise<Pagination<IDocStore<T>>> {
+    const pageanated = await this.localBase.paginatedValues<IDocStore<T>>(
+      filters,
+      page
+    );
+    return {
+      ...pageanated,
+      contents: await Promise.all((pageanated.contents || [])),
+    };
+  }
   async findAll(
     filters?: Filters,
     page?: Pagination<T>
@@ -373,12 +457,9 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         return (v as unknown as { id: string }).id;
       } else if (Object.prototype.hasOwnProperty.call(v, 'code')) {
         return (v as unknown as { code: string }).code;
-      } else {
-        return '';
       }
-    } else {
-      return this.hashName(String(v)).toString().replace('-', 'N');
     }
+    return this.hashName(String(v)).toString().replace('-', 'N');
   }
   private hashName(name: string) {
     let hash = 0;

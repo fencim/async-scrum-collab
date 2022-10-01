@@ -1,5 +1,5 @@
 <template>
-  <q-page class="justify-evenly q-pa-sm">
+  <q-page class="column q-pa-sm">
     <q-form @submit="signIn">
       <q-card class="q-pa-sm">
         <q-card-section>
@@ -104,6 +104,7 @@ export default defineComponent({
         });
         this.$router.replace('/');
       } catch (e) {
+        this.action = LoginAction.none;
         this.$q.notify({
           message: String((e as { code: string }).code || e),
           position: 'top',

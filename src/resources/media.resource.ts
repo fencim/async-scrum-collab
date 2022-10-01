@@ -7,7 +7,7 @@ import { KeyValueStorage } from './localbase';
 
 class MediaResource extends BaseResource<IMedia> {
   cache = new KeyValueStorage('cache');
-  protected stream(filters?: Filters<Entity> | undefined): void {
+  protected streamCb(filters?: Filters<Entity> | undefined): void {
     throw new Error(`Method not implemented.${filters}`);
   }
   protected async getCb(key: string): Promise<boolean | void | IMedia> {

@@ -22,6 +22,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('src/modules/credential/LogoutPage.vue')
       }, {
         name: 'Home',
+        meta: { actions: true },
         path: '', components: {
           default: () => import('src/modules/home/HomePage.vue'),
           header: () => import('src/modules/home/HomeToolbar.vue'),
@@ -40,6 +41,7 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         name: 'Project',
+        meta: { actions: true },
         path: '', components: {
           default: () => import('src/modules/project/ProjectPage.vue'),
           header: () => import('src/modules/project/ProjectToolbar.vue'),
@@ -85,7 +87,7 @@ const routes: RouteRecordRaw[] = [
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
           actions: () => import('src/modules/ceremony/CeremonyActionList.vue'),
         },
-        meta: { actions: true }
+        meta: { menus: false, actions: false }
       },
       {
         name: 'convo',
@@ -95,7 +97,7 @@ const routes: RouteRecordRaw[] = [
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
           actions: () => import('src/modules/ceremony/CeremonyActionList.vue'),
         },
-        meta: { actions: true }
+        meta: { menus: true, actions: true }
       },
       {
         name: 'ceremony',
@@ -105,7 +107,7 @@ const routes: RouteRecordRaw[] = [
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
           actions: () => import('src/modules/ceremony/CeremonyActionList.vue'),
         },
-        meta: { actions: true }
+        meta: { menus: true, actions: true }
       },
       {
         name: 'discussionDetails',
@@ -116,7 +118,7 @@ const routes: RouteRecordRaw[] = [
           menu: () => import('src/modules/ceremony/CeremonyMenuList.vue'),
           actions: () => import('src/modules/ceremony/CeremonyActionList.vue'),
         },
-        meta: { actions: true }
+        meta: { menus: true, actions: true }
       }],
   },
   // Always leave this as last one,

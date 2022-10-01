@@ -14,7 +14,7 @@ export const useIterationStore = defineStore(
   } as IIterationState),
   actions: {
     async ofProject(key: string) {
-      iterationResource.stream({ projectKey: key })
+      iterationResource.streamWith({ projectKey: key })
         .pipe(map(stream => {
           return stream.map(i => ({
             ...i,
@@ -27,6 +27,7 @@ export const useIterationStore = defineStore(
         .subscribe({
           next: (stream) => {
             this.iterations = stream;
+            console.log('iterations', stream.length);
             // if (this.activeIteration) {
             //   this.selectIteration(key, this.activeIteration.key);
             // }

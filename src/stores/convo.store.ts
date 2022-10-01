@@ -25,7 +25,7 @@ export const useConvoStore = defineStore('convo', {
         this.currentSub.unsubscribe();
       } else if (this.currentSub && this.currentTopic == topic) return this.currentSub;
       this.convo = [];
-      const stream = this.streams[topic] || convoResource.stream({
+      const stream = this.streams[topic] || convoResource.streamWith({
         projectKey, discussion
       }).pipe(switchMap(list => {
         const profileStore = useProfilesStore();
@@ -48,15 +48,17 @@ export const useConvoStore = defineStore('convo', {
       return stream;
     },
     async sendMessage(projectKey: string, discussion: string, from: string, convo: Partial<Convo>) {
-
       const msg = {
         ...convo,
         projectKey,
         discussion,
         date: date.formatDate(new Date()),
         from,
-        key: (discussion || projectKey) + '-m' + String(this.convo.length),
       } as Convo;
+      msg.key = convoResource.getKeyOf({
+        ...msg,
+        toString: () => `${projectKey}: ${discussion} : ${msg.date}`
+      } as Convo);
       await convoResource.setData(msg.key, msg);
     },
     async saveConvo(msg: Convo) {

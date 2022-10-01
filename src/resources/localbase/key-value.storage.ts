@@ -28,7 +28,7 @@ export class KeyValueStorage {
     const existing = (await transaction?.ReadRow(key))?.value;
     if (existing) {
       if (typeof existing == 'object' && typeof value == 'object') {
-        const keys = Object.keys(value).concat(Object.keys(existing))
+        const keys = Object.keys(value as unknown as object).concat(Object.keys(existing))
           .filter((value, index: number, self) => {
             return !!self.find(v => value == v);
           });

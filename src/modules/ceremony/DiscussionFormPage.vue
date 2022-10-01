@@ -223,7 +223,6 @@ export default defineComponent({
       activeIteration: undefined as IIteration | undefined,
       activeCeremonyKey: '',
       activeCeremony: undefined as ICeremony | undefined,
-      discussions: [] as DiscussionItem[],
       theDiscussion: {} as DiscussionItem,
       dialogAcceptance: false,
       newAcceptance: {} as IAcceptanceCriteria,
@@ -257,8 +256,6 @@ export default defineComponent({
       '';
     this.activeIteration = iterationStore.activeIteration;
 
-    this.discussions = await discussionStore.ofProject(this.activeProjectKey);
-
     this.activeCeremonyKey = this.$route.params.ceremony as string;
     this.activeCeremony = await ceremonyStore.withKey(
       this.activeProjectKey,
@@ -269,7 +266,11 @@ export default defineComponent({
       (await discussionStore.withKey(this.$route.params.item as string)) ||
       this.theDiscussion;
   },
-  computed: {},
+  computed: {
+    discussions() {
+      return discussionStore.discussions;
+    },
+  },
   methods: {
     addNewAccepatance() {
       if (

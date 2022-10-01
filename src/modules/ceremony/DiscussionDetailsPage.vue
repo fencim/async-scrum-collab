@@ -199,7 +199,6 @@ export default defineComponent({
       activeCeremony: undefined as ICeremony | undefined,
       activeItemKey: '0',
       activeItem: undefined as DiscussionItem | undefined,
-      discussions: [] as DiscussionItem[],
       subTasks: [] as DiscussionItem[],
       theDiscussion: {} as DiscussionItem,
       membersAgreed: [] as IProfile[],
@@ -245,6 +244,9 @@ export default defineComponent({
     convoBus.off('refresh', this.init);
   },
   computed: {
+    discussions() {
+      return discussionStore.discussions;
+    },
     convo() {
       return convoStore.convo;
     },
@@ -273,8 +275,6 @@ export default defineComponent({
           String(this.$route.params.iteration)) ||
         '';
       this.activeIteration = iterationStore.activeIteration;
-
-      this.discussions = await discussionStore.ofProject(this.activeProjectKey);
 
       this.activeCeremonyKey = this.$route.params.ceremony as string;
       this.activeCeremony = await ceremonyStore.withKey(

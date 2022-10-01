@@ -59,6 +59,17 @@
             </q-item>
           </q-list>
         </q-card-section>
+        <q-card-section v-if="saving" class="text-center">
+          <q-linear-progress
+            stripe
+            rounded
+            size="20px"
+            :value="progress"
+            color="warning"
+            class="q-mt-sm"
+          />
+          {{ progressDetails }}
+        </q-card-section>
         <q-card-actions :align="'right'">
           <q-btn icon="save" :loading="saving" type="submit">Save</q-btn>
         </q-card-actions>
@@ -99,6 +110,8 @@ export default defineComponent({
       icon: undefined as File | undefined,
       scheduleCeremonies: true,
       saving: false,
+      progress: 0,
+      progressDetails: '',
       planSched: [] as Schedule[],
       range: {
         from: '',
@@ -200,16 +213,20 @@ export default defineComponent({
   },
   methods: {
     async submitNewIteration() {
-      this.saving = false;
+      this.saving = true;
       this.theIteration.start = this.range.from;
       this.theIteration.end = this.range.to;
       this.theIteration.key =
         this.activeProjectKey + 'S' + this.iterations.length;
+      this.progressDetails = 'Saving Iteration Details';
       await iterationStore.saveIteration(this.theIteration);
+      this.progress = 0.2;
       if (this.scheduleCeremonies) {
         for (let index = 0; index < this.planSched.length; index++) {
+          this.progress = 0.2 + 0.8 * (index / this.planSched.length);
           const sched = this.planSched[index];
           if (!sched.check) continue;
+          this.progressDetails = 'Scheduling ' + sched.desc;
           await ceremonyStore.saveCeremony({
             key: sched.key,
             projectKey: this.theIteration.projectKey,

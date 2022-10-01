@@ -145,18 +145,17 @@ export default defineComponent({
       projectStore,
       ceremonyStore,
       discussionStore,
-      discussions: [] as DiscussionItem[],
     };
   },
   computed: {
+    discussions() {
+      return discussionStore.discussions;
+    },
     ceremonies() {
       return ceremonyStore.ceremonies.filter(
         (c) => c.iterationKey == this.iteration.key && c.type != 'scrum'
       );
     },
-  },
-  async mounted() {
-    this.discussions = await discussionStore.ofProject(this.project);
   },
   methods: {
     isCurrent(iteration: object) {

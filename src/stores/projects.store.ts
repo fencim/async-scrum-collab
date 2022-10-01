@@ -18,7 +18,7 @@ export const useProjectStore = defineStore('projectStore', {
   },
   actions: {
     async init() {
-      projectResource.stream().subscribe({
+      projectResource.streamWith().subscribe({
         next: (projects) => {
           this.projects = projects;
           if (this.activeProject) {
@@ -44,6 +44,7 @@ export const useProjectStore = defineStore('projectStore', {
           await iterationStore.ofProject(project.key);
           const ceremonyStore = useCeremonyStore();
           await ceremonyStore.ofIteration(project.key);
+
         }
         return project;
       } else {

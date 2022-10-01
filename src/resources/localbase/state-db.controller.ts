@@ -118,7 +118,20 @@ export class StateTableController<T>{
     } else {
       return Object.keys(filters).reduce((prev: boolean, cur) => {
         const keyValue = (cursor as unknown as { value: KeyValue<FilterPart> })['value'];
-        return prev && (!filters[cur] || (keyValue.value)[cur] == filters[cur]);
+        const propH = cur.split('.');
+        if (propH.length == 1) {
+          return prev && (typeof filters[cur] == 'undefined' || (keyValue.value)[cur] == filters[cur]);
+        } else {
+          let ref = keyValue.value;
+          for (let index = 0; index < propH.length && typeof ref == 'object'; index++) {
+            const prop = propH[index];
+            if (index == propH.length - 1) {
+              return prev && (typeof filters[prop] == 'undefined' || (ref)[cur] == filters[cur]);
+            }
+            ref = ref[prop] as FilterPart;
+          }
+        }
+        return prev;
       }, true);
     }
   }

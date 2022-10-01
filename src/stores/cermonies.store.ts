@@ -1,25 +1,35 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
 import { map } from 'rxjs';
-import { ICeremony } from 'src/entities';
+import { DiscussionItem, ICeremony } from 'src/entities';
 import { ceremonyResource } from 'src/resources';
+import { useDiscussionStore } from './discussions.store';
 
 export const useCeremonyStore = defineStore('ceremony', {
   state: () => ({
     ceremonies: [] as ICeremony[],
+    activeDiscussions: [] as DiscussionItem[],
     activeCeremony: undefined as ICeremony | undefined
   }),
   getters: {
     activeCeremonyProgress(): number {
       return this.activeCeremony?.progress || 0;
-    }
+    },
   },
   actions: {
-    setActiveCeremony(ceremony: ICeremony) {
+    async setActiveCeremony(ceremony?: ICeremony) {
       this.activeCeremony = ceremony;
+      if (ceremony) {
+        const discussionStore = useDiscussionStore();
+        const result = await Promise.all(ceremony.discussions
+          .map(key => discussionStore.withKey(key)));
+        this.activeDiscussions = result.filter(d => d) as DiscussionItem[];
+      } else {
+        this.activeDiscussions = [];
+      }
     },
     async ofIteration(project: string, iterationKey?: string) {
-      ceremonyResource.stream({
+      ceremonyResource.streamWith({
         projectKey: project,
         iterationKey
       }).pipe(map(stream => {
@@ -29,6 +39,9 @@ export const useCeremonyStore = defineStore('ceremony', {
       })).subscribe({
         next: ((stream) => {
           this.ceremonies = stream;
+          if (this.activeCeremony) {
+            this.setActiveCeremony(stream.find(c => c.key == this.activeCeremony?.key));
+          }
         })
       });
     },

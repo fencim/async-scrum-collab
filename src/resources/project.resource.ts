@@ -2,34 +2,12 @@ import { IProject } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
-import { map, merge, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 
 class ProjectResource extends BaseResource<IProject> {
-  private activeStream?: Observable<IProject[]>;
-  stream(filters?: Filters<Entity> | undefined): Observable<IProject[]> {
-    if (this.activeStream && this.activeStream) {
-      return this.activeStream;
-    }
-    const offline = new Observable<IProject[]>((subcriber) => {
-      this.findAllFrom(filters)
-        .then((list) => {
-          subcriber.next(list);
-          subcriber.complete();
-        });
-    });
-    const online = firebaseService.streamWith<IProject>('projects', filters && this.arrayFilter(filters) ||
-      (typeof filters == 'object' && filters as { [key: string]: string }) || {})
-      .pipe(map(list => {
-        this.saveEachTo(list, 'synced');
-        return list;
-      }));
-    this.activeStream = merge(offline, online);
-    this.activeStream.subscribe({
-      error: () => {
-        this.activeStream = undefined;
-      }
-    });
-    return this.activeStream;
+  protected streamCb(filters?: Filters<Entity> | undefined): void | Observable<IProject[]> {
+    return firebaseService.streamWith<IProject>('projects', filters && this.arrayFilter(filters) ||
+      (typeof filters == 'object' && filters as { [key: string]: string }) || {});
   }
   protected async getCb(key: string): Promise<boolean | void | IProject> {
     return await firebaseService.get('projects', key) as IProject;

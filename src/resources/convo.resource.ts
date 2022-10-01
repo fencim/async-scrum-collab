@@ -2,26 +2,16 @@ import { Convo, ConvoList } from 'src/entities';
 import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
-import { Observable, map, merge } from 'rxjs';
+import { Observable } from 'rxjs';
 
 class ConvoResource extends BaseResource<Convo> {
-  stream(filters?: Filters<Entity> | undefined): Observable<ConvoList> {
-    const offline = new Observable<ConvoList>((subcriber) => {
-      this.findAllFrom(filters)
-        .then((list) => {
-          subcriber.next(list);
-          subcriber.complete();
-        });
-    });
-    return merge(offline, firebaseService
+  protected streamCb(filters?: Filters<Entity> | undefined): void | Observable<Convo[]> {
+    return firebaseService
       .streamWith<Convo>('convos', filters
         && this.arrayFilter(filters) ||
-        (typeof filters == 'object' && filters as { [key: string]: string }) || {})
-      .pipe(map(list => {
-        //this.saveEachTo(list, 'synced');
-        return list;
-      })));
+        (typeof filters == 'object' && filters as { [key: string]: string }) || {});
   }
+
   protected async getCb(key: string): Promise<boolean | void | Convo> {
     return await firebaseService.get('convos', key) as Convo
   }

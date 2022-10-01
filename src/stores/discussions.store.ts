@@ -11,16 +11,19 @@ export const useDiscussionStore = defineStore('discussion', {
   },
   actions: {
     async fromKeyList(projectKey: string, list: string[]): Promise<DiscussionItem[]> {
-      const discussions = (await this.ofProject(projectKey));
-      const discussionList = list.map(key => discussions.find(d => d.key == key))
+      const discussionList = list.map(
+        key => this.discussions.find(d => d.projectKey == projectKey && d.key == key))
         .filter(d => d) as DiscussionItem[];
       return discussionList;
     },
-    async ofProject(projectKey: string) {
-      this.discussions = await discussionResource.findAllFrom({
+    ofProject(projectKey: string) {
+      return discussionResource.streamWith({
         projectKey
+      }).subscribe({
+        next: (stream) => {
+          this.discussions = stream;
+        },
       });
-      return this.discussions;
     },
     async withKey(key: string) {
       if (key)

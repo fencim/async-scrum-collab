@@ -53,8 +53,8 @@ export default defineComponent({
 
   data() {
     return {
-      leftDrawerOpen: true,
-      rightDrawerOpen: true,
+      leftDrawerOpen: false,
+      rightDrawerOpen: false,
       recentProfiles: [],
     };
   },
@@ -63,12 +63,19 @@ export default defineComponent({
     await projectStore.init();
   },
   updated() {
-    this.leftDrawerOpen = !!(this.$route.meta && this.$route.meta.actions);
+    this.evalDrawers();
+  },
+  mounted() {
+    this.evalDrawers();
   },
   beforeRouteUpdate() {
-    this.leftDrawerOpen = !!(this.$route.meta && this.$route.meta.actions);
+    this.evalDrawers();
   },
   methods: {
+    evalDrawers() {
+      this.rightDrawerOpen = !!(this.$route.meta && this.$route.meta.actions);
+      this.leftDrawerOpen = !!(this.$route.meta && this.$route.meta.menus);
+    },
     goto(link: string) {
       link.replace('/', '');
       //return this.$router.replace(link);
