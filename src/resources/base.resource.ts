@@ -254,7 +254,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     page?: Pagination<IDocStore<T>>
   ): Promise<Pagination<IDocStore<T>>> {
     const pageanated = await this.localBase.paginatedValues<IDocStore<T>>(
-      filters,
+      this.dataFilterPart(filters),
       page
     );
     return {
@@ -271,7 +271,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
       return doc.data;
     };
     const pageanated = await this.localBase.paginatedValues<IDocStore<T>>(
-      filters,
+      this.dataFilterPart(filters),
       page
     );
     return {

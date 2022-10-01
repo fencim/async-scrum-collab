@@ -27,7 +27,6 @@ export const useIterationStore = defineStore(
         .subscribe({
           next: (stream) => {
             this.iterations = stream;
-            console.log('iterations', stream.length);
             // if (this.activeIteration) {
             //   this.selectIteration(key, this.activeIteration.key);
             // }
