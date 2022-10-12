@@ -1,4 +1,6 @@
 import { route } from 'quasar/wrappers';
+import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
@@ -26,6 +28,8 @@ export default route(function (/* { store, ssrContext } */) {
   const profileStore = useProfilesStore();
   const projectStore = useProjectStore();
   const iterationStore = useIterationStore();
+  const ceremonyStore = useCeremonyStore();
+  const discussionStore = useDiscussionStore();
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
@@ -37,8 +41,6 @@ export default route(function (/* { store, ssrContext } */) {
       process.env.MODE === 'ssr' ? void 0 : process.env.VUE_ROUTER_BASE
     ),
   });
-
-
 
   Router.beforeEach(async (to, from, next) => {
     if (!profileStore.getUser()) await profileStore.authenticate();
@@ -55,6 +57,28 @@ export default route(function (/* { store, ssrContext } */) {
       else if (!to.params['iteration']) {
         await iterationStore.selectIteration('', '');
       }
+      if (iterationStore.activeIteration && to.params && to.params['ceremony']
+        && (!ceremonyStore.activeCeremony || ceremonyStore.activeCeremony.key != to.params['ceremony'])) {
+        const iteration = iterationStore.activeIteration;
+        const ceremony = await ceremonyStore.withKey(
+          iteration.projectKey,
+          iteration.key,
+          to.params['ceremony'] as string
+        );
+        ceremonyStore.setActiveCeremony(ceremony);
+        discussionStore.setActiveDiscussion(undefined);
+      } else {
+        ceremonyStore.setActiveCeremony();
+      }
+      if (ceremonyStore.activeCeremony && to.params && to.params['item']
+        && (!discussionStore.activeDiscussion || discussionStore.activeDiscussion.key != to.params['item'])) {
+        const item = await discussionStore.withKey(to.params['item'] as string);
+        discussionStore.setActiveDiscussion(item);
+      } else {
+        discussionStore.setActiveDiscussion(undefined);
+      }
+
+
       document.title = 'Async SCRUM Collab: ' + String(to.name).toUpperCase();
       next();
     } else {

@@ -313,7 +313,7 @@ export default defineComponent({
         );
       }
     },
-    async assesItem(forceSave?: boolean) {
+    async assesItem() {
       if (this.theDiscussion && this.activeProject) {
         const report = discussionStore.checkCompleteness(
           this.theDiscussion,
@@ -334,10 +334,6 @@ export default defineComponent({
           voted.includes(m.key)
         );
         this.progressReport = report;
-        if (this.theDiscussion.progress != report[0].progress || forceSave) {
-          this.theDiscussion.progress = report[0].progress;
-          await discussionStore.saveDiscussion(this.theDiscussion);
-        }
       }
     },
     describeDiscussion(item: DiscussionItem) {
@@ -361,7 +357,7 @@ export default defineComponent({
     async resetVoting(complexity?: number) {
       if (this.theDiscussion && profileStore.presentUser) {
         this.theDiscussion.complexity = complexity;
-        await this.assesItem(true);
+        await this.assesItem();
         if (typeof complexity == 'undefined') {
           convoStore.sendMessage(
             this.activeProjectKey,

@@ -30,7 +30,7 @@
             icon="login"
             label="Login"
           />
-          <center>Or</center>
+          <div class="text-center">Or</div>
           <q-btn
             :loading="action == 2"
             :disable="action != 0"
@@ -44,7 +44,7 @@
               fit="contain"
             />
           </q-btn>
-          <center>Or</center>
+          <div class="text-center">Or</div>
           <q-btn
             :loading="action == 3"
             :disable="action != 0"

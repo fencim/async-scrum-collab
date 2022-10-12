@@ -1,6 +1,7 @@
 <template>
   <q-list padding class="menu-list">
     <q-item
+      v-if="activeCeremony"
       clickable
       :active="!activeItemKey"
       active-class="bg-grey-9"
@@ -14,7 +15,7 @@
       }"
     >
       <q-circular-progress
-        :value="progress * 100"
+        :value="Number(activeCeremony.progress) * 100"
         show-value
         font-size="12px"
         class="text-white q-ma-sm text-uppercase"
@@ -23,16 +24,16 @@
         color="grey"
         track-color="transparent"
       >
-        {{ (progress * 100).toFixed(0) }}%
+        {{ (Number(activeCeremony.progress) * 100).toFixed(0) }}%
       </q-circular-progress>
       <q-tooltip
         ><div class="text-caption">Convo of {{ activeCeremony?.type }}</div>
-        <q-linear-progress :value="progress" />
+        <q-linear-progress :value="Number(activeCeremony.progress)" />
       </q-tooltip>
     </q-item>
     <q-item
       clickable
-      v-for="i in discussionItems"
+      v-for="i in discussionItems()"
       :key="i?.key"
       active-class="bg-grey-9"
       :active="i?.key == activeItemKey"
@@ -50,6 +51,13 @@
       >
         {{ i?.projectKey }}{{ (i.key.match(/\d+$/) || [])[0] }}
         <q-badge color="red" v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
+        <q-badge
+          color="primary"
+          v-else-if="i?.progress"
+          floating
+          style="font-size: 7pt"
+          >{{ Number(i?.progress || 0) * 100 }}%</q-badge
+        >
       </q-circular-progress>
       <q-tooltip
         ><div class="text-caption">
@@ -62,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { DiscussionItem, ICeremony, IProject } from 'src/entities';
+import { ICeremony, IProject } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProjectStore } from 'src/stores/projects.store';
@@ -85,7 +93,6 @@ export default defineComponent({
       activeItemKey: '0',
       activeProject: undefined as IProject | undefined,
       activeCeremony: undefined as ICeremony | undefined,
-      discussionItems: [] as DiscussionItem[],
     };
   },
   mounted() {
@@ -97,11 +104,6 @@ export default defineComponent({
   },
   updated() {
     this.init();
-  },
-  computed: {
-    progress() {
-      return ceremonyStore.activeCeremonyProgress;
-    },
   },
   methods: {
     async init() {
@@ -123,22 +125,12 @@ export default defineComponent({
       );
       this.activeItemKey =
         (this.$route.params.item && String(this.$route.params.item)) || '';
-      this.discussionItems = await Promise.all(
-        await discussionStore.fromKeyList(
-          this.activeProjectKey,
-          this.activeCeremony?.discussions || []
-        )
+    },
+    discussionItems() {
+      return discussionStore.fromKeyList(
+        this.activeProjectKey,
+        this.activeCeremony?.discussions || []
       );
-      if (this.activeCeremony) {
-        const progress =
-          this.discussionItems.reduce((p, c) => p + (c.progress || 0), 0) /
-          Math.max(this.discussionItems.length, 1);
-        if (progress !== this.activeCeremony.progress) {
-          this.activeCeremony.progress = progress;
-          await ceremonyStore.saveCeremony(this.activeCeremony);
-        }
-        ceremonyStore.setActiveCeremony(this.activeCeremony);
-      }
     },
   },
 });

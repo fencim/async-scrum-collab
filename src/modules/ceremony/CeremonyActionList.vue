@@ -19,14 +19,14 @@
     </q-dialog>
     <q-list padding class="menu-list">
       <EssentialLink
-        v-for="link in links"
+        v-for="link in convoStore.actions"
         :key="link.key"
         :caption="link.caption"
         :title="link.title"
         :icon="link.icon"
         :hide="link.hide"
         :class="{ shake: !!link.emphasize }"
-        :active="link.active || link == activeLink"
+        :active="link.active || link == convoStore.activeAction"
         @click="actOn(link)"
       />
       <q-separator />
@@ -52,7 +52,7 @@ import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
 import { useProjectStore } from 'src/stores/projects.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { convoBus } from './convo-bus';
-import { ActionItem, ticketActionList } from './ceremony.action-list';
+import { ActionItem } from './ceremony.action-list';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useConvoStore } from 'src/stores/convo.store';
@@ -71,8 +71,7 @@ export default defineComponent({
     return {
       convoBus,
       discussionStore,
-      links: ticketActionList,
-      activeLink: undefined as ActionItem | undefined,
+      convoStore,
       activeProject: 'AP',
       activeIteration: 'AI',
       activeCeremony: 'AC',
@@ -82,51 +81,16 @@ export default defineComponent({
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
       item: undefined as DiscussionItem | undefined,
-      timer: undefined as NodeJS.Timeout | undefined,
     };
   },
   async mounted() {
     await this.init();
     convoBus.on('onQuestion', (e) => {
-      this.activateLink('question', e as boolean);
+      this.convoStore.activateLink('question', e as boolean);
     });
     convoBus.on('onDisagree', (e) => {
-      this.activateLink('disagree', e as boolean);
+      this.convoStore.activateLink('disagree', e as boolean);
     });
-
-    this.timer = setInterval(() => {
-      if (this.item && this.project && profileStore.presentUser) {
-        const report = discussionStore.checkCompleteness(
-          this.item,
-          this.project,
-          convoStore.convo
-        );
-        this.item.awareness = this.item.awareness || {};
-        const presentUser = profileStore.presentUser?.key || '';
-        const list = report.reduce((p, r) => {
-          if (r.factor == 'details' && r.progress < 1) {
-            p.push('view');
-          } else if (r.factor == 'votes' && r.progress < 1) {
-            p.push('agree');
-          } else if (
-            r.factor == 'agreement' &&
-            this.item?.awareness[presentUser] != 'agree'
-          ) {
-            p.push('agree');
-          }
-          return p;
-        }, [] as string[]);
-        this.links.forEach((link) => {
-          if (list.includes(link.key)) {
-            link.emphasize =
-              !(link.active || this.activeLink == link) && !link.emphasize;
-          }
-        });
-      }
-    }, 1500);
-  },
-  unmounted() {
-    this.timer && clearInterval(this.timer);
   },
   async updated() {
     await this.init();
@@ -162,7 +126,7 @@ export default defineComponent({
       );
       this.activeItem =
         (this.$route.params.item && String(this.$route.params.item)) || '';
-      this.setLinkVisibility(
+      this.convoStore.setLinkVisibility(
         /(vote|attachment|question|record|agree|view|disagree)/i,
         !!this.activeItem
       );
@@ -170,28 +134,12 @@ export default defineComponent({
         (this.activeItem && (await discussionStore.withKey(this.activeItem))) ||
         undefined;
       if (/^(convo|ceremony)$/.test(String(this.$route.name) || '')) {
-        this.activateLink('convo');
+        this.convoStore.activateLink('convo');
       } else if (/^(discussionDetails)$/.test(String(this.$route.name) || '')) {
-        this.activateLink('view');
+        this.convoStore.activateLink('view');
       }
     },
-    setLinkVisibility(key: string | RegExp, visibility: boolean) {
-      this.links.forEach((l) => {
-        if (key && new RegExp(key).test(l.key)) {
-          l.hide = !visibility;
-        }
-      });
-    },
-    activateLink(key: string, active?: boolean) {
-      const link = this.links.find((l) => l.key == key);
-      if (link) {
-        if (typeof active == 'boolean') {
-          link.active = active;
-        } else {
-          this.activeLink = link;
-        }
-      }
-    },
+
     async actOn(action: ActionItem) {
       if (action.key == 'view') {
         await this.$router.replace({

@@ -1,16 +1,21 @@
 import { defineStore } from 'pinia';
 import { ConvoList, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
+import { useCeremonyStore } from './cermonies.store';
+interface IDiscussionState {
+  discussions: DiscussionItem[];
+  activeDiscussion?: DiscussionItem;
+}
 
 export const useDiscussionStore = defineStore('discussion', {
   state: () => ({
-    discussions: [] as DiscussionItem[]
-  }),
+    discussions: []
+  } as IDiscussionState),
   getters: {
 
   },
   actions: {
-    async fromKeyList(projectKey: string, list: string[]): Promise<DiscussionItem[]> {
+    fromKeyList(projectKey: string, list: string[]): DiscussionItem[] {
       const discussionList = list.map(
         key => this.discussions.find(d => d.projectKey == projectKey && d.key == key))
         .filter(d => d) as DiscussionItem[];
@@ -24,6 +29,9 @@ export const useDiscussionStore = defineStore('discussion', {
           this.discussions = stream;
         },
       });
+    },
+    setActiveDiscussion(item?: DiscussionItem) {
+      this.activeDiscussion = item;
     },
     async withKey(key: string) {
       if (key)
@@ -41,9 +49,26 @@ export const useDiscussionStore = defineStore('discussion', {
       if (index < 0) {
         this.discussions.push(discussion);
       } else {
+        discussion = Object.assign(this.discussions[index] || {}, { ...discussion });
         this.discussions.splice(index, 1, discussion);
       }
+      await this.updateCeremonyProgress.call(this, discussion);
       return discussion;
+    },
+    async updateCeremonyProgress(discussion: DiscussionItem) {
+      const ceremonyStore = useCeremonyStore();
+      const targetCeremony = ceremonyStore.ceremonies.find(
+        c => c.key == discussion.ceremonyKey && c.projectKey == discussion.projectKey);
+      if (targetCeremony) {
+        const items = this.discussions.filter(
+          i => i.ceremonyKey == discussion.ceremonyKey && i.projectKey == discussion.projectKey);
+        const progress = items.reduce((p, c) => p + (c.progress || 0), 0) /
+          Math.max(items.length, 1);
+        if (progress !== targetCeremony.progress) {
+          targetCeremony.progress = progress;
+          await ceremonyStore.saveCeremony(targetCeremony);
+        }
+      }
     },
     describeDiscussion(item?: DiscussionItem): string {
       switch (item?.type) {
@@ -232,3 +257,5 @@ export const useDiscussionStore = defineStore('discussion', {
     }
   }
 });
+
+

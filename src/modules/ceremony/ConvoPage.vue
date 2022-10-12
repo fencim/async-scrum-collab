@@ -2,7 +2,7 @@
   <q-page class="justify-between q-pa-sm column">
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
     <div id="messages-container" class="col-auto" style="width: 100%">
-      <div v-for="m in messages" :key="m.key" :id="m.key">
+      <div v-for="m in messages()" :key="m.key" :id="m.key">
         <chat-message
           v-if="m.type == 'message'"
           :msg="m"
@@ -183,7 +183,6 @@ export default defineComponent({
     convoBus.on('vote', this.confirmVote);
     convoBus.on('disagree', this.confirmDisagree);
     convoBus.on('refresh', this.init);
-    console.log('Scroll to bottom');
     await nextTick();
     this.scrollToBottom();
   },
@@ -199,14 +198,8 @@ export default defineComponent({
 
   async updated() {
     this.init();
-    console.log('Scroll to bottom');
     await nextTick();
     this.scrollToBottom();
-  },
-  computed: {
-    messages() {
-      return convoStore.convo;
-    },
   },
   methods: {
     async init() {
@@ -246,7 +239,13 @@ export default defineComponent({
       }
       this.assesItem();
     },
-
+    messages() {
+      if (discussionStore.activeDiscussion) {
+        const active = discussionStore.activeDiscussion;
+        return convoStore.convo.filter((m) => m.discussion == active.key);
+      }
+      return convoStore.convo.filter((m) => !m.discussion);
+    },
     async sendMessage() {
       if (this.askingQuestion) {
         convoStore.sendMessage(
@@ -446,12 +445,12 @@ export default defineComponent({
         msg.feedback = { ...msg.feedback } || {};
         msg.feedback[profileStore.presentUser?.key] = resolution;
         await convoStore.saveConvo({ ...msg });
-
-        let qMsg = this.messages.find((m) => m.key == msg.ref);
+        const messages = this.messages();
+        let qMsg = messages.find((m) => m.key == msg.ref);
         while (qMsg && qMsg.type != 'question' && resolution == 'agree') {
           if (qMsg.type == 'response' && qMsg.ref) {
             const ref = qMsg.ref;
-            qMsg = this.messages.find((m) => m.key == ref);
+            qMsg = messages.find((m) => m.key == ref);
           } else {
             qMsg = undefined;
           }
