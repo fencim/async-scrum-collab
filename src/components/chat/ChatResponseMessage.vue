@@ -8,7 +8,8 @@
       :href="href + r?.key"
     >
       <q-avatar size="sm" v-if="typeof r?.from == 'object'">
-        <img :src="r?.from.avatar" />
+        <img v-if="r?.from.avatar" :src="r?.from.avatar" />
+        <span v-else>{{ initials(r?.from?.name) }}</span>
       </q-avatar>
       &nbsp;
       {{ r?.message }}
@@ -91,6 +92,10 @@ export default defineComponent({
     resolveQuestionOf(msg: Convo, resolution: string) {
       this.$emit('resolveQuestion', msg, resolution);
     },
+    initials(name?: string) {
+      const m = (name || 'C U').match(/\b\w/g);
+      return `${m && m[0]}${m && m[1]}`;
+    }, //initials
   }, //methods
 });
 </script>

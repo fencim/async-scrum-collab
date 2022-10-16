@@ -24,11 +24,11 @@
         color="grey"
         track-color="transparent"
       >
-        {{ (Number(activeCeremony.progress) * 100).toFixed(0) }}%
+        {{ (Number(activeCeremony.progress || 0) * 100).toFixed(0) }}%
       </q-circular-progress>
       <q-tooltip
         ><div class="text-caption">Convo of {{ activeCeremony?.type }}</div>
-        <q-linear-progress :value="Number(activeCeremony.progress)" />
+        <q-linear-progress :value="Number(activeCeremony.progress || 0)" />
       </q-tooltip>
     </q-item>
     <q-item
@@ -39,32 +39,15 @@
       :active="i?.key == activeItemKey"
       :to="`/${activeProjectKey}/${activeIterationKey}/${activeCeremonyKey}/${i?.key}/convo`"
     >
-      <q-circular-progress
-        :value="(i?.progress || 0) * 100"
-        show-value
-        font-size="12px"
-        class="text-white q-ma-sm text-uppercase"
-        size="40px"
-        :thickness="0.15"
-        color="grey"
-        track-color="transparent"
-      >
-        {{ i?.projectKey }}{{ (i.key.match(/\d+$/) || [])[0] }}
-        <q-badge color="red" v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
-        <q-badge
-          color="primary"
-          v-else-if="i?.progress"
-          floating
-          style="font-size: 7pt"
-          >{{ Number(i?.progress || 0) * 100 }}%</q-badge
-        >
-      </q-circular-progress>
-      <q-tooltip
-        ><div class="text-caption">
-          {{ discussionStore.describeDiscussion(i) }}
-        </div>
-        <q-linear-progress :value="i.progress" />
-      </q-tooltip>
+      <discussion-menu
+        :item="i"
+        :description="i.info || ''"
+        :reporter="
+          i.type == 'scrum' && typeof i.reporter == 'object'
+            ? i.reporter
+            : undefined
+        "
+      />
     </q-item>
   </q-list>
 </template>
@@ -76,14 +59,17 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { convoBus } from './convo-bus';
+import DiscussionMenu from 'src/components/discussion/DiscussionMenu.vue';
+import { useProfilesStore } from 'src/stores/profiles.store';
 
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
+const profileStore = useProfilesStore();
 
 export default defineComponent({
   name: 'CeremonyMenuList',
-  components: {},
+  components: { DiscussionMenu },
   data() {
     return {
       discussionStore,
@@ -125,12 +111,29 @@ export default defineComponent({
       );
       this.activeItemKey =
         (this.$route.params.item && String(this.$route.params.item)) || '';
+      if (ceremonyStore.activeCeremony) {
+        discussionStore.discussionsOf(ceremonyStore.activeCeremony);
+      }
     },
     discussionItems() {
-      return discussionStore.fromKeyList(
+      const list = discussionStore.fromCeremony(
         this.activeProjectKey,
-        this.activeCeremony?.discussions || []
+        this.activeCeremony?.key || ''
       );
+      const theUser = profileStore.theUser;
+      if (this.activeCeremony?.type == 'scrum' && theUser) {
+        return list.sort((a) => {
+          if (
+            a.type == 'scrum' &&
+            (a.reporter == theUser.key ||
+              (typeof a.reporter == 'object' && a.reporter.key == theUser.key))
+          ) {
+            return -1;
+          }
+          return 0;
+        });
+      }
+      return list;
     },
   },
 });

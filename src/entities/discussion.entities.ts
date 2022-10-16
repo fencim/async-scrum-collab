@@ -1,4 +1,5 @@
 import { IBaseEntity } from './base.entity';
+import { IProfile } from './profile.entities';
 
 export interface IDiscussion extends IBaseEntity {
   key: string;
@@ -8,6 +9,7 @@ export interface IDiscussion extends IBaseEntity {
   complexity?: number;
   progress?: number;
   unread?: number;
+  info?: string;
 }
 
 export interface IGoal extends IDiscussion {
@@ -55,10 +57,10 @@ export interface IRoadBlock extends IDiscussion {
 
 export interface IScrumReport extends IDiscussion {
   type: 'scrum';
-  reporter: string;
-  tasksDid: string[];
-  todoTasks: string[];
-  roadblocks: string[];
+  reporter: string | IProfile;
+  tasksDid: (string | DiscussionItem)[];
+  todoTasks: (string | DiscussionItem)[];
+  roadblocks: (string | DiscussionItem)[];
 }
 
 export interface ISprintReport extends IDiscussion {

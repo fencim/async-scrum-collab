@@ -12,7 +12,8 @@
 
     <template v-slot:avatar>
       <q-avatar v-if="typeof msg.from == 'object'">
-        <q-img :src="msg.from.avatar" fit="cover" />
+        <q-img v-if="msg.from.avatar" :src="msg.from.avatar" fit="cover" />
+        <span v-else>{{ initials(msg.from.name) }}</span>
       </q-avatar>
     </template>
 
@@ -84,6 +85,10 @@ export default defineComponent({
           return 'pending';
       }
     }, //getStatus
+    initials(name?: string) {
+      const m = (name || 'C U').match(/\b\w/g);
+      return `${m && m[0]}${m && m[1]}`;
+    }, //initials
   }, //methods
 });
 </script>

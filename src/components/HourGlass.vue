@@ -98,7 +98,8 @@ export default defineComponent({
         if (now < start) {
           return 'in ' + date.getDateDiff(start, now, 'days') + ' days';
         } else if (now > end) {
-          return date.getDateDiff(now, end, 'days') + ' days past';
+          const days = date.getDateDiff(now, end, 'days');
+          return days == 1 ? 'yesterday' : days + ' days past';
         }
       }
       return date.getDateDiff(end, now, 'hours') + ' hr ';

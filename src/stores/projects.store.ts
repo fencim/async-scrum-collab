@@ -25,9 +25,6 @@ export const useProjectStore = defineStore('projectStore', {
             this.selectProject(this.activeProject.key);
           }
         },
-        complete: () => {
-          console.log('project stream done ==========================');
-        }
       })
       this.projects = (await projectResource.findAllFrom()) || [];
     },

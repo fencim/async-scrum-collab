@@ -288,9 +288,9 @@ export default defineComponent({
         (await discussionStore.withKey(this.activeItemKey)) ||
         this.theDiscussion;
       if (this.theDiscussion && this.theDiscussion.type == 'story') {
-        this.subTasks = await discussionStore.fromKeyList(
+        this.subTasks = await discussionStore.fromCeremony(
           this.activeProjectKey,
-          (this.theDiscussion.tasks as string[]) || []
+          this.activeCeremonyKey
         );
       }
       await this.revealAwareMembers();

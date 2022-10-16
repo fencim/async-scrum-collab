@@ -69,6 +69,6 @@ export const useCeremonyStore = defineStore('ceremony', {
         this.ceremonies.splice(index, 1, save);
       }
       return save;
-    }
+    },
   }
 });

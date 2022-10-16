@@ -66,7 +66,6 @@ export default defineComponent({
       project: undefined as IProject | undefined,
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
-      members: [] as IProfile[],
     };
   },
   mounted() {
@@ -76,6 +75,9 @@ export default defineComponent({
     this.init();
   },
   computed: {
+    members() {
+      return profileStore.members;
+    },
     progress() {
       return ceremonyStore.activeCeremonyProgress;
     },

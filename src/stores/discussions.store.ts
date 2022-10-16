@@ -1,7 +1,11 @@
 import { defineStore } from 'pinia';
-import { ConvoList, DiscussionItem, IProject, IQuestion, IVote } from 'src/entities';
+import { from, switchMap } from 'rxjs';
+import { ConvoList, DiscussionItem, ICeremony, IProject, IQuestion, IVote } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
+import { useProfilesStore } from './profiles.store';
+import { useProjectStore } from './projects.store';
+
 interface IDiscussionState {
   discussions: DiscussionItem[];
   activeDiscussion?: DiscussionItem;
@@ -15,20 +19,38 @@ export const useDiscussionStore = defineStore('discussion', {
 
   },
   actions: {
-    fromKeyList(projectKey: string, list: string[]): DiscussionItem[] {
-      const discussionList = list.map(
-        key => this.discussions.find(d => d.projectKey == projectKey && d.key == key))
-        .filter(d => d) as DiscussionItem[];
-      return discussionList;
+    fromCeremony(projectKey: string, ceremonyKey: string) {
+      return this.discussions.filter(d => d && d.projectKey == projectKey && d.ceremonyKey == ceremonyKey);
+    },
+    fromList(keys: string[], updatedList?: DiscussionItem[]) {
+      if (updatedList) {
+        return updatedList.filter(d => keys.includes(d.key));
+      }
+      //try from old records
+      return this.discussions.filter(d => keys.includes(d.key));
     },
     ofProject(projectKey: string) {
       return discussionResource.streamWith({
         projectKey
-      }).subscribe({
-        next: (stream) => {
-          this.discussions = stream;
-        },
-      });
+      })
+        .pipe(switchMap(list => {
+          const profileStore = useProfilesStore();
+          return from(Promise.all(list.map(async (m) => {
+            if (m.type == 'scrum') {
+              m.reporter = await profileStore.get(m.reporter as string) || m.reporter;
+              m.todoTasks = this.fromList(m.todoTasks as string[], list);
+              m.tasksDid = this.fromList(m.tasksDid as string[], list);
+              m.roadblocks = this.fromList(m.roadblocks as string[], list);
+              m.info = this.describeDiscussion(m);
+            }
+            return m;
+          })));
+        }))
+        .subscribe({
+          next: (stream) => {
+            this.discussions = stream;
+          },
+        });
     },
     setActiveDiscussion(item?: DiscussionItem) {
       this.activeDiscussion = item;
@@ -52,7 +74,7 @@ export const useDiscussionStore = defineStore('discussion', {
         discussion = Object.assign(this.discussions[index] || {}, { ...discussion });
         this.discussions.splice(index, 1, discussion);
       }
-      await this.updateCeremonyProgress.call(this, discussion);
+      await this.updateCeremonyProgress(discussion);
       return discussion;
     },
     async updateCeremonyProgress(discussion: DiscussionItem) {
@@ -253,6 +275,26 @@ export const useDiscussionStore = defineStore('discussion', {
             progress: 0,
             feedback: 'unknown item type:' + item.type
           };
+      }
+    },
+    async discussionsOf(ceremony: ICeremony) {
+      const items = this.discussions.filter(d => d.ceremonyKey == ceremony.key);
+      const project = useProjectStore().activeProject;
+      if (ceremony.type == 'scrum' && project) {
+        const noItems = project.members.filter(m => !(items.find(i => i.key.includes(m))));
+        await Promise.all(noItems.map(async (m) => {
+          return this.saveDiscussion({
+            type: 'scrum',
+            key: m + ceremony.key,
+            awareness: {},
+            ceremonyKey: ceremony.key,
+            projectKey: ceremony.projectKey,
+            reporter: m,
+            roadblocks: [],
+            tasksDid: [],
+            todoTasks: []
+          })
+        }))
       }
     }
   }
