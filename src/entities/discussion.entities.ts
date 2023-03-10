@@ -92,12 +92,8 @@ export interface IActionItem extends IDiscussion {
   owner: string;
   description: string;
 }
-export type DiscussionItem =
-  //planning
-  IStory | IGoal | IObjective | TechnicalTask |
-  //scrum
-  IScrumReport | IRoadBlock |
-  //review
-  ISprintReport | ISprintDemo |
-  //retro
-  IWentWell | IWentWrong | IToImprove | IActionItem;
+export type PlanningItem = IStory | IGoal | IObjective | TechnicalTask;
+export type DailyScrumItem = IScrumReport | IRoadBlock;
+export type ReviewItem = ISprintReport | ISprintDemo;
+export type RetroItem = IWentWell | IWentWrong | IToImprove | IActionItem;
+export type DiscussionItem = PlanningItem | DailyScrumItem | ReviewItem | RetroItem;

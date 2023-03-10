@@ -19,7 +19,11 @@
     <div style="min-width: 150px" v-if="msg.type == 'response'">
       <q-card class="bg-transparent text-dark no-shadow">
         <q-card-section horizontal>
-          <q-card-actions vertical align="right">
+          <q-card-actions
+            vertical
+            align="right"
+            v-if="refMsg?.type == 'question'"
+          >
             <q-btn
               icon="thumb_up_alt"
               size="sm"

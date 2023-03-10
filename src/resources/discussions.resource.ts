@@ -36,3 +36,4 @@ class DiscussionResource extends BaseResource<DiscussionItem> {
   }
 }
 export const discussionResource = new DiscussionResource();
+discussionResource.resumeSyncing();

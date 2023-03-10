@@ -71,3 +71,4 @@ class MediaResource extends BaseResource<IMedia> {
   }
 }
 export const mediaResource = new MediaResource();
+mediaResource.resumeSyncing();

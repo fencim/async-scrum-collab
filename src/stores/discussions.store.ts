@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { from, switchMap } from 'rxjs';
-import { ConvoList, DiscussionItem, ICeremony, IProject, IQuestion, IVote } from 'src/entities';
+import { ConvoList, DiscussionItem, ICeremony, IDiscussion, IProject, IQuestion, IToImprove, IVote, IWentWell, IWentWrong, RetroItem } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
 import { useProfilesStore } from './profiles.store';
@@ -203,7 +203,6 @@ export const useDiscussionStore = defineStore('discussion', {
             feedback: item.description.length > 10 ? 'Details is set' : 'Descriptions is not well defined'
           };
         case 'objective':
-
           if (item.description.length > 10) {
             progress += 1;
             feedbacks.push('Details is set')
@@ -269,6 +268,25 @@ export const useDiscussionStore = defineStore('discussion', {
             progress: progress / feedbacks.length,
             feedback: feedbacks.join('\n')
           };
+        case 'scrum':
+          if (item.reporter) {
+            progress += 1;
+            feedbacks.push('Reporter is defined')
+          } else {
+            feedbacks.push('Reporter is not defined')
+          }
+          const reported = item.todoTasks.length + item.tasksDid.length;
+          if (reported > 0) {
+            progress += 1;
+            feedbacks.push(reported + ' tasks are reported')
+          } else {
+            feedbacks.push('No tasks reported')
+          }
+          return {
+            factor: 'details',
+            progress: progress / feedbacks.length,
+            feedback: feedbacks.join('\n')
+          };
         default:
           return {
             factor: 'details',
@@ -295,6 +313,35 @@ export const useDiscussionStore = defineStore('discussion', {
             todoTasks: []
           })
         }))
+      } else if (ceremony.type == 'retro') {
+        const base: IDiscussion = {
+          key: ceremony.key,
+          awareness: {},
+          ceremonyKey: ceremony.key,
+          projectKey: ceremony.projectKey,
+        }
+        const retoItems: RetroItem[] = [{
+          type: 'went-well',
+          ...base,
+          key: 'wr' + ceremony.key,
+          comments: []
+        } as IWentWell, {
+          type: 'went-wrong',
+          ...base,
+          key: 'ww' + ceremony.key,
+          comments: []
+        } as IWentWrong,
+        {
+          type: 'to-improve',
+          ...base,
+          key: 'ti' + ceremony.key,
+          comments: []
+        } as IToImprove,
+        ].filter(i => !(items.find(d => d.type == i.type && d.ceremonyKey == i.ceremonyKey)));
+        await Promise.all(retoItems.map((i) => {
+          return this.saveDiscussion(i)
+        }))
+
       }
     }
   }

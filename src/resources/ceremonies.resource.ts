@@ -42,3 +42,4 @@ class CeremonyResource extends BaseResource<ICeremony> {
   }
 }
 export const ceremonyResource = new CeremonyResource();
+ceremonyResource.resumeSyncing();

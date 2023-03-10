@@ -33,3 +33,4 @@ class SessionResource extends BaseResource<SessionValue> {
 
 }
 export const sessionResource = new SessionResource();
+sessionResource.resumeSyncing();

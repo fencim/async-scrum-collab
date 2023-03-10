@@ -37,3 +37,4 @@ class ProjectResource extends BaseResource<IProject> {
   }
 }
 export const projectResource = new ProjectResource();
+projectResource.resumeSyncing();

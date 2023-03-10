@@ -60,11 +60,8 @@ export const useConvoStore = defineStore('convo', {
         date: date.formatDate(new Date()),
         from,
       } as Convo;
-      msg.key = convoResource.getKeyOf({
-        ...msg,
-        toString: () => `${projectKey}: ${discussion} : ${msg.date}`
-      } as Convo);
-      await convoResource.setData(msg.key, msg);
+
+      await convoResource.setData('', msg);
     },
     async saveConvo(msg: Convo) {
       if (msg && msg.key) {

@@ -33,18 +33,36 @@
     color="grey"
     track-color="transparent"
   >
-    {{ item.projectKey }}{{ (item.key.match(/\d+$/) || [])[0] }}
+    <q-icon
+      v-if="item.type == 'went-well'"
+      name="sentiment_very_satisfied"
+      size="lg"
+    />
+    <q-icon
+      v-else-if="item.type == 'went-wrong'"
+      name="sentiment_very_dissatisfied"
+      size="lg"
+    />
+    <q-icon
+      v-else-if="item.type == 'to-improve'"
+      name="self_improvement"
+      size="lg"
+    />
+    <span v-else>
+      {{ (item.key.match(/\d+$/) || [item.key])[0] }}
+    </span>
     <q-badge color="red" v-if="item.unread" floating>{{ item.unread }}</q-badge>
     <q-badge
       color="primary"
       v-else-if="item.progress"
       floating
+      align="bottom"
       style="font-size: 7pt"
       >{{ (Number(item.progress) * 100).toFixed(0) }}%</q-badge
     >
     <q-tooltip
       ><div class="text-caption">
-        {{ description }}
+        {{ item.info || item.type }}
       </div>
       <q-linear-progress :value="item.progress" />
     </q-tooltip>

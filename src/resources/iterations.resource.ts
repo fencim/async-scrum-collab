@@ -37,3 +37,4 @@ class IterationResource extends BaseResource<IIteration> {
   }
 }
 export const iterationResource = new IterationResource();
+iterationResource.resumeSyncing();

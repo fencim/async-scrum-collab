@@ -126,13 +126,21 @@ export default defineComponent({
       );
       this.activeItem =
         (this.$route.params.item && String(this.$route.params.item)) || '';
-      this.convoStore.setLinkVisibility(
-        /(vote|attachment|question|record|agree|view|disagree)/i,
-        !!this.activeItem
-      );
+
       this.item =
         (this.activeItem && (await discussionStore.withKey(this.activeItem))) ||
         undefined;
+      if (this.item?.type == 'scrum') {
+        this.convoStore.setLinkVisibility(
+          /(attachment|question|record|agree|view|disagree)/i,
+          !!this.activeItem
+        );
+      } else {
+        this.convoStore.setLinkVisibility(
+          /(vote|attachment|question|record|agree|view|disagree)/i,
+          !!this.activeItem
+        );
+      }
       if (/^(convo|ceremony)$/.test(String(this.$route.name) || '')) {
         this.convoStore.activateLink('convo');
       } else if (/^(discussionDetails)$/.test(String(this.$route.name) || '')) {

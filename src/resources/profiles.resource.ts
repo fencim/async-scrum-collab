@@ -37,3 +37,4 @@ class ProfileResource extends BaseResource<IProfile> {
   }
 }
 export const profileResource = new ProfileResource();
+profileResource.resumeSyncing();

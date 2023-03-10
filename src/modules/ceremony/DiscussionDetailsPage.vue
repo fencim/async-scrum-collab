@@ -85,7 +85,7 @@
           Pending
           <recent-active-members sizes="xs" :profiles="membersPending" />
         </q-card-section>
-        <q-card-section>
+        <q-card-section v-if="activeCeremony?.type == 'planning'">
           Voted
           <recent-active-members sizes="xs" :profiles="membersVoted" />
         </q-card-section>

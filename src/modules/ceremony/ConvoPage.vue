@@ -2,7 +2,7 @@
   <q-page class="justify-between q-pa-sm column">
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
     <div id="messages-container" class="col-auto" style="width: 100%">
-      <div v-for="m in messages()" :key="m.key" :id="m.key">
+      <div v-for="m in convoStore.convo" :key="m.key" :id="m.key">
         <chat-message
           v-if="m.type == 'message'"
           :msg="m"
@@ -244,7 +244,7 @@ export default defineComponent({
         const active = discussionStore.activeDiscussion;
         return convoStore.convo.filter((m) => m.discussion == active.key);
       }
-      return convoStore.convo.filter((m) => !m.discussion);
+      return convoStore.convo;
     },
     async sendMessage() {
       if (this.askingQuestion) {
