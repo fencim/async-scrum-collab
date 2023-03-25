@@ -81,7 +81,7 @@
             })
           "
         >
-          {{ i?.projectKey }}{{ (i.key.match(/\d+$/) || [])[0] }}
+          {{ (i.key.match(/\d+$/) || [])[0] }}
           <q-badge v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
           <q-tooltip
             ><div class="text-caption">

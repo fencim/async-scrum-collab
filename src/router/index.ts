@@ -2,6 +2,7 @@ import { route } from 'quasar/wrappers';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
+import { useOnlineUsersStore } from 'src/stores/online-users.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import {
@@ -30,6 +31,7 @@ export default route(function (/* { store, ssrContext } */) {
   const iterationStore = useIterationStore();
   const ceremonyStore = useCeremonyStore();
   const discussionStore = useDiscussionStore();
+  const onlineUsersStore = useOnlineUsersStore();
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
@@ -67,7 +69,7 @@ export default route(function (/* { store, ssrContext } */) {
         );
         ceremonyStore.setActiveCeremony(ceremony);
         discussionStore.setActiveDiscussion(undefined);
-      } else {
+      } else if (!to.params['ceremony']) {
         ceremonyStore.setActiveCeremony();
       }
       if (ceremonyStore.activeCeremony && to.params && to.params['item']
@@ -77,9 +79,10 @@ export default route(function (/* { store, ssrContext } */) {
       } else {
         discussionStore.setActiveDiscussion(undefined);
       }
-
-
       document.title = 'Async SCRUM Collab: ' + String(to.name).toUpperCase();
+      if (profileStore.theUser) {
+        onlineUsersStore.saveActive({ key: profileStore.theUser?.key || '' });
+      }
       next();
     } else {
       next({

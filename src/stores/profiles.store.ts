@@ -30,6 +30,7 @@ export const useProfilesStore = defineStore('Profiles', {
       }
     },
     async signout() {
+      this.theUser = undefined;
       await firebaseService.signout();
       await convoResource.deleteAll();
       await discussionResource.deleteAll();
@@ -49,7 +50,7 @@ export const useProfilesStore = defineStore('Profiles', {
       } || undefined;
       justLoggedIn = justLoggedIn && !!this.theUser;
       if (justLoggedIn && this.theUser && this.theUser.key) {
-        profileResource.setData(this.theUser.key, this.theUser);
+        //profileResource.setData(this.theUser.key, this.theUser);
       }
       if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
         mediaResource.cacheHttpUrl(this.theUser.avatar)

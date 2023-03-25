@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { date } from 'quasar';
-import { Subscription, switchMap, from, Observable } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { Convo, ConvoList } from 'src/entities';
 import { ActionItem, ticketActionList } from 'src/modules/ceremony/ceremony.action-list';
 import { convoResource } from 'src/resources';
@@ -29,21 +29,22 @@ export const useConvoStore = defineStore('convo', {
     ofDiscussion(projectKey: string, discussion: string) {
       const topic = `${projectKey}:${discussion}`;
       this.convo = [];
-      const stream = this.streams[topic] || (convoResource.streamWith({
-        projectKey, discussion
-      }).pipe(switchMap(list => {
-        const profileStore = useProfilesStore();
-        list = list.sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));
-        return from(Promise.all(list.map(async (m) => {
-          m.from = await profileStore.get(m.from as string) || m.from;
-          return m;
-        })));
-      })));
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const stream = convoResource.streamWith({
+        projectKey, discussion,
+        'date >=': today.toISOString()
+      });
       this.streams[topic] = stream;
       stream.subscribe({
-        next: (convo) => {
-          this.convo = [...convo];
-          this.computeCompleteness(projectKey, discussion, convo);
+        next: async (convo) => {
+          const profileStore = useProfilesStore();
+          const list = [...convo].sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));
+          this.convo = await (Promise.all(list.map(async (m) => {
+            m.from = await profileStore.get(m.from as string) || m.from;
+            return m;
+          })));
+          this.computeCompleteness(projectKey, discussion, this.convo);
         },
         error(err) {
           console.error(err);

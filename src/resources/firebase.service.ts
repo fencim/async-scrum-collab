@@ -55,7 +55,7 @@ if (/development/i.test(process.env.NODE_ENV)) {
 
 const imagesStorageRef = ref(fbStorage, 'images');
 
-type Models = entities.Convo | entities.IProfile |
+type Models = entities.Convo | entities.IProfile | entities.IOnlineUser |
   entities.IProject | entities.IProject | entities.IIteration |
   entities.DiscussionItem | entities.ICeremony | entities.IMedia | undefined;
 
@@ -66,7 +66,8 @@ const collections = {
   'ceremonies': () => collection(fbStore, 'ceremonies'),
   'discussions': () => collection(fbStore, 'discussions'),
   'convos': () => collection(fbStore, 'convos'),
-  'medias': () => collection(fbStore, 'medias')
+  'medias': () => collection(fbStore, 'medias'),
+  'online': () => collection(fbStore, 'online-users')
 };
 type Colls = typeof collections;
 type ModelName = keyof Colls;

@@ -5,3 +5,4 @@ export * from './media.entities';
 export * from './profile.entities';
 export * from './project.entities';
 export * from './convo.entities';
+export * from './online-user.entity';

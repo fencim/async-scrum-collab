@@ -781,10 +781,17 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     );
   }
   async saveEachTo(values: T[], status?: DocStatus) {
+    const saved: IDocStore<T>[] = [];
     while (values.length) {
       const v = values.splice(0, 1)[0];
-      v && (await this.setData(String(this.getKeyOf(v)), v, status));
+      if (v) {
+        const doc = await this.save(String(this.getKeyOf(v)), v, status);
+        if (doc) {
+          saved.push(doc);
+        }
+      }
     }
+    return saved;
   }
   subscribeOn(
     docOrKey: IDocStore<T> | string,
@@ -1095,26 +1102,21 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
               list,
               filters
             );
-            return updated?.map((u) => u.data) || list;
+            return updated || Promise.all(list.map(async (d) => (await this.getDoc(this.getKeyOf(d)) as IDocStore<T>)));
           } else {
-            await this.saveEachTo(list, 'synced');
-            return list;
+            return this.saveEachTo(list, 'synced');
           }
-        })
-      )
-      .pipe(
-        switchMap(async (list) => {
-          return (await Promise.all(
-            list.map((i) => this.getDoc(this.getKeyOf(i)))
-          )) as IDocStore<T>[];
         })
       );
     activeStream = merge(offline, online);
-    activeStream.subscribe({
-      error: () => {
-        this.streamMap.delete(filterStr);
-      },
-    });
+    // activeStream.subscribe({
+    //   next(value) {
+    //     console.log(value);
+    //   },
+    //   error: () => {
+    //     this.streamMap.delete(filterStr);
+    //   },
+    // });
     this.streamMap.set(filterStr, activeStream);
     return activeStream;
   }

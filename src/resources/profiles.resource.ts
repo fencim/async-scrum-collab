@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 
 class ProfileResource extends BaseResource<IProfile> {
   protected streamCb(filters?: Filters<Entity> | undefined): void | Observable<IProfile[]> {
-    return firebaseService.streamWith<IProfile>('projects', filters && this.arrayFilter(filters) ||
+    return firebaseService.streamWith<IProfile>('profiles', filters && this.arrayFilter(filters) ||
       (typeof filters == 'object' && filters as { [key: string]: string }) || {});
   }
   protected async getCb(key: string): Promise<boolean | void | IProfile> {

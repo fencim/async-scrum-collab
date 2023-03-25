@@ -3,8 +3,7 @@ WARNING: Illegal reflective access by io.netty.util.internal.ReflectionUtil (fil
 WARNING: Please consider reporting this to the maintainers of io.netty.util.internal.ReflectionUtil
 WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
-18:57:13.351 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
-18:57:13.819 [main] INFO com.firebase.server.forge.App$ - Listening at localhost:9000
-18:57:43.988 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO com.firebase.core.namespace.NamespaceActor - async-scrum-collab-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 470ms, init: 0ms
-18:57:44.290 [NamespaceSystem-blocking-namespace-operation-dispatcher-6:async-scrum-collab-default-rtdb$1087134829:] INFO com.firebase.core.namespace.StateManager - Namespace async-scrum-collab-default-rtdb status Active to Active
-21:01:40.837 [NamespaceSystem-akka.actor.default-dispatcher-11] INFO com.firebase.core.namespace.NamespaceActor - async-scrum-collab successfully activated FBKV (SurveyIdle(0)) wait: 81ms, init: 0ms
+11:25:08.539 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+11:25:08.903 [main] INFO com.firebase.server.forge.App$ - Listening at localhost:9000
+11:25:24.723 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO com.firebase.core.namespace.NamespaceActor - async-scrum-collab-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 436ms, init: 0ms
+11:25:25.006 [NamespaceSystem-blocking-namespace-operation-dispatcher-6:async-scrum-collab-default-rtdb$-1439277422:] INFO com.firebase.core.namespace.StateManager - Namespace async-scrum-collab-default-rtdb status Active to Active

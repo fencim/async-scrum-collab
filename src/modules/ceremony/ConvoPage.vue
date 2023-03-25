@@ -1,7 +1,13 @@
 <template>
   <q-page class="justify-between q-pa-sm column">
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
-    <div id="messages-container" class="col-auto" style="width: 100%">
+    <q-infinite-scroll @load="onLoad" reverse id="messages-container">
+      <template v-slot:loading>
+        <div class="row justify-center q-my-md">
+          <q-spinner color="primary" name="dots" size="40px" />
+        </div>
+      </template>
+
       <div v-for="m in convoStore.convo" :key="m.key" :id="m.key">
         <chat-message
           v-if="m.type == 'message'"
@@ -43,7 +49,8 @@
         />
       </div>
       <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
-    </div>
+    </q-infinite-scroll>
+
     <q-form @submit="sendMessage">
       <q-toolbar class="bg-grey-10 col" style="padding-right: 70px">
         <q-btn icon="poll " flat round />
@@ -183,7 +190,7 @@ export default defineComponent({
     convoBus.on('vote', this.confirmVote);
     convoBus.on('disagree', this.confirmDisagree);
     convoBus.on('refresh', this.init);
-    await nextTick();
+
     this.scrollToBottom();
   },
   unmounted() {
@@ -294,12 +301,18 @@ export default defineComponent({
       convoBus.emit('progressed');
     },
     scrollToBottom() {
-      const elem = document.querySelector(this.$route.hash || '#input-message');
-      elem?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end',
-        inline: 'end',
-      });
+      const scrollTo = () => {
+        const elem = document.querySelector(
+          this.$route.hash || '#input-message'
+        );
+        if (!elem) setTimeout(scrollTo, 100);
+        elem?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'end',
+        });
+      };
+      scrollTo();
     },
     stampTime(dateTime: string) {
       const now = new Date();

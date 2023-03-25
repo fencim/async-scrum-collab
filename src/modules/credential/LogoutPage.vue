@@ -12,9 +12,7 @@
           <q-card-section> Are you sure? You want to logout? </q-card-section>
         </q-card-section>
         <q-card-actions align="center">
-          <q-btn @click="signOut = true" v-close-popup color="primary"
-            >Yes</q-btn
-          >
+          <q-btn @click="logout()" v-close-popup color="primary">Yes</q-btn>
           <q-btn v-close-popup>Cancel</q-btn>
         </q-card-actions>
       </q-card>

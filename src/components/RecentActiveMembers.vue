@@ -33,14 +33,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { IProfile } from 'src/entities';
+import { defineComponent, PropType } from 'vue';
 const MAX_PROFILE_COUNT = 5;
 export default defineComponent({
   name: 'RecentActiveMembers',
   emits: ['clickProfile', 'ctrlClick'],
   props: {
     profiles: {
-      type: Object,
+      type: Object as PropType<IProfile[]>,
       required: true,
     },
     sizes: {
@@ -51,8 +52,9 @@ export default defineComponent({
   computed: {
     recent() {
       return (
-        Array.isArray(this.profiles) &&
-        this.profiles.filter((p) => p).slice(0, MAX_PROFILE_COUNT)
+        (Array.isArray(this.profiles) &&
+          this.profiles.filter((p) => p).slice(0, MAX_PROFILE_COUNT)) ||
+        []
       );
     },
     extraProfiles() {
