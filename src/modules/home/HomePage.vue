@@ -28,11 +28,22 @@
               </q-card-section>
             </q-card-section>
             <q-card-actions>
-              <q-btn @click.prevent="joinProject(props.row.key)">Join</q-btn>
               <q-btn
+                v-if="!hasJoined(props.row)"
+                @click.prevent="joinProject(props.row.key)"
+                >Join</q-btn
+              >
+              <q-btn
+                v-if="isAdminOf(props.row)"
                 icon="edit"
                 class="rounded"
                 :to="'/' + props.row.key + '/edit'"
+              />
+              <q-btn
+                v-if="isAdminOf(props.row)"
+                icon="emoji_people"
+                class="rounded"
+                :to="{ name: 'members', params: { project: props.row.key } }"
               />
             </q-card-actions>
           </q-card>
@@ -43,6 +54,7 @@
 </template>
 
 <script lang="ts">
+import { IProject } from 'src/entities';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
@@ -58,9 +70,26 @@ export default defineComponent({
     };
   },
   methods: {
+    hasJoined(project: IProject) {
+      return (
+        profilesStore.presentUser?.key &&
+        [
+          ...project.admins,
+          ...project.moderators,
+          ...project.members,
+          ...project.pending,
+        ].includes(profilesStore.presentUser?.key)
+      );
+    },
+    isAdminOf(project: IProject) {
+      return (
+        profilesStore.presentUser?.key &&
+        [...project.admins].includes(profilesStore.presentUser?.key)
+      );
+    },
     async joinProject(projectKey: string) {
       if (profilesStore.presentUser) {
-        await projectStore.addMember(
+        await projectStore.joinProject(
           projectKey,
           profilesStore.presentUser?.key
         );

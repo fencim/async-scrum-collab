@@ -96,7 +96,15 @@ export default defineComponent({
     return {
       projectStore,
       profile: profileStore,
-      theProject: {} as IProject,
+      theProject: {
+        key: '',
+        name: '',
+        members: [],
+        pending: [],
+        admins: [],
+        moderators: [],
+        guests: [],
+      } as IProject,
       icon: undefined as File | undefined,
     };
   },
@@ -117,13 +125,15 @@ export default defineComponent({
     async submitNewProject() {
       try {
         this.saving = true;
-        const project = await projectStore.saveProject(
+        if (profileStore.theUser) {
+          this.theProject.admins = [profileStore.theUser.key];
+        }
+
+        await projectStore.saveProject(
           this.theProject as IProject,
           this.croppedImg || this.icon
         );
-        if (profileStore.theUser) {
-          projectStore.addMember(project.key, profileStore.theUser.key);
-        }
+
         this.$router.replace('/' + this.theProject?.key);
       } catch (e) {
         this.$q.notify({

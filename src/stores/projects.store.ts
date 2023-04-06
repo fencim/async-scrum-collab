@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { IProject } from 'src/entities';
+import { IProfile, IProject } from 'src/entities';
 import { projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
 import { useCeremonyStore } from './cermonies.store';
@@ -10,6 +10,7 @@ interface IProjectState {
   projects: IProject[];
   activeProject?: IProject;
 }
+type MembershipType = 'pending' | 'admin' | 'moderator' | 'member' | 'guest';
 export const useProjectStore = defineStore('projectStore', {
   state: () => ({
     projects: []
@@ -34,7 +35,7 @@ export const useProjectStore = defineStore('projectStore', {
         this.activeProject = project;
         if (project) {
           const profileStore = useProfilesStore();
-          profileStore.selectProjectMembers(project.members);
+          profileStore.selectProjectMembers([...project.admins, ...project.members, ...project.moderators]);
           const discussionStore = useDiscussionStore();
           discussionStore.ofProject(project.key);
           const iterationStore = useIterationStore();
@@ -47,6 +48,33 @@ export const useProjectStore = defineStore('projectStore', {
       } else {
         this.activeProject = undefined;
       }
+    },
+    async setProjectMember(project: IProject, profiles: IProfile[], tobe: MembershipType, from: MembershipType) {
+      const getCollection = (membershipType: MembershipType) => {
+        switch (membershipType) {
+          case 'admin':
+            return project.admins;
+          case 'moderator':
+            return project.moderators;
+          case 'member':
+            return project.members;
+          case 'guest':
+            return project.guests;
+          case 'pending':
+          default:
+            return project.pending;
+        }
+      }
+      const source = getCollection(from);
+      const destination = getCollection(tobe);
+      profiles.forEach(profile => {
+        const sourceIndex = source.findIndex(p => profile.key == p);
+        if (sourceIndex >= 0) {
+          source.splice(sourceIndex, 1);
+          destination.push(profile.key);
+        }
+      })
+      await this.saveProject(project);
     },
     async saveProject(newProject: IProject, icon?: File) {
       const iconURL = await (new Promise<string | undefined>((resolve) => {
@@ -82,6 +110,20 @@ export const useProjectStore = defineStore('projectStore', {
         projectResource.setData(projectKey, {
           ...project,
           members: [...project.members]
+        });
+      }
+      return project;
+    },
+    async joinProject(projectKey: string, memberKey: string) {
+      const project = await this.selectProject(projectKey);
+      if (!project) {
+        throw 'Project does not exits';
+      }
+      if (!project.pending?.find(m => m == memberKey) && !project.members?.find(m => m == memberKey)) {
+        project.pending = (project.pending || []).concat([memberKey]);
+        projectResource.setData(projectKey, {
+          ...project,
+          pending: [...project.pending]
         });
       }
       return project;

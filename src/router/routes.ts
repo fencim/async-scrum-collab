@@ -48,10 +48,16 @@ const routes: RouteRecordRaw[] = [
           actions: () => import('src/modules/project/ProjectActionList.vue')
         }
       }, {
-        name: 'Edit Project',
+        name: 'editProject',
         path: 'edit', components: {
           default: () => import('src/modules/project/NewProjectPage.vue'),
         }
+      }, {
+        name: 'members',
+        path: 'members', components: {
+          default: () => import('src/modules/project/MembersPage.vue'),
+          header: () => import('src/modules/project/ProjectToolbar.vue'),
+        },
       }, {
         name: 'New Iteration',
         path: 'iteration/new', components: {

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { IProfile } from 'src/entities';
+import { IProfile, IProject } from 'src/entities';
 import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
 import { sessionResource } from 'src/resources/session.resource';
@@ -9,6 +9,7 @@ interface IProfileState {
   members: IProfile[];
   theUser?: IProfile;
 }
+
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({
     profiles: [botProfile] as IProfile[],
@@ -50,7 +51,7 @@ export const useProfilesStore = defineStore('Profiles', {
       } || undefined;
       justLoggedIn = justLoggedIn && !!this.theUser;
       if (justLoggedIn && this.theUser && this.theUser.key) {
-        //profileResource.setData(this.theUser.key, this.theUser);
+        profileResource.setData(this.theUser.key, this.theUser);
       }
       if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
         mediaResource.cacheHttpUrl(this.theUser.avatar)

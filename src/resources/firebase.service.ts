@@ -174,16 +174,19 @@ class FirebaseSevice {
   async create(modelName: ModelName, value: Models) {
     if (value) {
       const docRef = doc(fbStore, modelName + '/' + value.key);
-      await setDoc(docRef, value);
+      await setDoc(docRef, this.clone(value));
     }
     return value;
+  }
+  clone<T>(val: T) {
+    return JSON.parse(
+      JSON.stringify(val)
+    ) as T
   }
   async update(modelName: ModelName, id: string, value: Models) {
     const docRef = doc(fbStore, modelName, id);
     if (value) {
-      await updateDoc(docRef, {
-        ...value
-      });
+      await updateDoc(docRef, { ...this.clone(value) });
     }
   }
   async delete(modelName: ModelName, id: string) {
