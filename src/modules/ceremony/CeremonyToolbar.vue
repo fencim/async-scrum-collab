@@ -40,9 +40,11 @@ import { useProjectStore } from 'src/stores/projects.store';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { ICeremony, IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
+import { useActiveStore } from 'src/stores/active.store';
 
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();
+const activeStore = useActiveStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 
@@ -76,7 +78,7 @@ export default defineComponent({
   },
   computed: {
     members() {
-      return profileStore.members;
+      return activeStore.activeMembers;
     },
     progress() {
       return ceremonyStore.activeCeremonyProgress;

@@ -3,6 +3,7 @@ import { firebaseService } from './firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
+import { logsResource } from './logs.resource';
 
 class ProjectResource extends BaseResource<IProject> {
   protected streamCb(filters?: Filters<Entity> | undefined): void | Observable<IProject[]> {
@@ -13,7 +14,12 @@ class ProjectResource extends BaseResource<IProject> {
     return await firebaseService.get('projects', key) as IProject;
   }
   protected async createCb(data: IProject): Promise<boolean | void | IProject> {
-    return await firebaseService.create('projects', data) as IProject;
+    const result = await firebaseService.create('projects', data) as IProject;
+    await logsResource.setData('', {
+      type: 'project-create',
+      project: data
+    })
+    return result;
   }
   protected async deleteCb(data: IProject): Promise<boolean | void | IProject> {
     await firebaseService.delete('projects', data.id || data.key);

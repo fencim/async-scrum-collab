@@ -3,9 +3,9 @@ import { IIteration } from './iteration.entities';
 import { IProject } from './project.entities';
 
 export interface IBaseActivityLog extends IBaseEntity {
-  key: string;
-  date: string;
-  user: string;
+  key?: string;
+  date?: string;
+  user?: string;
 }
 /**Auth Activities */
 //Login
@@ -123,6 +123,12 @@ export interface IIterationReOpenActivityLog extends IBaseActivityLog {
   iterationKey: string;
 }
 
+export type IIterationActivityLog =
+  | IIterationCreateActivityLog
+  | IIterationActivateActivityLog
+  | IIterationCloseActivityLog
+  | IIterationReOpenActivityLog;
+
 //*Add Ceremony
 
 /** Ceremony Activities */
@@ -133,3 +139,5 @@ export interface IIterationReOpenActivityLog extends IBaseActivityLog {
 //accept schedule
 //progress changed
 //add discussion
+
+export type IActivityLog = IAuthActivityLogs | IProjectActivityLog | IIterationActivityLog;

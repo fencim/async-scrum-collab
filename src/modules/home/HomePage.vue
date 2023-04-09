@@ -41,7 +41,7 @@
               />
               <q-btn
                 v-if="isAdminOf(props.row)"
-                icon="emoji_people"
+                icon="group"
                 class="rounded"
                 :to="{ name: 'members', params: { project: props.row.key } }"
               />

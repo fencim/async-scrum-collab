@@ -1,10 +1,9 @@
 WARNING: An illegal reflective access operation has occurred
-WARNING: Illegal reflective access by io.netty.util.internal.ReflectionUtil (file:/C:/Users/lucma/.cache/firebase/emulators/firebase-database-emulator-v4.8.0.jar) to field sun.nio.ch.SelectorImpl.selectedKeys
+WARNING: Illegal reflective access by io.netty.util.internal.ReflectionUtil (file:/C:/Users/lucma/.cache/firebase/emulators/firebase-database-emulator-v4.11.0.jar) to field sun.nio.ch.SelectorImpl.selectedKeys
 WARNING: Please consider reporting this to the maintainers of io.netty.util.internal.ReflectionUtil
 WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
 WARNING: All illegal access operations will be denied in a future release
-16:00:53.948 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
-16:00:54.405 [main] INFO com.firebase.server.forge.App$ - Listening at localhost:9000
-16:01:11.318 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - async-scrum-collab-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 307ms, init: 0ms
-16:01:11.528 [NamespaceSystem-blocking-namespace-operation-dispatcher-7:async-scrum-collab-default-rtdb$510244344:] INFO com.firebase.core.namespace.StateManager - Namespace async-scrum-collab-default-rtdb status Active to Active
-16:05:28.068 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - irids-project successfully activated FBKV (SurveyIdle(0)) wait: 28ms, init: 0ms
+13:05:03.428 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+13:05:03.804 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000
+13:05:18.922 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - async-scrum-collab-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 270ms, init: 0ms
+13:05:19.110 [NamespaceSystem-blocking-namespace-operation-dispatcher-7] INFO com.firebase.core.namespace.StateManager - Namespace async-scrum-collab-default-rtdb status Active to Active

@@ -1,4 +1,5 @@
 import { route } from 'quasar/wrappers';
+import { useActiveStore } from 'src/stores/active.store';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
@@ -12,6 +13,7 @@ import {
   createWebHistory,
 } from 'vue-router';
 import routes from './routes';
+import { IProject } from 'src/entities';
 
 /*
  * If not building with SSR mode, you can
@@ -26,6 +28,7 @@ export default route(function (/* { store, ssrContext } */) {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);
+  const activeStore = useActiveStore();
   const profileStore = useProfilesStore();
   const projectStore = useProjectStore();
   const iterationStore = useIterationStore();
@@ -47,10 +50,14 @@ export default route(function (/* { store, ssrContext } */) {
   Router.beforeEach(async (to, from, next) => {
     if (!profileStore.getUser()) await profileStore.authenticate();
     if (profileStore.getUser() || (to.meta && to.meta.anonymous)) {
+      let activeProject: IProject | undefined;
       if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
-        await projectStore.selectProject(to.params['project'] as string);
+        activeProject = await projectStore.selectProject(to.params['project'] as string);
       } else if (!to.params['project']) {
         await projectStore.selectProject('');
+      }
+      if (activeProject) {
+        activeStore.selectProject(activeProject);
       }
       if (projectStore.activeProject && to.params && to.params['iteration']
         && (!iterationStore.activeIteration || iterationStore.activeIteration.key != to.params['iteration'])) {

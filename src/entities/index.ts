@@ -6,3 +6,4 @@ export * from './profile.entities';
 export * from './project.entities';
 export * from './convo.entities';
 export * from './online-user.entity';
+export * from './activity-log.entities';

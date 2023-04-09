@@ -2,10 +2,12 @@
   <q-page class="justify-evenly q-pa-sm">
     <div class="row">
       <q-card class="col q-ma-sm">
-        <q-card-section>Admins ({{ admins.length }})</q-card-section>
+        <q-card-section
+          >Admins ({{ activeStore.administrators.length }})</q-card-section
+        >
         <q-card-section>
           <recent-active-members
-            :profiles="admins"
+            :profiles="activeStore.administrators"
             @click-profile="selectAdmin"
           />
         </q-card-section>
@@ -21,10 +23,12 @@
         </q-card-actions>
       </q-card>
       <q-card class="col q-ma-sm">
-        <q-card-section>Moderators ({{ moderators.length }})</q-card-section>
+        <q-card-section
+          >Moderators ({{ activeStore.moderators.length }})</q-card-section
+        >
         <q-card-section>
           <recent-active-members
-            :profiles="moderators"
+            :profiles="activeStore.moderators"
             @click-profile="selectModerator"
           />
         </q-card-section>
@@ -42,10 +46,12 @@
     </div>
     <div class="row">
       <q-card class="col q-ma-sm">
-        <q-card-section>Pending ({{ pending.length }})</q-card-section>
+        <q-card-section
+          >Pending ({{ activeStore.pendingMembers.length }})</q-card-section
+        >
         <q-card-section>
           <recent-active-members
-            :profiles="pending"
+            :profiles="activeStore.pendingMembers"
             @click-profile="selectPending"
           />
         </q-card-section>
@@ -61,10 +67,12 @@
         </q-card-actions>
       </q-card>
       <q-card class="col q-ma-sm">
-        <q-card-section>Members ({{ members.length }})</q-card-section>
+        <q-card-section
+          >Members ({{ activeStore.activeMembers.length }})</q-card-section
+        >
         <q-card-section>
           <recent-active-members
-            :profiles="members"
+            :profiles="activeStore.activeMembers"
             @click-profile="selectMember"
           />
         </q-card-section>
@@ -80,10 +88,12 @@
         </q-card-actions>
       </q-card>
       <q-card class="col q-ma-sm">
-        <q-card-section>Guests ({{ guests.length }})</q-card-section>
+        <q-card-section
+          >Guests ({{ activeStore.guests.length }})</q-card-section
+        >
         <q-card-section>
           <recent-active-members
-            :profiles="guests"
+            :profiles="activeStore.guests"
             @click-profile="selectGuest"
           />
         </q-card-section>
@@ -106,53 +116,33 @@ import { IProfile } from 'src/entities';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
-import { useProfilesStore } from 'src/stores/profiles.store';
+import { useActiveStore } from 'src/stores/active.store';
 
-const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
-
+const activeStore = useActiveStore();
 export default defineComponent({
   name: 'MembersPage',
   components: { RecentActiveMembers },
   data() {
     return {
-      projectStore,
-      admins: [] as IProfile[],
+      activeStore,
       selectedAdmins: [] as IProfile[],
-      pending: [] as IProfile[],
       selectedPending: [] as IProfile[],
-      moderators: [] as IProfile[],
       selectedModerators: [] as IProfile[],
-      guests: [] as IProfile[],
       selectedGuests: [] as IProfile[],
-      members: [] as IProfile[],
       selectedMembers: [] as IProfile[],
     };
   },
   async mounted() {
-    await this.loadMembers();
+    await this.resetSelected();
   },
+
   methods: {
-    async loadMembers() {
-      this.admins = await profileStore.selectProjectMembers(
-        projectStore.activeProject?.admins || []
-      );
+    resetSelected() {
       this.selectedAdmins = [];
-      this.moderators = await profileStore.selectProjectMembers(
-        projectStore.activeProject?.moderators || []
-      );
       this.selectedModerators = [];
-      this.guests = await profileStore.selectProjectMembers(
-        projectStore.activeProject?.guests || []
-      );
       this.selectedGuests = [];
-      this.pending = await profileStore.selectProjectMembers(
-        projectStore.activeProject?.pending || []
-      );
       this.selectedPending = [];
-      this.members = await profileStore.selectProjectMembers(
-        projectStore.activeProject?.members || []
-      );
       this.selectedMembers = [];
     },
     selectAdmin(profile: IProfile) {
@@ -213,94 +203,103 @@ export default defineComponent({
       }
     },
     async adminsToMembers() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedAdmins,
         'member',
         'admin'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async adminsToModerators() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedAdmins,
         'moderator',
         'admin'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async moderatorsToAdmins() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedModerators,
         'admin',
         'moderator'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async moderatorsToMembers() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedModerators,
         'member',
         'moderator'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async pendingToMembers() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedPending,
         'member',
         'pending'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async pendingToGuest() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedPending,
         'guest',
         'pending'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async membersToModerators() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedMembers,
         'moderator',
         'member'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async membersToGuests() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedMembers,
         'guest',
         'member'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
     async guestsToMembers() {
-      if (!projectStore.activeProject) return;
+      if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
-        projectStore.activeProject,
+        activeStore.activeProject,
         this.selectedGuests,
         'member',
         'guest'
       );
-      await this.loadMembers();
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
     },
   },
 });

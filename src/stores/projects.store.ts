@@ -5,7 +5,9 @@ import { firebaseService } from 'src/resources/firebase.service';
 import { useCeremonyStore } from './cermonies.store';
 import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
-import { useProfilesStore } from './profiles.store';
+import { useActiveStore } from './active.store';
+
+
 interface IProjectState {
   projects: IProject[];
   activeProject?: IProject;
@@ -20,10 +22,11 @@ export const useProjectStore = defineStore('projectStore', {
   actions: {
     async init() {
       projectResource.streamWith().subscribe({
-        next: (projects) => {
+        next: async (projects) => {
           this.projects = projects;
           if (this.activeProject) {
-            this.selectProject(this.activeProject.key);
+            const activeProject = await this.selectProject(this.activeProject.key);
+            activeProject && await useActiveStore().selectProject(activeProject);
           }
         },
       })
@@ -34,8 +37,6 @@ export const useProjectStore = defineStore('projectStore', {
         const project = this.projects.find(p => p.key == key) || await projectResource.findOne({ key });
         this.activeProject = project;
         if (project) {
-          const profileStore = useProfilesStore();
-          profileStore.selectProjectMembers([...project.admins, ...project.members, ...project.moderators]);
           const discussionStore = useDiscussionStore();
           discussionStore.ofProject(project.key);
           const iterationStore = useIterationStore();

@@ -35,7 +35,8 @@ import { Observable, retry } from 'rxjs';
 
 // Initialize Firebase
 const app = initializeApp({
-  ...firebaseConfig
+  ...firebaseConfig,
+
 });
 
 // Initialize Firebase Authentication and get a reference to the service
@@ -57,7 +58,8 @@ const imagesStorageRef = ref(fbStorage, 'images');
 
 type Models = entities.Convo | entities.IProfile | entities.IOnlineUser |
   entities.IProject | entities.IProject | entities.IIteration |
-  entities.DiscussionItem | entities.ICeremony | entities.IMedia | undefined;
+  entities.DiscussionItem | entities.ICeremony | entities.IMedia |
+  entities.IActivityLog | undefined;
 
 const collections = {
   'profiles': () => collection(fbStore, 'profiles'),
@@ -67,7 +69,8 @@ const collections = {
   'discussions': () => collection(fbStore, 'discussions'),
   'convos': () => collection(fbStore, 'convos'),
   'medias': () => collection(fbStore, 'medias'),
-  'online': () => collection(fbStore, 'online-users')
+  'online': () => collection(fbStore, 'online-users'),
+  'logs': () => collection(fbStore, 'logs')
 };
 type Colls = typeof collections;
 type ModelName = keyof Colls;

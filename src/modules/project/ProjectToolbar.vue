@@ -13,15 +13,15 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { IProject } from 'src/entities';
+import { useActiveStore } from 'src/stores/active.store';
 const projectStore = useProjectStore();
-const profileStore = useProfilesStore();
+const activeStore = useActiveStore();
 export default defineComponent({
   name: 'ProjectToolbar',
 
@@ -29,7 +29,7 @@ export default defineComponent({
   data() {
     return {
       projectStore,
-      profileStore,
+      activeStore,
       showToday: true,
       activeProject: '',
       project: undefined as IProject | undefined,
@@ -37,7 +37,7 @@ export default defineComponent({
   },
   computed: {
     members() {
-      return profileStore.members;
+      return activeStore.activeMembers;
     },
   },
   mounted() {

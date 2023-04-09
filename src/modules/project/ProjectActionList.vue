@@ -7,6 +7,20 @@
         </q-item-section>
         <q-tooltip>New Iteration</q-tooltip>
       </q-item>
+      <q-item
+        clickable
+        :to="{
+          name: 'members',
+          params: {
+            key: project?.key,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="group" />
+        </q-item-section>
+        <q-tooltip>Project Members</q-tooltip>
+      </q-item>
     </q-list>
   </div>
 </template>

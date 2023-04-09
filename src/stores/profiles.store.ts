@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia';
-import { IProfile, IProject } from 'src/entities';
+import { IProfile } from 'src/entities';
 import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
 import { firebaseService } from 'src/resources/firebase.service';
+import { logsResource } from 'src/resources/logs.resource';
 import { sessionResource } from 'src/resources/session.resource';
+
 const botProfile = { avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' };
 interface IProfileState {
   profiles: IProfile[];
-  members: IProfile[];
   theUser?: IProfile;
 }
 
@@ -47,11 +48,17 @@ export const useProfilesStore = defineStore('Profiles', {
       this.theUser = this.theUser || (user = firebaseService.auth()) && {
         avatar: (user?.photoURL || ''),
         key: user?.uid || user?.email || '',
+        email: user?.email || 'none',
+        emailVerified: user?.emailVerified,
         name: user?.displayName || user?.email || 'None'
       } || undefined;
       justLoggedIn = justLoggedIn && !!this.theUser;
       if (justLoggedIn && this.theUser && this.theUser.key) {
         profileResource.setData(this.theUser.key, this.theUser);
+        logsResource.setData('', {
+          type: 'auth-login',
+          username: this.theUser.email || this.theUser.key,
+        })
       }
       if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
         mediaResource.cacheHttpUrl(this.theUser.avatar)
@@ -80,7 +87,6 @@ export const useProfilesStore = defineStore('Profiles', {
         }
         return p;
       }))) as IProfile[];
-      this.members = profiles;
       return profiles;
     },
     setAsTheUser(profileKey: string) {

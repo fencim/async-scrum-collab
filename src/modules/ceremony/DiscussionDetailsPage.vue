@@ -176,9 +176,11 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { convoBus } from './convo-bus';
+import { useActiveStore } from 'src/stores/active.store';
 
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();
+const activeStore = useActiveStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
@@ -301,14 +303,14 @@ export default defineComponent({
       if (this.theDiscussion) {
         const awareness = this.theDiscussion.awareness || {};
         const awareMembers = Object.keys(awareness);
-        this.membersAgreed = profileStore.members.filter(
+        this.membersAgreed = activeStore.activeMembers.filter(
           (m) => awareness[m.key] == 'agree'
         );
-        this.membersDisagreed = profileStore.members.filter(
+        this.membersDisagreed = activeStore.activeMembers.filter(
           (m) => awareness[m.key] == 'disagree'
         );
 
-        this.membersPending = profileStore.members.filter(
+        this.membersPending = activeStore.activeMembers.filter(
           (m) => !awareMembers.includes(m.key)
         );
       }
@@ -330,7 +332,7 @@ export default defineComponent({
               .map((c) => c.from as string)
           ),
         ];
-        this.membersVoted = profileStore.members.filter((m) =>
+        this.membersVoted = activeStore.activeMembers.filter((m) =>
           voted.includes(m.key)
         );
         this.progressReport = report;

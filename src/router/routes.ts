@@ -21,7 +21,7 @@ const routes: RouteRecordRaw[] = [
         name: 'logout',
         component: () => import('src/modules/credential/LogoutPage.vue')
       }, {
-        name: 'Home',
+        name: 'home',
         meta: { actions: true },
         path: '', components: {
           default: () => import('src/modules/home/HomePage.vue'),
@@ -54,9 +54,11 @@ const routes: RouteRecordRaw[] = [
         }
       }, {
         name: 'members',
+        meta: { actions: true },
         path: 'members', components: {
           default: () => import('src/modules/project/MembersPage.vue'),
           header: () => import('src/modules/project/ProjectToolbar.vue'),
+          actions: () => import('src/modules/project/ProjectActionList.vue')
         },
       }, {
         name: 'New Iteration',

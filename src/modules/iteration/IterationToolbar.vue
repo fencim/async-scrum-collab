@@ -46,15 +46,15 @@
 </template>
 
 <script lang="ts">
-import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { date } from 'quasar';
+import { useActiveStore } from 'src/stores/active.store';
 
-const profilesStore = useProfilesStore();
+const activeStore = useActiveStore();
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
 
@@ -65,7 +65,6 @@ export default defineComponent({
   data() {
     return {
       date,
-      profilesStore,
       projectStore,
       iterationStore,
       showToday: true,
@@ -75,7 +74,7 @@ export default defineComponent({
   },
   computed: {
     members() {
-      return profilesStore.members;
+      return activeStore.activeMembers;
     },
   },
   mounted() {
