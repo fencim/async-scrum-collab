@@ -1,5 +1,5 @@
 import { IIteration } from 'src/entities';
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
@@ -37,4 +37,3 @@ class IterationResource extends BaseResource<IIteration> {
   }
 }
 export const iterationResource = new IterationResource();
-iterationResource.resumeSyncing();

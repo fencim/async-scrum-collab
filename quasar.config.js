@@ -89,8 +89,28 @@ module.exports = configure(function (ctx) {
 
       // https://v2.quasar.dev/quasar-cli-webpack/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
-      // chainWebpack (/* chain */) {}
+      extendWebpack(cfg) {
+        const index = cfg.module.rules.findIndex(
+          (r) =>
+            (typeof r == 'string' && r == 'ts-loader') ||
+            (typeof r == 'object' && r.loader == 'ts-loader')
+        );
+        if (index > 0) {
+          if (typeof cfg.module.rules[index].exclude == 'string') {
+            cfg.module.rules[index].exclude = [cfg.module.rules[index].exclude, '**/*.spec.ts'];
+          } else if (Array.isArray(cfg.module.rules[index].exclude)) {
+            cfg.module.rules[index].exclude.push('**/*.spec.ts')
+          } else {
+            cfg.module.rules[index].exclude = ['**/*.spec.ts'];
+          }
+          cfg.module.rules.splice(index, 0, {
+            test: /\.worker\.ts$/,
+            loader: 'worker-loader',
+          });
+        }
+      },
     },
+
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-devServer
     devServer: {

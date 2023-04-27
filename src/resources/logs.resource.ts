@@ -1,4 +1,4 @@
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
@@ -29,7 +29,7 @@ class LogsResource extends BaseResource<IActivityLog> {
     throw new Error('Method not implemented.');
   }
   protected async deleteAllCb(): Promise<boolean | void> {
-    throw new Error('Method not implemented.');
+    return true;
   }
   protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | IActivityLog[]> {
     return await firebaseService.findAll('logs', filters as { [field: string]: string }) as IActivityLog[]
@@ -46,4 +46,3 @@ class LogsResource extends BaseResource<IActivityLog> {
 
 }
 export const logsResource = new LogsResource();
-logsResource.resumeSyncing();

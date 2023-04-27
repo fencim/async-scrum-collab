@@ -1,5 +1,6 @@
 import { store } from 'quasar/wrappers'
 import { createPinia } from 'pinia'
+import 'src/workers/synchronizer/synchronizer.connection';
 
 /*
  * If not building with SSR mode, you can
@@ -18,3 +19,5 @@ export default store((/* { ssrContext } */) => {
 
   return pinia
 })
+
+

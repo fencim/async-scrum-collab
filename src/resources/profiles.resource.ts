@@ -1,5 +1,5 @@
 import { IProfile } from 'src/entities';
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Filters, Entity } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
@@ -37,4 +37,3 @@ class ProfileResource extends BaseResource<IProfile> {
   }
 }
 export const profileResource = new ProfileResource();
-profileResource.resumeSyncing();

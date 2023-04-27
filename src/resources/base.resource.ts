@@ -954,7 +954,9 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     props: (keyof T)[],
     cb?: (status: StatusUpdate) => void
   ) {
-    const existing = await this.getDoc(key);
+    let existing = await this.getDoc(key);
+    if (!existing) await this.getData(key);
+    existing = await this.getDoc(key);
     if (!existing || typeof existing.data != 'object') return;
     let diff = 0;
     for (const prop of props) {

@@ -207,8 +207,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedAdmins,
-        'member',
-        'admin'
+        'members',
+        'admins'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
@@ -218,8 +218,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedAdmins,
-        'moderator',
-        'admin'
+        'moderators',
+        'admins'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
@@ -229,8 +229,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedModerators,
-        'admin',
-        'moderator'
+        'admins',
+        'moderators'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
@@ -240,8 +240,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedModerators,
-        'member',
-        'moderator'
+        'members',
+        'moderators'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
@@ -251,7 +251,7 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedPending,
-        'member',
+        'members',
         'pending'
       );
       await activeStore.selectProject(activeStore.activeProject);
@@ -262,7 +262,7 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedPending,
-        'guest',
+        'guests',
         'pending'
       );
       await activeStore.selectProject(activeStore.activeProject);
@@ -273,8 +273,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedMembers,
-        'moderator',
-        'member'
+        'moderators',
+        'members'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
@@ -284,8 +284,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedMembers,
-        'guest',
-        'member'
+        'guests',
+        'members'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
@@ -295,8 +295,8 @@ export default defineComponent({
       await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedGuests,
-        'member',
-        'guest'
+        'members',
+        'guests'
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();

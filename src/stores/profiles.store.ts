@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { IProfile } from 'src/entities';
 import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
-import { firebaseService } from 'src/resources/firebase.service';
+import { firebaseService } from 'src/services/firebase.service';
 import { logsResource } from 'src/resources/logs.resource';
 import { sessionResource } from 'src/resources/session.resource';
 

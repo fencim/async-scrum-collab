@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { IMedia } from 'src/entities';
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { KeyValueStorage } from './localbase';
@@ -71,4 +71,3 @@ class MediaResource extends BaseResource<IMedia> {
   }
 }
 export const mediaResource = new MediaResource();
-mediaResource.resumeSyncing();

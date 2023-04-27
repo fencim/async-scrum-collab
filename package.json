@@ -30,7 +30,8 @@
     "tweetnacl-util": "^0.15.1",
     "vue": "^3.0.0",
     "vue-cropperjs": "^5.0.0",
-    "vue-router": "^4.0.0"
+    "vue-router": "^4.0.0",
+    "worker-loader": "^3.0.8"
   },
   "devDependencies": {
     "@quasar/app-webpack": "^3.0.0",

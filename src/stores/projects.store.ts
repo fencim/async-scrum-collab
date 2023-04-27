@@ -1,18 +1,19 @@
 import { defineStore } from 'pinia';
 import { IProfile, IProject } from 'src/entities';
 import { projectResource } from 'src/resources';
-import { firebaseService } from 'src/resources/firebase.service';
+import { firebaseService } from 'src/services/firebase.service';
 import { useCeremonyStore } from './cermonies.store';
 import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useActiveStore } from './active.store';
+import { logsResource } from 'src/resources/logs.resource';
 
 
 interface IProjectState {
   projects: IProject[];
   activeProject?: IProject;
 }
-type MembershipType = 'pending' | 'admin' | 'moderator' | 'member' | 'guest';
+type MembershipType = 'pending' | 'admins' | 'moderators' | 'members' | 'guests';
 export const useProjectStore = defineStore('projectStore', {
   state: () => ({
     projects: []
@@ -51,19 +52,20 @@ export const useProjectStore = defineStore('projectStore', {
       }
     },
     async setProjectMember(project: IProject, profiles: IProfile[], tobe: MembershipType, from: MembershipType) {
+      const theProject = (await projectResource.findOne({ key: project.key })) || project;
       const getCollection = (membershipType: MembershipType) => {
         switch (membershipType) {
-          case 'admin':
-            return project.admins;
-          case 'moderator':
-            return project.moderators;
-          case 'member':
-            return project.members;
-          case 'guest':
-            return project.guests;
+          case 'admins':
+            return theProject.admins;
+          case 'moderators':
+            return theProject.moderators;
+          case 'members':
+            return theProject.members;
+          case 'guests':
+            return theProject.guests;
           case 'pending':
           default:
-            return project.pending;
+            return theProject.pending;
         }
       }
       const source = getCollection(from);
@@ -75,7 +77,11 @@ export const useProjectStore = defineStore('projectStore', {
           destination.push(profile.key);
         }
       })
-      await this.saveProject(project);
+      await projectResource.updatePropertiesFrom(theProject.key, {
+        [tobe]: destination,
+        [from]: source
+      }, [tobe, from]
+      );
     },
     async saveProject(newProject: IProject, icon?: File) {
       const iconURL = await (new Promise<string | undefined>((resolve) => {
@@ -106,6 +112,7 @@ export const useProjectStore = defineStore('projectStore', {
       if (!project) {
         throw 'Project does not exits';
       }
+
       if (!project.members?.find(m => m == memberKey)) {
         project.members = (project.members || []).concat([memberKey]);
         projectResource.setData(projectKey, {
@@ -121,11 +128,18 @@ export const useProjectStore = defineStore('projectStore', {
         throw 'Project does not exits';
       }
       if (!project.pending?.find(m => m == memberKey) && !project.members?.find(m => m == memberKey)) {
-        project.pending = (project.pending || []).concat([memberKey]);
-        projectResource.setData(projectKey, {
-          ...project,
-          pending: [...project.pending]
+        await projectResource.updatePropertiesFrom(project.key, {
+          pending: (project.pending || []).concat([memberKey])
+        }, ['pending'], (e) => {
+          if (e.status == 'synced') {
+            logsResource.setData('', {
+              type: 'project-join',
+              projectKey: project.key,
+
+            })
+          }
         });
+
       }
       return project;
     }

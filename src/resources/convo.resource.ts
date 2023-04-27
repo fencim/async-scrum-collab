@@ -1,5 +1,5 @@
 import { Convo, ConvoList } from 'src/entities';
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
@@ -46,4 +46,3 @@ class ConvoResource extends BaseResource<Convo> {
 
 }
 export const convoResource = new ConvoResource();
-convoResource.resumeSyncing();

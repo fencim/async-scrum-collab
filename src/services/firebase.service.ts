@@ -26,12 +26,20 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import { connectStorageEmulator, getDownloadURL, getStorage, ref, uploadBytesResumable, UploadTask } from 'firebase/storage';
-import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
+import { getDatabase, connectDatabaseEmulator, ref as refDb, onValue } from 'firebase/database';
 
 import * as entities from '../entities';
 import { firebaseConfig } from './firebase-config';
 import { WhereFilterOp } from './firebase-operators';
-import { Observable, retry } from 'rxjs';
+import { Observable, Subject, retry } from 'rxjs';
+
+export enum AccessStatus {
+  offline = 1,
+  online = 2,
+  authorized = 4,
+  unAuthorized = 8,
+  expired = 16
+}
 
 // Initialize Firebase
 const app = initializeApp({
@@ -75,31 +83,72 @@ const collections = {
 type Colls = typeof collections;
 type ModelName = keyof Colls;
 class FirebaseSevice {
+  constructor() {
+    this.accessObs = new Subject();
+    const connRef = refDb(fbDb, '.info/connected');
+    onValue(connRef, (snap) => {
+      if (snap.val() === true) {
+        this.setAccessStatus(AccessStatus.online);
+      } else {
+        this.setAccessStatus(AccessStatus.offline);
+      }
+    })
+
+  }
+  private accessObs?: Subject<AccessStatus>;
+  accessStatus = AccessStatus.online;
+  setAccessStatus(value: AccessStatus) {
+    if (value & AccessStatus.offline) {
+      this.accessStatus = this.accessStatus ^ AccessStatus.online;
+    } else if (value & AccessStatus.online) {
+      this.accessStatus = this.accessStatus | AccessStatus.online
+    }
+    if (value & AccessStatus.unAuthorized) {
+      this.accessStatus = this.accessStatus ^ AccessStatus.authorized;
+    } else if (value & AccessStatus.authorized) {
+      this.accessStatus = this.accessStatus | AccessStatus.authorized
+    }
+    this.accessObs?.next(value | this.accessStatus);
+  }
+  subscribe(cb: (online: AccessStatus) => void) {
+    this.accessObs?.subscribe(cb);
+  }
   auth() {
     return auth.currentUser;
   }
   autheticate() {
     return new Promise<User | null>((resolve) => {
       auth.onAuthStateChanged((user) => {
+        if (user) {
+          this.setAccessStatus(AccessStatus.authorized);
+        } else {
+          this.setAccessStatus(AccessStatus.unAuthorized);
+        }
         resolve(user);
       })
     })
   }
   async signout() {
+    this.setAccessStatus(AccessStatus.unAuthorized);
     return signOut(auth);
   }
   async signInWithSession(cred: AuthCredential) {
-    return signInWithCredential(auth, cred);
+    const res = await signInWithCredential(auth, cred);
+    res && this.setAccessStatus(AccessStatus.authorized);
+    return res;
   }
   async signInWithEmailandPass(email: string, password: string) {
     return await signInWithEmailAndPassword(auth, email, password);
   }
   async signInWithGoolgeAccount() {
-    return await signInWithPopup(auth, googleProvider);
+    const res = await signInWithPopup(auth, googleProvider);
+    this.setAccessStatus(AccessStatus.authorized);
+    return res;
   }
   async createUserWithEmailPass(email: string, password: string) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await sendEmailVerification(cred.user);
+    this.setAccessStatus(AccessStatus.authorized);
     return cred;
   }
   async uploadImage(file: File, options?: { task?: UploadTask, path: string }) {
@@ -192,6 +241,17 @@ class FirebaseSevice {
       await updateDoc(docRef, { ...this.clone(value) });
     }
   }
+  async patch(modelName: ModelName, id: string, prop: string, value: any) {
+    const docRef = doc(fbStore, modelName, id);
+    if (typeof value !== 'undefined') {
+      const data = {
+        [prop]: typeof value == 'object' ? this.clone(value) : value
+      }
+      await updateDoc(docRef, data);
+      return true;
+    }
+    return false;
+  }
   async delete(modelName: ModelName, id: string) {
     const docRef = doc(fbStore, modelName, id);
     await deleteDoc(docRef);
@@ -202,6 +262,7 @@ class FirebaseSevice {
     batch.delete(docRef);
     return batch.commit();
   }
+
 
 }
 

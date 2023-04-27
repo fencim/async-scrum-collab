@@ -1,5 +1,5 @@
 import { ICeremony } from 'src/entities';
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
@@ -42,4 +42,3 @@ class CeremonyResource extends BaseResource<ICeremony> {
   }
 }
 export const ceremonyResource = new CeremonyResource();
-ceremonyResource.resumeSyncing();

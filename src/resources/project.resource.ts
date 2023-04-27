@@ -1,11 +1,20 @@
 import { IProject } from 'src/entities';
-import { firebaseService } from './firebase.service';
-import { BaseResource } from './base.resource';
+import { firebaseService } from '../services/firebase.service';
+import { BaseResource, CbResponse } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
 import { logsResource } from './logs.resource';
 
 class ProjectResource extends BaseResource<IProject> {
+  protected async patchCb(data: IProject, property: string): Promise<CbResponse<IProject>> {
+    const projectKey = this.getKeyOf(data);
+    const result = await firebaseService.patch(
+      'projects',
+      projectKey, property,
+      data[property as keyof IProject]
+    );
+    return result;
+  }
   protected streamCb(filters?: Filters<Entity> | undefined): void | Observable<IProject[]> {
     return firebaseService.streamWith<IProject>('projects', filters && this.arrayFilter(filters) ||
       (typeof filters == 'object' && filters as { [key: string]: string }) || {});
@@ -35,12 +44,9 @@ class ProjectResource extends BaseResource<IProject> {
     await firebaseService.update('projects', data.id || data.key, data);
     return true;
   }
-  protected patchCb(): Promise<boolean | void | IProject> {
-    throw new Error('Method not implemented.');
-  }
+
   constructor() {
     super('project')
   }
 }
 export const projectResource = new ProjectResource();
-projectResource.resumeSyncing();

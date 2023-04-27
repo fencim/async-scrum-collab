@@ -1,4 +1,4 @@
-import { firebaseService } from './firebase.service';
+import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Filters, Entity } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
@@ -37,4 +37,3 @@ class OnlineUsersResource extends BaseResource<IOnlineUser> {
   }
 }
 export const onlineUsersResource = new OnlineUsersResource();
-onlineUsersResource.resumeSyncing();
