@@ -35,6 +35,9 @@ class SynchronizerConnection {
     postMessage('retrySynching', info);
     postMessage('syncResource', info);
   }
+  setUserKey(userKey: string) {
+    postMessage('setUserKey', userKey);
+  }
 }
 export const synchronizerConnection = new SynchronizerConnection();
 synchronizerWorker.addEventListener(

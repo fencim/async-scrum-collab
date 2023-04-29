@@ -105,6 +105,7 @@
         </q-card-section>
         <q-card-actions v-if="selectedGuests.length">
           <q-btn @click="guestsToMembers">As Member</q-btn>
+          <q-btn @click="guestsToPending">As Pending</q-btn>
         </q-card-actions>
       </q-card>
     </div>
@@ -296,6 +297,17 @@ export default defineComponent({
         activeStore.activeProject,
         this.selectedGuests,
         'members',
+        'guests'
+      );
+      await activeStore.selectProject(activeStore.activeProject);
+      this.resetSelected();
+    },
+    async guestsToPending() {
+      if (!activeStore.activeProject) return;
+      await projectStore.setProjectMember(
+        activeStore.activeProject,
+        this.selectedGuests,
+        'pending',
         'guests'
       );
       await activeStore.selectProject(activeStore.activeProject);

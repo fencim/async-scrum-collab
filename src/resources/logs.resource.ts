@@ -1,11 +1,12 @@
 import { firebaseService } from '../services/firebase.service';
-import { BaseResource } from './base.resource';
+import { BaseResource, DocStatus, StatusUpdate } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
 import { IActivityLog } from 'src/entities';
-import { useProfilesStore } from 'src/stores/profiles.store';
+// import { useProfilesStore } from 'src/stores/profiles.store';
 
 class LogsResource extends BaseResource<IActivityLog> {
+  userKey?: string;
   protected streamCb(filters?: Filters<Entity> | undefined): void | Observable<IActivityLog[]> {
     return firebaseService
       .streamWith<IActivityLog>('logs', filters
@@ -20,9 +21,7 @@ class LogsResource extends BaseResource<IActivityLog> {
     return await firebaseService.get('logs', key) as IActivityLog
   }
   protected async createCb(data: IActivityLog): Promise<boolean | void | IActivityLog> {
-    data.user = useProfilesStore().theUser?.key;
-    data.date = (new Date()).toISOString();
-    data.key = this.getKeyOf(data);
+
     return await firebaseService.create('logs', data) as IActivityLog;
   }
   protected async deleteCb(): Promise<boolean | void | IActivityLog> {
@@ -39,6 +38,17 @@ class LogsResource extends BaseResource<IActivityLog> {
   }
   protected patchCb(): Promise<boolean | void | IActivityLog> {
     throw new Error('Method not implemented.');
+  }
+  setData(
+    key: string,
+    value: IActivityLog,
+    createOnlyOrStatus?: boolean | DocStatus,
+    cb?: ((status: StatusUpdate) => void) | undefined, remarks?: string | undefined):
+    Promise<IActivityLog | undefined> {
+    value.user = this.userKey || value.user;
+    value.date = (new Date()).toISOString();
+    value.key = this.getKeyOf(value);
+    return super.setData(key, value, createOnlyOrStatus, cb, remarks);
   }
   constructor() {
     super('logs', 'key')

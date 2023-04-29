@@ -1,6 +1,6 @@
 export type SynchronizerEventNames =
   | 'log'
-  | 'getAccessToken' 
+  | 'getAccessToken'
   | 'syncStatus'
   | 'docStatusChanged';
 export type SynchronizerMessageEvent = {
@@ -10,7 +10,7 @@ export type SynchronizerMessageEvent = {
 
 
 export type SynchronizerRequestEventNames =
-  | 'setAccessToken' | 'syncResource' | 'syncUpStream' | 'retrySynching' | 'stopSynching' | 'resumeSynching' | 'clearAll';
+  | 'setAccessToken' | 'setUserKey' | 'syncResource' | 'syncUpStream' | 'retrySynching' | 'stopSynching' | 'resumeSynching' | 'clearAll';
 export type SynchronizerRequestEvent = {
   event: SynchronizerRequestEventNames;
   data: any;

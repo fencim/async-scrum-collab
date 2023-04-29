@@ -4,6 +4,7 @@ import { convoResource, discussionResource, iterationResource, mediaResource, pr
 import { firebaseService } from 'src/services/firebase.service';
 import { logsResource } from 'src/resources/logs.resource';
 import { sessionResource } from 'src/resources/session.resource';
+import { synchronizerConnection } from 'src/workers/synchronizer/synchronizer.connection';
 
 const botProfile = { avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' };
 interface IProfileState {
@@ -55,6 +56,7 @@ export const useProfilesStore = defineStore('Profiles', {
       justLoggedIn = justLoggedIn && !!this.theUser;
       if (justLoggedIn && this.theUser && this.theUser.key) {
         profileResource.setData(this.theUser.key, this.theUser);
+        synchronizerConnection.setUserKey(this.theUser.key);
         logsResource.setData('', {
           type: 'auth-login',
           username: this.theUser.email || this.theUser.key,

@@ -1,6 +1,7 @@
+import { logsResource } from 'src/resources/logs.resource';
 import { SynchronizerEventNames, SynchronizerRequestEvent } from './message.event';
 import './resource.registration';
-import  resourceSynchronizer  from './resource.synchronizer';
+import resourceSynchronizer from './resource.synchronizer';
 
 const ctx: Worker = self as any;
 function sendMessage(event: SynchronizerEventNames, data?: any) {
@@ -13,7 +14,7 @@ function sendMessage(event: SynchronizerEventNames, data?: any) {
 ctx.addEventListener('message', (event) => {
   try {
     const message = event.data as SynchronizerRequestEvent;
-    let syncInfo :{ module?: string; entity?: string };
+    let syncInfo: { module?: string; entity?: string };
     switch (message.event) {
       case 'retrySynching':
         const retryInfo = message.data as { module?: string; entity?: string };
@@ -58,7 +59,7 @@ ctx.addEventListener('message', (event) => {
         break;
       case 'stopSynching':
         resourceSynchronizer.stopSyncing(
-          typeof message.data == 'number'? message.data: undefined);
+          typeof message.data == 'number' ? message.data : undefined);
         break;
       case 'resumeSynching':
         resourceSynchronizer.resumeSyncing(
@@ -67,8 +68,11 @@ ctx.addEventListener('message', (event) => {
           message.data?.entity
         );
         break;
+      case 'setUserKey':
+        logsResource.userKey = message.data as string;
+        break;
       default:
         break;
     }
-  } catch {}
+  } catch { }
 });
