@@ -80,7 +80,39 @@ export const useProjectStore = defineStore('projectStore', {
       await projectResource.updatePropertiesFrom(theProject.key, {
         [tobe]: destination,
         [from]: source
-      }, [tobe, from]
+      }, [tobe, from], (async info => {
+        if (info.status == 'synced') {
+          if (from == 'pending' && tobe == 'members') {
+            await logsResource.setData(
+              '', {
+              projectKey: theProject.key,
+              type: 'project-approve-membership',
+              newMember: destination[destination.length - 1],
+            })
+          } else if (tobe == 'guests') {
+            await logsResource.setData(
+              '', {
+              projectKey: theProject.key,
+              type: 'project-set-as-guest',
+              member: destination[destination.length - 1],
+            })
+          } else if (tobe == 'admins') {
+            await logsResource.setData(
+              '', {
+              projectKey: theProject.key,
+              type: 'project-set-as-admin',
+              member: destination[destination.length - 1]
+            })
+          } else if (tobe == 'moderators') {
+            await logsResource.setData(
+              '', {
+              projectKey: theProject.key,
+              type: 'project-set-as-moderator',
+              member: destination[destination.length - 1]
+            })
+          }
+        }
+      })
       );
     },
     async saveProject(newProject: IProject, icon?: File) {
@@ -142,6 +174,13 @@ export const useProjectStore = defineStore('projectStore', {
 
       }
       return project;
+    },
+    async setStatus(projectKey: string, status: IProject['status']) {
+      const project = await this.selectProject(projectKey);
+      if (!project) {
+        throw 'Project does not exits';
+      }
+      await projectResource.updateProperty(projectKey, 'status', status);
     }
   }
 });

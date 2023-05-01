@@ -1,5 +1,8 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
+    <q-chip size="xl" icon="settings"> Project Setting </q-chip>
+    <q-separator />
+    <q-chip size="lg" icon="group"> Project Members </q-chip>
     <div class="row">
       <q-card class="col q-ma-sm">
         <q-card-section
@@ -109,6 +112,78 @@
         </q-card-actions>
       </q-card>
     </div>
+    <q-separator />
+    <q-chip size="lg" icon="display_settings"
+      >Project Status : {{ activeStore.activeProject?.status }}</q-chip
+    >
+    <div class="row">
+      <q-btn
+        color="negative"
+        :disable="activeStore.activeProject?.status != 'active'"
+        rounded
+        @click="confirmClose = true"
+        icon="phonelink_erase"
+        >Close Project</q-btn
+      >
+      <q-separator />
+      <q-btn
+        color="primary"
+        v-if="activeStore.activeProject?.status != 'active'"
+        rounded
+        @click="activateProject"
+        icon="auto_fix_normal"
+        >Activate Project</q-btn
+      >
+      <q-separator />
+      <q-btn
+        :disable="activeStore.activeProject?.status == 'disabled'"
+        rounded
+        @click="confirmDisable = true"
+        icon="disabled_by_default"
+      >
+        Disable Project</q-btn
+      >
+    </div>
+    <q-dialog v-model="confirmClose" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="phonelink_erase" color="primary" text-color="white" />
+          <span class="q-ml-sm">You are about to close the project.</span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn
+            flat
+            label="Proceed"
+            @click="closeProject"
+            color="primary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="confirmDisable" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar
+            icon="disabled_by_default"
+            color="primary"
+            text-color="white"
+          />
+          <span class="q-ml-sm">You are about to disable the project.</span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn
+            flat
+            label="Proceed"
+            @click="disableProject"
+            color="primary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -122,7 +197,7 @@ import { useActiveStore } from 'src/stores/active.store';
 const projectStore = useProjectStore();
 const activeStore = useActiveStore();
 export default defineComponent({
-  name: 'MembersPage',
+  name: 'ProjectSettingsPage',
   components: { RecentActiveMembers },
   data() {
     return {
@@ -132,6 +207,8 @@ export default defineComponent({
       selectedModerators: [] as IProfile[],
       selectedGuests: [] as IProfile[],
       selectedMembers: [] as IProfile[],
+      confirmDisable: false,
+      confirmClose: false,
     };
   },
   async mounted() {
@@ -312,6 +389,21 @@ export default defineComponent({
       );
       await activeStore.selectProject(activeStore.activeProject);
       this.resetSelected();
+    },
+    async disableProject() {
+      if (!activeStore.activeProject) return;
+      await projectStore.setStatus(activeStore.activeProject.key, 'disabled');
+      await activeStore.selectProject(activeStore.activeProject);
+    },
+    async closeProject() {
+      if (!activeStore.activeProject) return;
+      await projectStore.setStatus(activeStore.activeProject.key, 'disabled');
+      await activeStore.selectProject(activeStore.activeProject);
+    },
+    async activateProject() {
+      if (!activeStore.activeProject) return;
+      await projectStore.setStatus(activeStore.activeProject.key, 'active');
+      await activeStore.selectProject(activeStore.activeProject);
     },
   },
 });

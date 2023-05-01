@@ -33,15 +33,25 @@ export const useProfilesStore = defineStore('Profiles', {
       }
     },
     async signout() {
-      this.theUser = undefined;
-      await firebaseService.signout();
-      await convoResource.deleteAll();
-      await discussionResource.deleteAll();
-      await iterationResource.deleteAll();
-      await mediaResource.deleteAll();
-      await projectResource.deleteAll();
-      await profileResource.deleteAll();
-      await sessionResource.deleteAll();
+      if (this.theUser) {
+        await logsResource.setData('', {
+          type: 'auth-logout',
+          username: this.theUser.email || this.theUser.key,
+        }, undefined, async (info) => {
+          if (info.status == 'synced') {
+            this.theUser = undefined;
+            await firebaseService.signout();
+            await convoResource.deleteAll();
+            await discussionResource.deleteAll();
+            await iterationResource.deleteAll();
+            await mediaResource.deleteAll();
+            await projectResource.deleteAll();
+            await profileResource.deleteAll();
+            await sessionResource.deleteAll();
+          }
+        })
+
+      }
     },
     getUser() {
       let user;
@@ -57,10 +67,6 @@ export const useProfilesStore = defineStore('Profiles', {
       if (justLoggedIn && this.theUser && this.theUser.key) {
         profileResource.setData(this.theUser.key, this.theUser);
         synchronizerConnection.setUserKey(this.theUser.key);
-        logsResource.setData('', {
-          type: 'auth-login',
-          username: this.theUser.email || this.theUser.key,
-        })
       }
       if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
         mediaResource.cacheHttpUrl(this.theUser.avatar)
@@ -98,12 +104,24 @@ export const useProfilesStore = defineStore('Profiles', {
       const cred = await firebaseService.signInWithGoolgeAccount();
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
+      if (this.theUser) {
+        logsResource.setData('', {
+          type: 'auth-login',
+          username: this.theUser.email || this.theUser.key,
+        })
+      }
       return cred;
     },
     async signIn(email: string, password: string) {
       const cred = await firebaseService.signInWithEmailandPass(email, password);
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
+      if (this.theUser) {
+        logsResource.setData('', {
+          type: 'auth-login',
+          username: this.theUser.email || this.theUser.key,
+        })
+      }
       return cred;
     },
     async register(profile: { email: string, password: string, displayName: string, photo?: File }) {

@@ -53,10 +53,10 @@ const routes: RouteRecordRaw[] = [
           default: () => import('src/modules/project/NewProjectPage.vue'),
         }
       }, {
-        name: 'members',
+        name: 'settings',
         meta: { actions: true },
-        path: 'members', components: {
-          default: () => import('src/modules/project/MembersPage.vue'),
+        path: 'settings', components: {
+          default: () => import('src/modules/project/ProjectSettingsPage.vue'),
           header: () => import('src/modules/project/ProjectToolbar.vue'),
           actions: () => import('src/modules/project/ProjectActionList.vue')
         },

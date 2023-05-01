@@ -10,16 +10,16 @@
       <q-item
         clickable
         :to="{
-          name: 'members',
+          name: 'settings',
           params: {
             key: project?.key,
           },
         }"
       >
         <q-item-section avatar>
-          <q-icon name="group" />
+          <q-icon name="settings" />
         </q-item-section>
-        <q-tooltip>Project Members</q-tooltip>
+        <q-tooltip>Project Settings</q-tooltip>
       </q-item>
     </q-list>
   </div>

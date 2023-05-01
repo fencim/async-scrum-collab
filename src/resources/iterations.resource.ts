@@ -3,6 +3,7 @@ import { firebaseService } from '../services/firebase.service';
 import { BaseResource } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
+import { logsResource } from './logs.resource';
 
 class IterationResource extends BaseResource<IIteration> {
   protected streamCb(filters?: Filters<Entity> | undefined): Observable<IIteration[]> {
@@ -13,7 +14,15 @@ class IterationResource extends BaseResource<IIteration> {
     return await firebaseService.get('iterations', key) as IIteration;
   }
   protected async createCb(data: IIteration): Promise<boolean | void | IIteration> {
-    return await firebaseService.create('iterations', data) as IIteration;
+    const result = await firebaseService.create('iterations', data) as IIteration;
+    if (result) {
+      logsResource.setData('', {
+        type: 'iteration-create',
+        projectKey: result.projectKey,
+        iteration: result
+      })
+    }
+    return result;
   }
   protected async deleteCb(data: IIteration): Promise<boolean | void | IIteration> {
     await firebaseService.delete('iterations', data.id || data.key);

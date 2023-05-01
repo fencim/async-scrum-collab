@@ -105,6 +105,7 @@ export type IProjectActivityLog =
 //Create Iterations
 export interface IIterationCreateActivityLog extends IBaseActivityLog {
   type: 'iteration-create';
+  projectKey: string;
   iteration: IIteration;
 }
 //Activate Iteration
