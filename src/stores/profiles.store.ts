@@ -112,6 +112,18 @@ export const useProfilesStore = defineStore('Profiles', {
       }
       return cred;
     },
+    async signInAnonymously() {
+      const cred = await firebaseService.signInAnonymously();
+      await sessionResource.setData('currentUser', cred.user.toJSON() as object);
+      this.theUser = this.getUser();
+      if (this.theUser) {
+        logsResource.setData('', {
+          type: 'auth-login',
+          username: this.theUser.email || this.theUser.key,
+        })
+      }
+      return cred;
+    },
     async signIn(email: string, password: string) {
       const cred = await firebaseService.signInWithEmailandPass(email, password);
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);

@@ -7,6 +7,7 @@ import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useActiveStore } from './active.store';
 import { logsResource } from 'src/resources/logs.resource';
+import { DeferredPromise } from 'src/resources/localbase';
 
 
 interface IProjectState {
@@ -22,7 +23,11 @@ export const useProjectStore = defineStore('projectStore', {
   },
   actions: {
     async init() {
-      projectResource.streamWith().subscribe({
+      const filters: Partial<IProject> | undefined =
+      {
+        status: 'active'
+      };
+      projectResource.streamWith(filters).subscribe({
         next: async (projects) => {
           this.projects = projects;
           if (this.activeProject) {
@@ -127,6 +132,7 @@ export const useProjectStore = defineStore('projectStore', {
       }))
       newProject.icon = iconURL || newProject.icon;
       newProject.members = newProject.members || [];
+      newProject.status = 'active';
       await projectResource.setData(newProject.key, {
         ...newProject,
         members: [...newProject.members]
@@ -180,7 +186,14 @@ export const useProjectStore = defineStore('projectStore', {
       if (!project) {
         throw 'Project does not exits';
       }
-      await projectResource.updateProperty(projectKey, 'status', status);
+      const deffered = new DeferredPromise<void>();
+      await projectResource.updateProperty(projectKey, 'status', status, async (info) => {
+        if (info.status == 'synced') {
+          this.activeProject = await projectResource.getLocalData(info.newKey || info.key || projectKey);
+          deffered.resolve();
+        }
+      });
+      await deffered.promise;
     }
   }
 });

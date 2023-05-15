@@ -35,6 +35,11 @@
 
     <q-page-container style="padding-right: 56px">
       <router-view />
+      <TheSynchronizer
+        :byModule="synchronizerStore.byModule"
+        :synchingTotal="synchronizerStore.synchingTotal"
+        :synchingTotalError="synchronizerStore.synchingTotalError"
+      />
     </q-page-container>
   </q-layout>
 </template>
@@ -42,17 +47,21 @@
 <script lang="ts">
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
+import { useSynchronizerStore } from 'src/stores/synchronizer.store';
+import TheSynchronizer from 'src/components/TheSynchronizer.vue';
 import { defineComponent } from 'vue';
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
+const synchronizerStore = useSynchronizerStore();
 
 export default defineComponent({
   name: 'MainLayout',
-
-  components: {},
-
+  components: {
+    TheSynchronizer,
+  },
   data() {
     return {
+      synchronizerStore,
       leftDrawerOpen: false,
       rightDrawerOpen: false,
       recentProfiles: [],

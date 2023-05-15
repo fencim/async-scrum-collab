@@ -393,17 +393,14 @@ export default defineComponent({
     async disableProject() {
       if (!activeStore.activeProject) return;
       await projectStore.setStatus(activeStore.activeProject.key, 'disabled');
-      await activeStore.selectProject(activeStore.activeProject);
     },
     async closeProject() {
       if (!activeStore.activeProject) return;
-      await projectStore.setStatus(activeStore.activeProject.key, 'disabled');
-      await activeStore.selectProject(activeStore.activeProject);
+      await projectStore.setStatus(activeStore.activeProject.key, 'closed');
     },
     async activateProject() {
       if (!activeStore.activeProject) return;
       await projectStore.setStatus(activeStore.activeProject.key, 'active');
-      await activeStore.selectProject(activeStore.activeProject);
     },
   },
 });
