@@ -8,7 +8,7 @@
           <q-input
             autofocus
             :model-value="message"
-            @update:model-value="$emit('update:message', message)"
+            @update:model-value="onType"
             rounded
             :label-slot="!!replyTo || confirmDisagreement"
           >
@@ -64,10 +64,19 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['sendMessage', 'update:message'],
+  emits: ['sendMessage', 'update:message', 'update:askingQuestion'],
   methods: {
     sendMessage() {
       this.$emit('sendMessage');
+    },
+    onType(e: string | number | null) {
+      if (typeof e == 'string' && e && /\?$/.test(e)) {
+        this.$emit('update:askingQuestion', true);
+        this.$emit('update:message', e.replace(/\s*\?$/, ''));
+      } else {
+        this.$emit('update:askingQuestion', false);
+        this.$emit('update:message', e);
+      }
     },
   },
 });

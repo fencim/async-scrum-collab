@@ -42,7 +42,7 @@ const routes: RouteRecordRaw[] = [
       {
         name: 'Project',
         meta: { actions: true },
-        path: '', components: {
+        path: 'timeline', components: {
           default: () => import('src/modules/project/ProjectPage.vue'),
           header: () => import('src/modules/project/ProjectToolbar.vue'),
           actions: () => import('src/modules/project/ProjectActionList.vue')
@@ -61,6 +61,16 @@ const routes: RouteRecordRaw[] = [
           actions: () => import('src/modules/project/ProjectActionList.vue')
         },
       }, {
+        name: 'board',
+        path: 'board',
+        meta: { actions: true },
+        components: {
+          default: () => import('src/modules/task-board/IterationTaskBoardPage.vue'),
+          header: () => import('src/modules/project/ProjectToolbar.vue'),
+          actions: () => import('src/modules/project/ProjectActionList.vue')
+
+        }
+      }, {
         name: 'New Iteration',
         path: 'iteration/new', components: {
           default: () => import('src/modules/iteration/NewIterationPage.vue'),
@@ -72,6 +82,12 @@ const routes: RouteRecordRaw[] = [
           default: () => import('src/modules/iteration/DailyTimelinePage.vue'),
           header: () => import('src/modules/iteration/IterationToolbar.vue'),
 
+        }
+      }, {
+        name: 'burn-down',
+        path: ':iteration/burn-down', components: {
+          default: () => import('src/modules/iteration/BurnDownPage.vue'),
+          header: () => import('src/modules/iteration/IterationToolbar.vue'),
         }
       }, {
         name: 'iterationform',

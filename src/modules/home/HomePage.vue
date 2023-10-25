@@ -9,7 +9,12 @@
             </q-card-section>
             <q-card-section
               horizontal
-              @click="$router.replace('/' + props.row.key)"
+              @click="
+                $router.replace({
+                  name: 'Project',
+                  params: { project: props.row.key },
+                })
+              "
             >
               <q-card-section>
                 <q-btn round size="lg" dense>

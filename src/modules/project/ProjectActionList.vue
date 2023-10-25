@@ -10,6 +10,34 @@
       <q-item
         clickable
         :to="{
+          name: 'board',
+          params: {
+            key: project?.key,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="dashboard" />
+        </q-item-section>
+        <q-tooltip>Task board</q-tooltip>
+      </q-item>
+      <q-item
+        clickable
+        :to="{
+          name: 'Project',
+          params: {
+            key: project?.key,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="view_timeline" />
+        </q-item-section>
+        <q-tooltip>Timeline</q-tooltip>
+      </q-item>
+      <q-item
+        clickable
+        :to="{
           name: 'settings',
           params: {
             key: project?.key,

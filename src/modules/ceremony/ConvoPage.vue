@@ -1,7 +1,7 @@
 <template>
-  <q-page class="justify-between q-pa-sm column">
+  <q-page class="justify-between q-pa-sm column q-pb-xl">
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
-    <q-infinite-scroll @load="onLoad" reverse id="messages-container">
+    <q-infinite-scroll reverse id="messages-container">
       <template v-slot:loading>
         <div class="row justify-center q-my-md">
           <q-spinner color="primary" name="dots" size="40px" />
@@ -50,8 +50,15 @@
       </div>
       <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
     </q-infinite-scroll>
-
-    <q-form @submit="sendMessage">
+    <chat-message-form
+      :message="message"
+      :asking-question="askingQuestion"
+      :reply-to="replyTo"
+      @send-message="sendMessage"
+      @update:message="(e) => (message = e)"
+      @update:asking-question="(e) => (askingQuestion = e)"
+    />
+    <q-form v-if="false" @submit="sendMessage">
       <q-toolbar class="bg-grey-10 col" style="padding-right: 70px">
         <q-btn icon="poll " flat round />
         <q-btn icon="attachment" flat round />
@@ -65,7 +72,7 @@
           >
             <template v-slot:label>
               <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
-                <img :src="replyTo?.from.avatar" />
+                <img :src="asFromAvatar(replyTo)" />
               </q-avatar>
               <q-avatar size="sm" v-else-if="confirmDisagreement">
                 <q-icon name="thumb_down_alt" />
@@ -130,6 +137,7 @@ import ChatMessage from 'src/components/chat/ChatMessage.vue';
 import ChatVoteMessage from 'src/components/chat/ChatVoteMessage.vue';
 import ChatQuestionMessage from 'src/components/chat/ChatQuestionMessage.vue';
 import ChatResponseMessage from 'src/components/chat/ChatResponseMessage.vue';
+import ChatMessageForm from 'src/components/chat/ChatMessageForm.vue';
 import {
   IIteration,
   IProject,
@@ -162,6 +170,7 @@ export default defineComponent({
     ChatVoteMessage,
     ChatQuestionMessage,
     ChatResponseMessage,
+    ChatMessageForm,
   },
   data() {
     return {
@@ -209,6 +218,9 @@ export default defineComponent({
     this.scrollToBottom();
   },
   methods: {
+    asFromAvatar(msg: Convo | undefined) {
+      return typeof msg?.from == 'object' ? msg?.from.avatar : '';
+    },
     async init() {
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||

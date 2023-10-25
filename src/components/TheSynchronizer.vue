@@ -1,12 +1,13 @@
 <template>
   <q-page-sticky
-    position="bottom-left"
-    :offset="[18, 18]"
+    v-if="props.byModule && props.byModule.length > 0"
+    position="bottom-right"
+    :offset="[65, 65]"
     :style="{ zIndex: 999 }"
   >
     <q-btn
       data-cy="onViewSync"
-      color="black"
+      color="beige"
       icon="sync"
       :dense="$q.screen.lt.md"
       flat
@@ -137,6 +138,7 @@ const props = defineProps({
 });
 resourceSynchronizer.subscribe((info) => {
   const timeout = 3000;
+  if (info.entity == 'online') return;
   if (info.status == 'synced') {
     switch (info.fromStatus) {
       case undefined:
@@ -147,7 +149,7 @@ resourceSynchronizer.subscribe((info) => {
           icon: 'add_task',
           caption: info.entity,
           message: 'Successfuly created',
-          classes: 'full-width',
+          position: 'bottom-left',
           timeout,
         });
         break;
@@ -157,8 +159,8 @@ resourceSynchronizer.subscribe((info) => {
           type: 'positive',
           icon: 'check_circle_outline',
           caption: info.entity,
-          classes: 'full-width',
           message: 'Successfully updated',
+          position: 'bottom-left',
           timeout,
         });
         break;
@@ -167,8 +169,8 @@ resourceSynchronizer.subscribe((info) => {
           type: 'positive',
           icon: 'delete_outline',
           caption: info.entity,
+          position: 'bottom-left',
           message: 'Successfully deleted',
-          classes: 'full-width',
           timeout,
         });
         break;
@@ -179,6 +181,7 @@ resourceSynchronizer.subscribe((info) => {
       icon: 'error',
       message: info.entity + ':' + info.fromStatus,
       caption: info.status,
+      position: 'bottom-left',
       timeout,
     });
   }
@@ -193,7 +196,7 @@ function syncProgress(sycned: number, total: number) {
 }
 
 function syncBuffer(sycned: number, total: number) {
-  return !sycned && !total ? 0.0 : sycned / total + 0.1;
+  return !sycned && !total ? 0.0 : sycned / (total + 0.01);
 }
 </script>
 

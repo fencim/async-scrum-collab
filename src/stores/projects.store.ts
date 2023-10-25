@@ -57,6 +57,7 @@ export const useProjectStore = defineStore('projectStore', {
       }
     },
     async setProjectMember(project: IProject, profiles: IProfile[], tobe: MembershipType, from: MembershipType) {
+
       const theProject = (await projectResource.findOne({ key: project.key })) || project;
       const getCollection = (membershipType: MembershipType) => {
         switch (membershipType) {

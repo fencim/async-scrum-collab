@@ -4,7 +4,7 @@
     flat
     round
     size="xl"
-    :to="`/${projectStore.activeProject?.key}`"
+    :to="{ name: 'Project', params: { key: projectStore.activeProject?.key } }"
     :style="
       projectStore.activeProject
         ? 'border: 2px solid gray; border-radius: 50px'

@@ -35,12 +35,12 @@
 
     <q-page-container style="padding-right: 56px">
       <router-view />
-      <TheSynchronizer
-        :byModule="synchronizerStore.byModule"
-        :synchingTotal="synchronizerStore.synchingTotal"
-        :synchingTotalError="synchronizerStore.synchingTotalError"
-      />
     </q-page-container>
+    <TheSynchronizer
+      :byModule="synchronizerStore.byModule"
+      :synchingTotal="synchronizerStore.synchingTotal"
+      :synchingTotalError="synchronizerStore.synchingTotalError"
+    />
   </q-layout>
 </template>
 

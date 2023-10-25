@@ -11,7 +11,9 @@ import {
   User,
   signOut,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  UserCredential,
+  signInAnonymously
 } from 'firebase/auth';
 
 import {
@@ -83,6 +85,7 @@ const collections = {
 type Colls = typeof collections;
 type ModelName = keyof Colls;
 class FirebaseSevice {
+
   constructor() {
     this.accessObs = new Subject();
     const connRef = refDb(fbDb, '.info/connected');
@@ -136,6 +139,9 @@ class FirebaseSevice {
     const res = await signInWithCredential(auth, cred);
     res && this.setAccessStatus(AccessStatus.authorized);
     return res;
+  }
+  signInAnonymously(): Promise<UserCredential> {
+    return signInAnonymously(auth)
   }
   async signInWithEmailandPass(email: string, password: string) {
     return await signInWithEmailAndPassword(auth, email, password);
