@@ -134,7 +134,12 @@ export default defineComponent({
           this.croppedImg || this.icon
         );
 
-        this.$router.replace('/' + this.theProject?.key);
+        this.$router.replace({
+          name: 'Project',
+          params: {
+            project: this.theProject?.key,
+          },
+        });
       } catch (e) {
         this.$q.notify({
           message: String((e as { code: string }).code || e),

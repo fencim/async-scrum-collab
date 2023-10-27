@@ -3,9 +3,12 @@
     <the-present-project />
     <q-toolbar-title>
       <div class="text-subtitle2 text-uppercase q-pt-sm q-px-sm">
-        <q-btn flat dense :to="`/${activeProject}`">{{
-          projectStore.activeProject?.key
-        }}</q-btn>
+        <q-btn
+          flat
+          dense
+          :to="{ name: 'Project', params: { project: activeProject } }"
+          >{{ projectStore.activeProject?.key }}</q-btn
+        >
         : {{ iterationStore.activeIteration?.name }}
       </div>
       <div
