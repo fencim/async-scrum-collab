@@ -81,14 +81,17 @@ const routes: RouteRecordRaw[] = [
         path: ':iteration', components: {
           default: () => import('src/modules/iteration/DailyTimelinePage.vue'),
           header: () => import('src/modules/iteration/IterationToolbar.vue'),
-
-        }
+          actions: () => import('src/modules/iteration/IterationActionList.vue')
+        },
+        meta: { actions: true }
       }, {
         name: 'burn-down',
         path: ':iteration/burn-down', components: {
           default: () => import('src/modules/iteration/BurnDownPage.vue'),
           header: () => import('src/modules/iteration/IterationToolbar.vue'),
-        }
+          actions: () => import('src/modules/iteration/IterationActionList.vue')
+        },
+        meta: { actions: true }
       }, {
         name: 'iterationform',
         path: ':iteration/edit', components: {

@@ -7,6 +7,50 @@
         </q-item-section>
         <q-tooltip>Schedule an iteration meeting</q-tooltip>
       </q-item>
+      <q-item
+        clickable
+        :to="{
+          name: 'iteration',
+          params: {
+            project: project?.key || activeProject,
+            iteration: iteration?.key || activeIteration,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="view_timeline" />
+        </q-item-section>
+        <q-tooltip>Timeline</q-tooltip>
+      </q-item>
+      <q-item
+        clickable
+        :to="{
+          name: 'board',
+          params: {
+            project: project?.key,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="dashboard" />
+        </q-item-section>
+        <q-tooltip>Task board</q-tooltip>
+      </q-item>
+      <q-item
+        clickable
+        :to="{
+          name: 'burn-down',
+          params: {
+            project: project?.key || activeProject,
+            iteration: iteration?.key || activeIteration,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="trending_down" />
+        </q-item-section>
+        <q-tooltip>Burn Down</q-tooltip>
+      </q-item>
     </q-list>
   </div>
 </template>

@@ -12,7 +12,7 @@
         :to="{
           name: 'board',
           params: {
-            key: project?.key,
+            project: project?.key,
           },
         }"
       >
@@ -26,7 +26,7 @@
         :to="{
           name: 'Project',
           params: {
-            key: project?.key,
+            project: project?.key,
           },
         }"
       >
@@ -40,7 +40,7 @@
         :to="{
           name: 'settings',
           params: {
-            key: project?.key,
+            project: project?.key,
           },
         }"
       >
