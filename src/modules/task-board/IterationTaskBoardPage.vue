@@ -1,44 +1,28 @@
 <script setup lang="ts">
+import cards from './cards';
+
 import { useIterationStore } from 'src/stores/iterations.store';
 import draggable from 'vuedraggable';
-import { ref } from 'vue';
+import { Component, ref } from 'vue';
+import { dummyData } from './dummy-data';
 import { PlanningItem } from 'src/entities';
 const tab = ref('all');
 
+const componentMap: Record<PlanningItem['type'], string | Component> = {
+  goal: cards.GoalCard,
+  objective: cards.ObjectiveCard,
+  story: cards.StoryCard,
+  task: cards.TechnicalCard,
+};
+function getComponent(item: PlanningItem) {
+  if (typeof componentMap[item.type] == 'string') {
+    return componentMap[item.type];
+  } else {
+    return componentMap[item.type] as Component;
+  }
+}
 const iterationStore = useIterationStore();
-const columns = ref<{ name: string; tasks: PlanningItem[] }[]>([
-  {
-    name: 'To Do',
-    tasks: [
-      {
-        key: 'test',
-        type: 'story',
-        acceptanceCriteria: [],
-        awareness: {},
-        ceremonyKey: '',
-        projectKey: '',
-        tasks: [],
-        subject: 'do this',
-        purpose: 'test',
-        targetUser: 'user',
-      },
-    ],
-  },
-  {
-    name: 'In Progress',
-    tasks: [
-      {
-        key: 'test2',
-        type: 'goal',
-        awareness: {},
-        ceremonyKey: '',
-        description: 'Testing',
-        projectKey: 'PR',
-      },
-    ],
-  },
-  { name: 'Done', tasks: [] },
-]);
+const columns = ref(dummyData);
 </script>
 <template>
   <q-page class="justify-evenly q-pa-sm">
@@ -83,8 +67,16 @@ const columns = ref<{ name: string; tasks: PlanningItem[] }[]>([
                   class="list-group-item q-ma-sm q-pa-sm board-card"
                   :class="element.type + '-card'"
                 >
-                  {{ element.type }}
-                  {{ element.key }}
+                  <component :is="getComponent(element)" :task="element" />
+                  <q-btn
+                    class="float-right vertical-bottom"
+                    size="xs"
+                    icon="circle"
+                    dense
+                    flat
+                  >
+                    <q-tooltip>{{ element.type }}</q-tooltip>
+                  </q-btn>
                 </q-card>
               </template>
             </draggable>
@@ -97,6 +89,10 @@ const columns = ref<{ name: string; tasks: PlanningItem[] }[]>([
 <style lang="sass">
 .board-card
   border-left: 5px solid
+.goal-card
+  border-color: blue
+.objective-card
+  border-color: purple
 .story-card
   border-color: green
 </style>

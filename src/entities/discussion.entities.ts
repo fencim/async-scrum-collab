@@ -7,7 +7,12 @@ export interface IDiscussion extends IBaseEntity {
   ceremonyKey: string;
   awareness: { [profileKey: string]: string };
   complexity?: number;
+  responsibilityOf?: string;
+  assignedTo?: string;
+  assignees?: string[];
   progress?: number;
+  dueDate?: string;
+  priority?: number;
   unread?: number;
   info?: string;
 }
