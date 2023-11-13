@@ -113,10 +113,46 @@
       </q-card>
     </div>
     <q-separator />
+    <q-chip size="lg" icon="view_column">Taskboard Columns </q-chip>
+    <div class="row">
+      <draggable :list="taskboardColumns" @change="saved = false">
+        <template #footer
+          ><q-btn
+            icon="add"
+            color="primary"
+            class="q-pr-md"
+            rounded
+            dense
+            @click="createNewCol()"
+            >New Column</q-btn
+          ></template
+        >
+        <template #item="{ element }">
+          <q-chip class="non-selectable">
+            <icon-picker
+              :icon="element.icon || 'done'"
+              :title="element.name"
+              editable
+              @update:icon="(v) => (element.icon = v)"
+            />
+            {{ element.name }}
+            &nbsp;
+            <q-btn
+              dense
+              size="sm"
+              round
+              icon="edit"
+              @click="editBoardColumn(element)"
+            ></q-btn>
+          </q-chip>
+        </template>
+      </draggable>
+    </div>
+    <q-separator />
     <q-chip size="lg" icon="display_settings"
       >Project Status : {{ activeStore.activeProject?.status }}</q-chip
     >
-    <div class="row">
+    <div class="row q-my-md">
       <q-btn
         color="negative"
         :disable="activeStore.activeProject?.status != 'active'"
@@ -142,6 +178,16 @@
         icon="disabled_by_default"
       >
         Disable Project</q-btn
+      >
+      <q-space class="col" />
+      <q-btn
+        rounded
+        icon="save"
+        :disable="saved"
+        :loading="saving"
+        color="primary"
+        @click="saveProject()"
+        >Save Project</q-btn
       >
     </div>
     <q-dialog v-model="confirmClose" persistent>
@@ -184,22 +230,96 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="editColumn">
+      <q-card :style="{ width: $q.screen.sizes.sm + 'px' }">
+        <q-card-section class="row">
+          <icon-picker
+            class="col-1 cursor-pointer self-center"
+            :icon="editingCol.icon || 'done'"
+            editable
+            size="md"
+            :title="editingCol.name || ''"
+            @update:icon="(v) => (editingCol.icon = v)"
+          />
+          <q-input
+            class="col"
+            :label="editingCol.key"
+            v-model="editingCol.name"
+          />
+          <q-checkbox
+            class="col-2"
+            label="Done State"
+            v-model="editingCol.doneState"
+          />
+        </q-card-section>
+        <q-card-actions class="row justify-center">
+          <q-btn
+            v-if="editingCol != newBoardCol"
+            icon="delete"
+            color="negative"
+            class="col-3"
+            @click="confirmDeleteCol = true"
+          />
+          <q-space class="col3" />
+          <q-btn
+            @click="editColumn = false"
+            color="secondary"
+            icon="close"
+            class="col-3"
+          />
+          <q-btn
+            @click="saveTaskColumn(editingCol)"
+            icon="save"
+            color="primary"
+            class="col-3"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="confirmDeleteCol" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="delete" color="primary" text-color="white" />
+          <span class="q-ml-sm">Deleting board column?</span>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn
+            flat
+            label="Proceed"
+            @click="deleteTaskColumn(editingCol)"
+            color="primary"
+            v-close-popup
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script lang="ts">
-import { IProfile } from 'src/entities';
+import draggable from 'vuedraggable';
+import IconPicker from 'src/components/IconPickerComponent.vue';
+import { IProfile, IBoardColumn } from 'src/entities';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { useActiveStore } from 'src/stores/active.store';
-
+function createNewBoardCol() {
+  return {
+    key: 'new',
+    name: 'New',
+    icon: 'done',
+    color: 'white',
+  } as IBoardColumn;
+}
 const projectStore = useProjectStore();
 const activeStore = useActiveStore();
 export default defineComponent({
   name: 'ProjectSettingsPage',
-  components: { RecentActiveMembers },
+  components: { RecentActiveMembers, draggable, IconPicker },
   data() {
+    const defaultNewBoardCol = createNewBoardCol();
     return {
       activeStore,
       selectedAdmins: [] as IProfile[],
@@ -209,10 +329,33 @@ export default defineComponent({
       selectedMembers: [] as IProfile[],
       confirmDisable: false,
       confirmClose: false,
+      editColumn: false,
+      confirmDeleteCol: false,
+      saving: false,
+      saved: true,
+      taskboardColumns: [] as IBoardColumn[],
+      newBoardCol: defaultNewBoardCol,
+      editingCol: defaultNewBoardCol,
     };
   },
   async mounted() {
     await this.resetSelected();
+    this.taskboardColumns = activeStore.activeProject?.boardColumns?.map(
+      (c) => ({ ...c })
+    ) || [
+      {
+        key: 'to-do',
+        name: 'To do',
+      },
+      {
+        key: 'in-progress',
+        name: 'In Progress',
+      },
+      {
+        key: 'done',
+        name: 'Done',
+      },
+    ];
   },
 
   methods: {
@@ -401,6 +544,64 @@ export default defineComponent({
     async activateProject() {
       if (!activeStore.activeProject) return;
       await projectStore.setStatus(activeStore.activeProject.key, 'active');
+    },
+    createNewCol() {
+      this.editingCol = this.newBoardCol;
+      this.editColumn = true;
+    },
+    updateBoardColumnIcon(col: IBoardColumn, icon: string) {
+      this.saved = this.saved && col.icon == icon;
+      col.icon = icon;
+    },
+    editBoardColumn(col: IBoardColumn) {
+      this.editingCol = { ...col };
+      this.editColumn = true;
+    },
+    saveTaskColumn(col: IBoardColumn) {
+      if (col === this.newBoardCol) {
+        const savingCol = {
+          ...col,
+          key: col.name.replace(/[\s]+/g, '_').toLowerCase(),
+        };
+        const index = this.taskboardColumns.findIndex(
+          (c) => c.key == savingCol.key
+        );
+        if (index < 0) {
+          this.taskboardColumns.push(savingCol);
+          this.newBoardCol = createNewBoardCol();
+        } else {
+          this.$q.notify({
+            message: 'Duplicate column',
+            color: 'negative',
+          });
+        }
+      } else {
+        const index = this.taskboardColumns.findIndex((c) => c.key == col.key);
+        if (index >= 0) {
+          this.taskboardColumns.splice(index, 1, { ...col });
+        }
+      }
+      this.editColumn = false;
+      this.saved = false;
+    },
+    deleteTaskColumn(col: IBoardColumn) {
+      const index = this.taskboardColumns.findIndex((c) => c.key == col.key);
+      if (index >= 0) {
+        this.taskboardColumns.splice(index, 1);
+        this.editColumn = false;
+        this.saved = false;
+      }
+    },
+    async saveProject() {
+      if (!activeStore.activeProject) return;
+      this.saving = true;
+      //save taskboard columns
+      await projectStore.saveProjectColumns(
+        activeStore.activeProject.key,
+        this.taskboardColumns
+      );
+      this.saving = false;
+      this.saved = true;
     },
   },
 });

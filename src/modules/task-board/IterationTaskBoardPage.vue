@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import cards from './cards';
+import draggable from 'vuedraggable';
 
 import { useIterationStore } from 'src/stores/iterations.store';
-import draggable from 'vuedraggable';
-import { Component, ref } from 'vue';
+import { ref } from 'vue';
 import { dummyData } from './dummy-data';
 import { PlanningItem } from 'src/entities';
 const tab = ref('all');
-
+type Component = any;
 const componentMap: Record<PlanningItem['type'], string | Component> = {
   goal: cards.GoalCard,
   objective: cards.ObjectiveCard,
@@ -18,7 +18,7 @@ function getComponent(item: PlanningItem) {
   if (typeof componentMap[item.type] == 'string') {
     return componentMap[item.type];
   } else {
-    return componentMap[item.type] as Component;
+    return componentMap[item.type];
   }
 }
 const iterationStore = useIterationStore();

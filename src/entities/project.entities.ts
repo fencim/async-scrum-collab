@@ -1,5 +1,12 @@
 import { IBaseEntity } from './base.entity';
 
+export interface IBoardColumn {
+  key: string;
+  name: string;
+  doneState?: boolean;
+  icon?: string;
+  color?: string;
+}
 export interface IProject extends IBaseEntity {
   key: string;
   name: string;
@@ -11,4 +18,5 @@ export interface IProject extends IBaseEntity {
   guests: string[];
   pending: string[];
   moderators: string[];
+  boardColumns?: IBoardColumn[];
 }

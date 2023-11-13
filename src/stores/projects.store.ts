@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { IProfile, IProject } from 'src/entities';
+import { IProfile, IProject, IBoardColumn } from 'src/entities';
 import { projectResource } from 'src/resources';
 import { firebaseService } from 'src/services/firebase.service';
 import { useCeremonyStore } from './cermonies.store';
@@ -189,6 +189,20 @@ export const useProjectStore = defineStore('projectStore', {
       }
       const deffered = new DeferredPromise<void>();
       await projectResource.updateProperty(projectKey, 'status', status, async (info) => {
+        if (info.status == 'synced') {
+          this.activeProject = await projectResource.getLocalData(info.newKey || info.key || projectKey);
+          deffered.resolve();
+        }
+      });
+      await deffered.promise;
+    },
+    async saveProjectColumns(projectKey: string, cols: IBoardColumn[]) {
+      const project = await this.selectProject(projectKey);
+      if (!project) {
+        throw 'Project does not exits';
+      }
+      const deffered = new DeferredPromise<void>();
+      await projectResource.updateProperty(projectKey, 'boardColumns', [...cols], async (info) => {
         if (info.status == 'synced') {
           this.activeProject = await projectResource.getLocalData(info.newKey || info.key || projectKey);
           deffered.resolve();
