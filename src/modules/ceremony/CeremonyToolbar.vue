@@ -3,11 +3,25 @@
     <the-present-project />
     <q-toolbar-title>
       <div class="text-subtitle2 text-uppercase q-pt-sm q-px-sm">
-        <q-btn flat dense :to="`/${activeProject}`">{{ activeProject }}</q-btn>
+        <q-btn
+          flat
+          dense
+          :to="{ name: 'Project', params: { project: activeProject } }"
+          >{{ activeProject }}</q-btn
+        >
         :
-        <q-btn flat dense :to="`/${activeProject}/${activeIteration}`">{{
-          iteration?.name
-        }}</q-btn>
+        <q-btn
+          flat
+          dense
+          :to="{
+            name: 'iteration',
+            params: {
+              project: activeProject,
+              iteration: activeIteration,
+            },
+          }"
+          >{{ iteration?.name }}</q-btn
+        >
         : {{ ceremony?.type.toUpperCase() }}
       </div>
       <div

@@ -1,6 +1,6 @@
 import { IBaseEntity } from './base.entity';
 import { IProfile } from './profile.entities';
-
+import { IBoardColumn } from './project.entities';
 export interface IDiscussion extends IBaseEntity {
   key: string;
   projectKey: string;
@@ -102,3 +102,7 @@ export type DailyScrumItem = IScrumReport | IRoadBlock;
 export type ReviewItem = ISprintReport | ISprintDemo;
 export type RetroItem = IWentWell | IWentWrong | IToImprove | IActionItem;
 export type DiscussionItem = PlanningItem | DailyScrumItem | ReviewItem | RetroItem;
+
+export interface ISprintBoardColumn extends IBoardColumn {
+  tasks: PlanningItem[];
+}

@@ -47,7 +47,7 @@
     <q-timeline-entry
       v-for="c in ceremonies"
       :key="c.key"
-      :title="c.type.toUpperCase()"
+      :title="(isCurrentlyHappening(c) ? '(NOW) ' : '') + c.type.toUpperCase()"
       :subtitle="`${date.formatDate(
         c.start,
         'MMM DD, YYYY hh:mm A'
@@ -56,6 +56,7 @@
         c.start,
         'hours'
       )} hours)`"
+      :class="isCurrentlyHappening(c) ? 'bg-teal-7 rounded-borders' : ''"
     >
       <div>
         <q-circular-progress
@@ -117,7 +118,7 @@
 
 <script lang="ts">
 import { date } from 'quasar';
-import { DiscussionItem, IIteration } from 'src/entities';
+import { DiscussionItem, IIteration, ICeremony } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProjectStore } from 'src/stores/projects.store';
@@ -161,6 +162,9 @@ export default defineComponent({
     isCurrent(iteration: object) {
       const sprint = iteration as IIteration;
       return date.isBetweenDates(new Date(), sprint.start, sprint.end);
+    },
+    isCurrentlyHappening(ceremony: ICeremony) {
+      return date.isBetweenDates(new Date(), ceremony.start, ceremony.end);
     },
     discussionFromList(list: string[]) {
       return list

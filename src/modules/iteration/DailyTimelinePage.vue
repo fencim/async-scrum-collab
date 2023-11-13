@@ -15,12 +15,15 @@
             iterationStore.activeIteration.key == c.iterationKey
         )"
         :key="c.key"
-        :title="c.type.toUpperCase()"
+        :title="
+          (isCurrentlyHappening(c) ? '(NOW) ' : '') + c.type.toUpperCase()
+        "
         :subtitle="`${date.formatDate(
           c.start,
           'ddd, MMM DD, YYYY hh:mm A'
         )} - ${date.formatDate(c.end, 'hh:mm A')}`"
         :side="/(planning|retro|review)/.test(c.type) ? 'left' : 'right'"
+        :class="isCurrentlyHappening(c) ? 'bg-teal-7 rounded-borders' : ''"
       >
         <div>
           <q-circular-progress
@@ -76,7 +79,9 @@
             '/' + c.projectKey + '/' + c.iterationKey + '/' + c.key + '/edit'
           "
         />
+
         <q-linear-progress
+          class="q-mt-sm"
           :color="
             (c.progress || 0) < 1 && date.getDateDiff(new Date(), c.end) > 0
               ? 'red'
@@ -86,123 +91,13 @@
           :value="c.progress"
         />
       </q-timeline-entry>
-      <!-- <q-timeline-entry
-        title="Sprint Planning"
-        subtitle="February 22, 1986"
-        side="left"
-      >
-        <div>Total Points : 86pts</div>
-        <div>
-          <q-btn
-            dense
-            :to="
-              '/' +
-              (activeProject || 'AP') +
-              '/' +
-              (activeIteration || 'AI') +
-              '/planning'
-            "
-            >Open</q-btn
-          >
-        </div>
-      </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Daily Scrum"
-        subtitle="February 21, 1986"
-        side="right"
-        icon="calendar_today"
-      >
-        <div>
-          <div>Burned Stories: 12pts</div>
-          <div>Bug Fixed: 6 defecs</div>
-          <div>New Bugs: 1 defecs</div>
-          <div>Roadbloacks</div>
-          <ul>
-            <li>Slow Internet Connection</li>
-            <li>Unstable Build</li>
-          </ul>
-        </div>
-      </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Non-working day"
-        subtitle="February 22, 1986"
-        side="left"
-        avatar="https://cdn.quasar.dev/img/avatar3.jpg"
-      >
-        <div>Holiday</div>
-      </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Daily Scrum"
-        subtitle="February 22, 1986"
-        side="right"
-      >
-        <div>
-          <div>Burned Stories: 12pts</div>
-          <div>Bug Fixed: 6 defecs</div>
-          <div>New Bugs: 1 defecs</div>
-          <div class="text-bold">ROADBLOCKS:</div>
-          <ul>
-            <li>
-              <q-avatar size="xs"><img src="icons/avatar3.jpg" /> </q-avatar>
-              Slow Internet Connection
-            </li>
-            <li>
-              <q-avatar size="xs"><img src="icons/avatar2.jpg" /> </q-avatar>
-              Unstable Build
-            </li>
-          </ul>
-        </div>
-      </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Daily Scrum"
-        subtitle="February 22, 1986"
-        side="right"
-        color="orange"
-        icon="calendar_today"
-      >
-        <div>
-          <div>Burned Stories: 12pts</div>
-          <div>Bug Fixed: 6 defecs</div>
-          <div>New Bugs: 1 defecs</div>
-          <div class="text-bold">ROADBLOCKS:</div>
-          <ul>
-            <li>Slow Internet Connection</li>
-            <li>Unstable Build</li>
-          </ul>
-        </div>
-      </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Backlog Grooming"
-        subtitle="February 22, 1986"
-        side="right"
-      >
-        <div>Stories, Accepance Criterias, Complexity</div>
-      </q-timeline-entry>
-
-      <q-timeline-entry
-        title="Sprint Review"
-        subtitle="February 22, 1986"
-        side="left"
-      >
-        <div>
-          <div>Completed: 89pts</div>
-          <div>Missed: 8pts</div>
-
-          Demo link: <a href="www.youtube.com">YouTube</a>
-        </div>
-      </q-timeline-entry> -->
     </q-timeline>
   </q-page>
 </template>
 
 <script lang="ts">
 import { date } from 'quasar';
-import { DiscussionItem } from 'src/entities';
+import { DiscussionItem, ICeremony } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
@@ -233,6 +128,9 @@ export default defineComponent({
       return list
         .map((key) => this.discussions.find((d) => d.key == key))
         .filter((d) => d) as DiscussionItem[];
+    },
+    isCurrentlyHappening(ceremony: ICeremony) {
+      return date.isBetweenDates(new Date(), ceremony.start, ceremony.end);
     },
   },
 });

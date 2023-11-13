@@ -127,8 +127,18 @@
             >New Column</q-btn
           ></template
         >
-        <template #item="{ element }">
-          <q-chip class="non-selectable">
+        <template #item="{ element, index }">
+          <q-chip
+            class="non-selectable"
+            :color="
+              element.color ||
+              (element.doneState
+                ? 'positive'
+                : index == 0
+                ? 'accent'
+                : 'secondary')
+            "
+          >
             <icon-picker
               :icon="element.icon || 'done'"
               :title="element.name"
@@ -232,7 +242,13 @@
     </q-dialog>
     <q-dialog v-model="editColumn">
       <q-card :style="{ width: $q.screen.sizes.sm + 'px' }">
-        <q-card-section class="row">
+        <q-card-section
+          class="row"
+          :style="{
+            'background-color':
+              editingCol.color == 'white' ? 'transparent' : editingCol.color,
+          }"
+        >
           <icon-picker
             class="col-1 cursor-pointer self-center"
             :icon="editingCol.icon || 'done'"
@@ -251,6 +267,27 @@
             label="Done State"
             v-model="editingCol.doneState"
           />
+          <q-icon
+            :color="editingCol.color"
+            name="colorize"
+            size="md"
+            class="col-1 cursor-pointer self-center"
+          >
+            <q-popup-proxy
+              cover
+              transition-show="scale"
+              transition-hide="scale"
+            >
+              <q-color
+                :model-value="editingCol.color"
+                @change="
+                  (val) => {
+                    editingCol.color = val;
+                  }
+                "
+              />
+            </q-popup-proxy>
+          </q-icon>
         </q-card-section>
         <q-card-actions class="row justify-center">
           <q-btn
@@ -310,7 +347,6 @@ function createNewBoardCol() {
     key: 'new',
     name: 'New',
     icon: 'done',
-    color: 'white',
   } as IBoardColumn;
 }
 const projectStore = useProjectStore();
@@ -346,14 +382,18 @@ export default defineComponent({
       {
         key: 'to-do',
         name: 'To do',
+        icon: 'not_started',
       },
       {
         key: 'in-progress',
         name: 'In Progress',
+        icon: 'pending',
       },
       {
         key: 'done',
         name: 'Done',
+        icon: 'done',
+        doneState: true,
       },
     ];
   },

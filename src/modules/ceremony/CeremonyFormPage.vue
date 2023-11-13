@@ -14,7 +14,13 @@
             Ceremony of {{ activeProject?.name }}</q-toolbar-title
           >
 
-          <q-btn flat round dense icon="close" :to="`/${activeProjectKey}/`" />
+          <q-btn
+            flat
+            round
+            dense
+            icon="close"
+            :to="{ name: 'Project', params: { project: activeProjectKey } }"
+          />
         </q-toolbar>
 
         <q-card-section class="row">

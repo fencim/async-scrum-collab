@@ -5,7 +5,7 @@ import draggable from 'vuedraggable';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { ref } from 'vue';
 import { dummyData } from './dummy-data';
-import { PlanningItem } from 'src/entities';
+import { ISprintBoardColumn, PlanningItem } from 'src/entities';
 const tab = ref('all');
 type Component = any;
 const componentMap: Record<PlanningItem['type'], string | Component> = {
@@ -22,12 +22,19 @@ function getComponent(item: PlanningItem) {
   }
 }
 const iterationStore = useIterationStore();
-const columns = ref(dummyData);
+const columns = ref<ISprintBoardColumn[]>([
+  {
+    key: 'backlog',
+    name: 'Sprint Backlog',
+    tasks: [],
+  },
+  ...dummyData,
+]);
 </script>
 <template>
   <q-page class="justify-evenly q-pa-sm">
     <q-tabs v-model="tab" inline-label dense class="text-teal">
-      <q-tab name="all" icon="dashboard" label="All" />
+      <q-tab name="all" icon="dashboard" label="Product" />
       <q-tab
         v-for="i in iterationStore.iterations"
         :key="i.key"
@@ -49,7 +56,7 @@ const columns = ref(dummyData);
         <div class="text-h6">{{ i.name }}</div>
         <div class="kanban-board row">
           <div
-            class="kanban-column col-4 column"
+            class="kanban-column col column"
             v-for="(column, columnIndex) in columns"
             :key="columnIndex"
           >

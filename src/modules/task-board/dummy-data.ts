@@ -1,8 +1,9 @@
-import { PlanningItem } from 'src/entities';
+import { ISprintBoardColumn } from 'src/entities';
 
-export const dummyData: { name: string; tasks: PlanningItem[]; }[] = [
+export const dummyData: ISprintBoardColumn[] = [
   {
     name: 'To Do',
+    key: 'todo',
     tasks: [
       {
         key: 'test',
@@ -26,6 +27,7 @@ export const dummyData: { name: string; tasks: PlanningItem[]; }[] = [
   },
   {
     name: 'In Progress',
+    key: 'in_progress',
     tasks: [
       {
         key: 'test2',
@@ -38,6 +40,7 @@ export const dummyData: { name: string; tasks: PlanningItem[]; }[] = [
     ],
   },
   {
+    key: 'done',
     name: 'Done', tasks: [{
       type: 'objective',
       description: 'objective',
