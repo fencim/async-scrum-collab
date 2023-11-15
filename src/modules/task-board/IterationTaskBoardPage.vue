@@ -1,40 +1,42 @@
 <script setup lang="ts">
-import cards from './cards';
 import draggable from 'vuedraggable';
+import ProductBacklog from './ProductBacklogComponent.vue';
 
 import { useIterationStore } from 'src/stores/iterations.store';
-import { ref } from 'vue';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useActiveStore } from 'src/stores/active.store';
+
+import { ref, onMounted } from 'vue';
 import { dummyData } from './dummy-data';
-import { ISprintBoardColumn, PlanningItem } from 'src/entities';
+import { ISprintBoardColumn } from 'src/entities';
+import { getComponent } from './card-components';
+import { useQuasar } from 'quasar';
 const tab = ref('all');
-type Component = any;
-const componentMap: Record<PlanningItem['type'], string | Component> = {
-  goal: cards.GoalCard,
-  objective: cards.ObjectiveCard,
-  story: cards.StoryCard,
-  task: cards.TechnicalCard,
-};
-function getComponent(item: PlanningItem) {
-  if (typeof componentMap[item.type] == 'string') {
-    return componentMap[item.type];
-  } else {
-    return componentMap[item.type];
-  }
-}
 const iterationStore = useIterationStore();
-const columns = ref<ISprintBoardColumn[]>([
-  {
-    key: 'backlog',
-    name: 'Sprint Backlog',
-    tasks: [],
-  },
-  ...dummyData,
-]);
+const discussionStore = useDiscussionStore();
+const activeStore = useActiveStore();
+const columns = ref<ISprintBoardColumn[]>([...dummyData]);
+
+onMounted(async () => {
+  const project = activeStore.activeProject;
+  if (project) {
+    discussionStore.ofProject(project.key);
+  }
+  const q = useQuasar();
+  if (!q.screen.lt.md && activeStore.activeProject) {
+    tab.value;
+  }
+});
 </script>
 <template>
   <q-page class="justify-evenly q-pa-sm">
     <q-tabs v-model="tab" inline-label dense class="text-teal">
-      <q-tab name="all" icon="dashboard" label="Product" />
+      <q-tab
+        name="all"
+        icon="dashboard"
+        label="Product"
+        v-if="$q.screen.lt.md"
+      />
       <q-tab
         v-for="i in iterationStore.iterations"
         :key="i.key"
@@ -44,53 +46,51 @@ const columns = ref<ISprintBoardColumn[]>([
       />
     </q-tabs>
     <q-separator />
-    <q-tab-panels v-model="tab">
-      <q-tab-panel name="all">
-        <div class="text-h6">All</div>
-      </q-tab-panel>
-      <q-tab-pannel
-        v-for="i in iterationStore.iterations"
-        :key="i.key"
-        :name="i.key"
-      >
-        <div class="text-h6">{{ i.name }}</div>
-        <div class="kanban-board row">
-          <div
-            class="kanban-column col column"
-            v-for="(column, columnIndex) in columns"
-            :key="columnIndex"
-          >
-            <draggable
-              class="col kanban-task-list dragArea list-group"
-              :list="column.tasks"
-              group="tasks"
-              item-key="key"
+    <div class="row">
+      <div v-if="!$q.screen.lt.md" class="col-4">
+        <div class="text-h6">Product Backlog</div>
+        <product-backlog />
+      </div>
+      <q-tab-panels v-model="tab" class="col">
+        <q-tab-panel name="all" v-if="$q.screen.lt.md">
+          <div class="text-h6">All</div>
+          <product-backlog />
+        </q-tab-panel>
+        <q-tab-pannel
+          v-for="i in iterationStore.iterations"
+          :key="i.key"
+          :name="i.key"
+        >
+          <div class="text-h6">{{ i.name }}</div>
+          <div class="kanban-board row">
+            <div
+              class="kanban-column col column"
+              v-for="(column, columnIndex) in columns"
+              :key="columnIndex"
             >
-              <template #header>
-                <h6>{{ column.name }}</h6>
-              </template>
-              <template #item="{ element }">
-                <q-card
-                  class="list-group-item q-ma-sm q-pa-sm board-card"
-                  :class="element.type + '-card'"
-                >
-                  <component :is="getComponent(element)" :task="element" />
-                  <q-btn
-                    class="float-right vertical-bottom"
-                    size="xs"
-                    icon="circle"
-                    dense
-                    flat
+              <draggable
+                class="col kanban-task-list dragArea list-group"
+                :list="column.tasks"
+                group="tasks"
+                item-key="key"
+              >
+                <template #header>
+                  <h6>{{ column.name }}</h6>
+                </template>
+                <template #item="{ element }">
+                  <q-card
+                    class="list-group-item q-ma-sm q-pa-sm board-card"
+                    :class="element.type + '-card'"
                   >
-                    <q-tooltip>{{ element.type }}</q-tooltip>
-                  </q-btn>
-                </q-card>
-              </template>
-            </draggable>
+                    <component :is="getComponent(element)" :task="element" />
+                  </q-card>
+                </template>
+              </draggable>
+            </div>
           </div>
-        </div>
-      </q-tab-pannel>
-    </q-tab-panels>
+        </q-tab-pannel>
+      </q-tab-panels>
+    </div>
   </q-page>
 </template>
 <style lang="sass">

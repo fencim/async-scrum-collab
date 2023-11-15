@@ -6,6 +6,7 @@ const props = defineProps({
     required: true,
     type: Object as PropType<IStory>,
   },
+  mini: Boolean,
   maxed: Boolean,
 });
 const showDetails = ref(false);

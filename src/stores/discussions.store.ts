@@ -1,10 +1,18 @@
 import { defineStore } from 'pinia';
 import { from, switchMap } from 'rxjs';
-import { ConvoList, DiscussionItem, ICeremony, IDiscussion, IProject, IQuestion, IToImprove, IVote, IWentWell, IWentWrong, RetroItem } from 'src/entities';
+import {
+  ConvoList,
+  DiscussionItem,
+  ICeremony, IDiscussion,
+  IProject, IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
+  PlanningItem,
+  RetroItem
+} from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
 import { useProfilesStore } from './profiles.store';
 import { useProjectStore } from './projects.store';
+import { useIterationStore } from './iterations.store';
 
 interface IDiscussionState {
   discussions: DiscussionItem[];
@@ -16,11 +24,19 @@ export const useDiscussionStore = defineStore('discussion', {
     discussions: []
   } as IDiscussionState),
   getters: {
-
+    productBacklog(): ISprintBoardColumn {
+      return {
+        key: 'product-backlog',
+        name: 'Product Backlog',
+        tasks: this.discussions
+          .filter(d => (['goal', 'objective', 'story', 'task'] as PlanningItem['type'][])
+            .includes(d.type as PlanningItem['type'])) as PlanningItem[]
+      };
+    }
   },
   actions: {
-    fromCeremony(projectKey: string, ceremonyKey: string) {
-      return this.discussions.filter(d => d && d.projectKey == projectKey && d.ceremonyKey == ceremonyKey);
+    fromIteration(projectKey: string, iterationKey: string) {
+      return this.discussions.filter(d => d && d.projectKey == projectKey && d.iteration == iterationKey);
     },
     fromList(keys: string[], updatedList?: DiscussionItem[]) {
       if (updatedList) {
@@ -35,6 +51,7 @@ export const useDiscussionStore = defineStore('discussion', {
       })
         .pipe(switchMap(list => {
           const profileStore = useProfilesStore();
+          const iterationStore = useIterationStore();
           return from(Promise.all(list.map(async (m) => {
             if (m.type == 'scrum') {
               m.reporter = await profileStore.get(m.reporter as string) || m.reporter;
@@ -42,6 +59,12 @@ export const useDiscussionStore = defineStore('discussion', {
               m.tasksDid = this.fromList(m.tasksDid as string[], list);
               m.roadblocks = this.fromList(m.roadblocks as string[], list);
               m.info = this.describeDiscussion(m);
+            }
+            if (Array.isArray(m.assignees) && typeof m.assignees[0] == 'string') {
+              m.assignees = await profileStore.selectProjectMembers(m.assignees as string[]);
+            }
+            if (m.iteration && typeof m.iteration == 'string') {
+              m.iteration = await iterationStore.getIteration(m.iteration);
             }
             return m;
           })));
@@ -296,7 +319,7 @@ export const useDiscussionStore = defineStore('discussion', {
       }
     },
     async discussionsOf(ceremony: ICeremony) {
-      const items = this.discussions.filter(d => d.ceremonyKey == ceremony.key);
+      const items = this.discussions.filter(d => d.iteration == ceremony.iterationKey);
       const project = useProjectStore().activeProject;
       if (ceremony.type == 'scrum' && project) {
         const noItems = project.members.filter(m => !(items.find(i => i.key.includes(m))));

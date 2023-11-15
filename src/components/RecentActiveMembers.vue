@@ -5,7 +5,6 @@
       :size="sizes"
       v-for="p in recent"
       :key="p.name"
-      :href="p.href"
       @dblclick="$emit('ctrlClick', p)"
       @click.ctrl="$emit('ctrlClick', p)"
       @click="$emit('clickProfile', p)"

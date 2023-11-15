@@ -302,7 +302,7 @@ export default defineComponent({
         } while (this.discussions.find((d) => d.key == key));
         this.theDiscussion.key = key;
       }
-      this.theDiscussion.ceremonyKey = this.activeCeremonyKey;
+      this.theDiscussion.iteration = this.activeIterationKey;
       this.theDiscussion.projectKey = this.activeProjectKey;
       await discussionStore.saveDiscussion(this.theDiscussion);
 

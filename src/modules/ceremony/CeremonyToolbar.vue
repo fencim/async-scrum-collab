@@ -92,7 +92,12 @@ export default defineComponent({
   },
   computed: {
     members() {
-      return activeStore.activeMembers;
+      return [
+        ...activeStore.administrators,
+        ...activeStore.moderators,
+        ...activeStore.activeMembers,
+        ...activeStore.guests,
+      ];
     },
     progress() {
       return ceremonyStore.activeCeremonyProgress;

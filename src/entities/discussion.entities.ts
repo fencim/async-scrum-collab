@@ -1,4 +1,5 @@
 import { IBaseEntity } from './base.entity';
+import { IIteration } from './iteration.entities';
 import { IProfile } from './profile.entities';
 import { IBoardColumn } from './project.entities';
 export interface IDiscussion extends IBaseEntity {
@@ -7,9 +8,15 @@ export interface IDiscussion extends IBaseEntity {
   ceremonyKey: string;
   awareness: { [profileKey: string]: string };
   complexity?: number;
+  //board
+  iteration?: string | IIteration;
+  closed?: boolean;
+  status?: string;
   responsibilityOf?: string;
-  assignedTo?: string;
-  assignees?: string[];
+  assignedTo?: string | IProfile;
+  assignees?: (string | IProfile)[];
+  order?: number;
+  //planning
   progress?: number;
   dueDate?: string;
   priority?: number;

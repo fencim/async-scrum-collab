@@ -116,9 +116,9 @@ export default defineComponent({
       }
     },
     discussionItems() {
-      const list = discussionStore.fromCeremony(
+      const list = discussionStore.fromIteration(
         this.activeProjectKey,
-        this.activeCeremony?.key || ''
+        this.activeIterationKey
       );
       const theUser = profileStore.theUser;
       if (this.activeCeremony?.type == 'scrum' && theUser) {

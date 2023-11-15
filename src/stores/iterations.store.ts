@@ -33,7 +33,10 @@ export const useIterationStore = defineStore(
           }
         });
     },
-
+    async getIteration(key: string) {
+      return this.iterations.find(i => i.key == key)
+        || await iterationResource.findOne({ key });
+    },
     async selectIteration(project: string, key: string) {
       if (project && key) {
         this.activeIteration = this.iterations.find(i => i.projectKey == project && i.key == key)

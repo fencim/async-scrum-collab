@@ -6,6 +6,8 @@ const props = defineProps({
     required: true,
     type: Object as PropType<TechnicalTask>,
   },
+  mini: Boolean,
+  maxed: Boolean,
 });
 </script>
 <template>

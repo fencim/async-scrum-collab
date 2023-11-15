@@ -290,9 +290,9 @@ export default defineComponent({
         (await discussionStore.withKey(this.activeItemKey)) ||
         this.theDiscussion;
       if (this.theDiscussion && this.theDiscussion.type == 'story') {
-        this.subTasks = await discussionStore.fromCeremony(
+        this.subTasks = await discussionStore.fromIteration(
           this.activeProjectKey,
-          this.activeCeremonyKey
+          this.activeIterationKey
         );
       }
       await this.revealAwareMembers();
