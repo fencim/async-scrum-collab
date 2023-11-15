@@ -22,11 +22,23 @@ defineProps({
       <q-chip dense color="primary">{{ task.priority || 'P1' }}</q-chip>
       <q-chip dense color="secondary">{{ task.dueDate || 'No Due' }}</q-chip>
     </template>
+    <template #details>
+      {{ task.specifics }}, {{ task.enables }}, {{ task.mesures }},
+      {{ task.due }}
+    </template>
     <template #footer>
       <recent-active-members :profiles="getProfiles(task.assignees)" />
     </template>
     <template #bottom>
       <q-linear-progress :value="0.5" />
+    </template>
+    <template #dropdown>
+      <div class="row bg-transaparent no-shadow">
+        <q-btn round icon="person" size="sm"
+          ><q-tooltip>Assign</q-tooltip></q-btn
+        >
+        <q-btn round icon="edit" size="sm"><q-tooltip>Edit</q-tooltip></q-btn>
+      </div>
     </template>
   </base-card>
 </template>
