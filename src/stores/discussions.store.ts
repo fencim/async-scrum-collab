@@ -6,7 +6,7 @@ import {
   ICeremony, IDiscussion,
   IProject, IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
   PlanningItem,
-  RetroItem
+  RetroItem, IBoardColumn
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
@@ -32,9 +32,18 @@ export const useDiscussionStore = defineStore('discussion', {
           .filter(d => (['goal', 'objective', 'story', 'task'] as PlanningItem['type'][])
             .includes(d.type as PlanningItem['type'])) as PlanningItem[]
       };
-    }
+    },
   },
   actions: {
+    getTaskBoard(columns: IBoardColumn[], iterationKey: string) {
+      const boardTasks = this.productBacklog.tasks.filter(t =>
+      ((typeof t.iteration == 'object' && t.iteration.key == iterationKey)
+        || (t.iteration == iterationKey)));
+      return columns.map((c, index) => ({
+        ...c,
+        tasks: boardTasks.filter(t => (t.status == c.key || (index == 0 && !t.status)))
+      })) as ISprintBoardColumn[];
+    },
     fromIteration(projectKey: string, iterationKey: string) {
       return this.discussions.filter(d => d && d.projectKey == projectKey && d.iteration == iterationKey);
     },

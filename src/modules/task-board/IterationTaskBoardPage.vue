@@ -7,15 +7,16 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
 
 import { ref, onMounted } from 'vue';
-import { dummyData } from './dummy-data';
-import { ISprintBoardColumn } from 'src/entities';
+// import { dummyData } from './dummy-data';
+// import { ISprintBoardColumn } from 'src/entities';
 import { getComponent } from './card-components';
 import { useQuasar } from 'quasar';
+import { ISprintBoardColumn, PlanningItem } from 'src/entities';
 const tab = ref('all');
 const iterationStore = useIterationStore();
 const discussionStore = useDiscussionStore();
 const activeStore = useActiveStore();
-const columns = ref<ISprintBoardColumn[]>([...dummyData]);
+//const columns = ref<ISprintBoardColumn[]>([...dummyData]);
 
 onMounted(async () => {
   const project = activeStore.activeProject;
@@ -27,6 +28,20 @@ onMounted(async () => {
     tab.value;
   }
 });
+async function changeOnColumn(
+  column: ISprintBoardColumn,
+  change: {
+    added?: { newIndex: number; element: PlanningItem };
+    removed: { oldIndex: number; element: PlanningItem };
+    moved: { newIndex: number; oldIndex: number; element: PlanningItem };
+  }
+) {
+  if (change.added) {
+    const issue = { ...change.added.element };
+    issue.status = column.key;
+    await discussionStore.saveDiscussion(issue);
+  }
+}
 </script>
 <template>
   <q-page class="justify-evenly q-pa-sm">
@@ -48,12 +63,11 @@ onMounted(async () => {
     <q-separator />
     <div class="row">
       <div v-if="!$q.screen.lt.md" class="col-4">
-        <div class="text-h6">Product Backlog</div>
+        <div class="text-h6 q-px-sm">Product Backlog</div>
         <product-backlog />
       </div>
       <q-tab-panels v-model="tab" class="col">
         <q-tab-panel name="all" v-if="$q.screen.lt.md">
-          <div class="text-h6">All</div>
           <product-backlog />
         </q-tab-panel>
         <q-tab-pannel
@@ -61,11 +75,17 @@ onMounted(async () => {
           :key="i.key"
           :name="i.key"
         >
-          <div class="text-h6">{{ i.name }}</div>
-          <div class="kanban-board row">
+          <div class="text-h6 q-px-sm">{{ i.name }}</div>
+          <div
+            class="kanban-board row"
+            v-if="typeof activeStore.activeProject?.boardColumns == 'object'"
+          >
             <div
               class="kanban-column col column"
-              v-for="(column, columnIndex) in columns"
+              v-for="(column, columnIndex) in discussionStore.getTaskBoard(
+                activeStore.activeProject?.boardColumns,
+                i.key
+              )"
               :key="columnIndex"
             >
               <draggable
@@ -73,9 +93,10 @@ onMounted(async () => {
                 :list="column.tasks"
                 group="tasks"
                 item-key="key"
+                @change="(e) => changeOnColumn(column, e)"
               >
                 <template #header>
-                  <h6>{{ column.name }}</h6>
+                  <div class="text-h6 q-pa-sm">{{ column.name }}</div>
                 </template>
                 <template #item="{ element }">
                   <q-card

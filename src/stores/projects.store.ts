@@ -20,6 +20,7 @@ export const useProjectStore = defineStore('projectStore', {
     projects: []
   } as IProjectState),
   getters: {
+
   },
   actions: {
     async init() {
@@ -49,7 +50,7 @@ export const useProjectStore = defineStore('projectStore', {
           await iterationStore.ofProject(project.key);
           const ceremonyStore = useCeremonyStore();
           await ceremonyStore.ofIteration(project.key);
-
+          project.boardColumns = project.boardColumns || [];
         }
         return project;
       } else {

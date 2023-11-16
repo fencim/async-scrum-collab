@@ -2,7 +2,7 @@
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { IStory } from 'src/entities';
-import { defineProps, PropType, ref } from 'vue';
+import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 const props = defineProps({
   task: {
@@ -12,7 +12,6 @@ const props = defineProps({
   mini: Boolean,
   maxed: Boolean,
 });
-const showDetails = ref(false);
 </script>
 <template>
   <base-card :maxed="maxed" :mini="mini" :task="task">

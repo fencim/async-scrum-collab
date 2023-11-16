@@ -20,15 +20,15 @@ defineProps({
     </template>
     <template #side>
       <q-chip dense color="primary">{{ task.priority || 'P1' }}</q-chip>
-      <q-chip dense color="secondary">{{ task.dueDate || 'No Due' }}</q-chip>
+      <q-chip dense color="secondary">{{ task.dueDate || 'ND' }}</q-chip>
     </template>
     <template #details>
-      <recent-active-members :profiles="getProfiles(task.assignees)" />
+      <q-badge v-if="typeof task.iteration == 'object'" dense>{{
+        task.iteration.name || task.iteration
+      }}</q-badge>
     </template>
     <template #footer>
-      <q-badge v-if="typeof task.iteration == 'object'" dense>{{
-        task.iteration.name || ''
-      }}</q-badge>
+      <recent-active-members :profiles="getProfiles(task.assignees)" />
     </template>
     <template #bottom>
       <q-linear-progress :value="0.5" />
