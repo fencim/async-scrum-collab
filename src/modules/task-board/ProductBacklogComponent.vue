@@ -4,12 +4,56 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
 import { ref } from 'vue';
 const discussionStore = useDiscussionStore();
-const keywords = ref(null);
-function onGrabTask(e: any) {
-  console.log(Object.keys(e), e);
-}
+const keywords = ref<null | FilterOption[]>(null);
+type FilterOption = {
+  type: 'Iteration' | 'Type';
+  value: string;
+  display: string;
+};
+const filterOptions = ref<FilterOption[]>([
+  {
+    type: 'Type',
+    display: 'Goal',
+    value: 'goal',
+  },
+]);
+function onGrabTask(e: any) {}
 function getBacklog() {
-  return discussionStore.productBacklog.tasks || [];
+  const backlog = (discussionStore.productBacklog.tasks || []).filter(
+    (task) => {
+      if (!keywords.value || keywords.value.length == 0) return true;
+      return keywords.value.find(
+        (f) =>
+          (f.type == 'Type' && task.type == f.value) ||
+          (f.type == 'Iteration' &&
+            ((typeof task.iteration == 'object' &&
+              task.iteration.key == f.value) ||
+              f.value == task.iteration))
+      );
+    }
+  );
+  filterOptions.value = backlog.reduce((p, c) => {
+    const iteration = typeof c.iteration == 'object' ? c.iteration : undefined;
+    if (
+      typeof iteration == 'object' &&
+      !p.find((o) => o.type == 'Iteration' && o.value == iteration.key)
+    ) {
+      p.push({
+        type: 'Iteration',
+        value: iteration.key,
+        display: iteration.name,
+      });
+    }
+    if (c.type && !p.find((o) => o.type == 'Type' && o.value == c.type)) {
+      p.push({
+        type: 'Type',
+        value: c.type,
+        display: c.type.replace(/^\w/, (m) => m.toUpperCase()),
+      });
+    }
+    return p;
+  }, [] as FilterOption[]);
+  return backlog;
 }
 </script>
 <template>
@@ -28,10 +72,33 @@ function getBacklog() {
         v-model="keywords"
         use-input
         use-chips
-        dropdown-icon="none"
+        hide-dropdown-icon
         multiple
+        :options="filterOptions"
         input-debounce="0"
-      />
+      >
+        <template #selected-item="{ opt, removeAtIndex, index }">
+          <q-chip
+            v-if="keywords"
+            dense
+            removable
+            text-color="primary"
+            class="q-my-none q-ml-xs q-mr-none"
+            @remove="removeAtIndex(index)"
+          >
+            {{ opt.type }} : {{ opt.display }}
+          </q-chip>
+          <q-badge v-else>*none*</q-badge>
+        </template>
+        <template #option="{ opt, itemProps }">
+          <q-item v-bind="itemProps">
+            <q-item-section>
+              <q-item-label caption>{{ opt.type }}</q-item-label>
+              <q-item-label>{{ opt.display }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
     </template>
     <template #item="{ element }">
       <q-card

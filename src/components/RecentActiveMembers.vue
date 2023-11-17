@@ -47,12 +47,15 @@ export default defineComponent({
       type: String,
       required: false,
     },
+    maxCount: Number,
   },
   computed: {
     recent() {
       return (
         (Array.isArray(this.profiles) &&
-          this.profiles.filter((p) => p).slice(0, MAX_PROFILE_COUNT)) ||
+          this.profiles
+            .filter((p) => p)
+            .slice(0, this.maxCount || MAX_PROFILE_COUNT)) ||
         []
       );
     },
@@ -61,12 +64,13 @@ export default defineComponent({
         0,
         ((Array.isArray(this.profiles) &&
           this.profiles.filter((p) => p).length) ||
-          0) - MAX_PROFILE_COUNT
+          0) - (this.maxCount || MAX_PROFILE_COUNT)
       );
     },
     extra() {
       return (
-        (Array.isArray(this.profiles) && this.profiles[MAX_PROFILE_COUNT]) ||
+        (Array.isArray(this.profiles) &&
+          this.profiles[this.maxCount || MAX_PROFILE_COUNT]) ||
         this.profiles[0]
       );
     },

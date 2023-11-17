@@ -16,16 +16,14 @@ const tab = ref('all');
 const iterationStore = useIterationStore();
 const discussionStore = useDiscussionStore();
 const activeStore = useActiveStore();
-//const columns = ref<ISprintBoardColumn[]>([...dummyData]);
 
 onMounted(async () => {
   const project = activeStore.activeProject;
   if (project) {
     discussionStore.ofProject(project.key);
   }
-  const q = useQuasar();
-  if (!q.screen.lt.md && activeStore.activeProject) {
-    tab.value;
+  if (activeStore.activeProject && iterationStore.iterations.length) {
+    tab.value = iterationStore.iterations[0].key;
   }
 });
 async function changeOnColumn(
@@ -34,11 +32,13 @@ async function changeOnColumn(
     added?: { newIndex: number; element: PlanningItem };
     removed: { oldIndex: number; element: PlanningItem };
     moved: { newIndex: number; oldIndex: number; element: PlanningItem };
-  }
+  },
+  iterationKey: string
 ) {
   if (change.added) {
     const issue = { ...change.added.element };
     issue.status = column.key;
+    issue.iteration = iterationKey;
     await discussionStore.saveDiscussion(issue);
   }
 }
@@ -89,11 +89,11 @@ async function changeOnColumn(
               :key="columnIndex"
             >
               <draggable
-                class="col kanban-task-list dragArea list-group"
+                class="col kanban-task-list dragArea list-group full-height"
                 :list="column.tasks"
                 group="tasks"
                 item-key="key"
-                @change="(e) => changeOnColumn(column, e)"
+                @change="(e) => changeOnColumn(column, e, i.key)"
               >
                 <template #header>
                   <div class="text-h6 q-pa-sm">{{ column.name }}</div>
