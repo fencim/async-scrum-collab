@@ -17,7 +17,7 @@ const filterOptions = ref<FilterOption[]>([
     value: 'goal',
   },
 ]);
-function onGrabTask(e: any) {}
+function onGrabTask() {}
 function getBacklog() {
   const backlog = (discussionStore.productBacklog.tasks || []).filter(
     (task) => {

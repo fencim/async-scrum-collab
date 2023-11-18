@@ -23,8 +23,14 @@ defineProps({
       <q-chip dense color="secondary">{{ task.dueDate || 'No Due' }}</q-chip>
     </template>
     <template #details>
-      {{ task.specifics }}, {{ task.enables }}, {{ task.mesures }},
-      {{ task.due }}
+      <div>
+        {{ task.specifics }}, {{ task.enables }}, {{ task.mesures }},
+        {{ task.due }}
+      </div>
+      <q-space />
+      <q-badge v-if="typeof task.iteration == 'object'" dense>{{
+        task.iteration.name || task.iteration
+      }}</q-badge>
     </template>
     <template #footer>
       <recent-active-members :profiles="getProfiles(task.assignees)" />

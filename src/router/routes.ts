@@ -62,7 +62,7 @@ const routes: RouteRecordRaw[] = [
         },
       }, {
         name: 'board',
-        path: 'board',
+        path: 'board/:iteration?',
         meta: { actions: true },
         components: {
           default: () => import('src/modules/task-board/IterationTaskBoardPage.vue'),

@@ -7,11 +7,9 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
 
 import { ref, onMounted } from 'vue';
-// import { dummyData } from './dummy-data';
-// import { ISprintBoardColumn } from 'src/entities';
 import { getComponent } from './card-components';
-import { useQuasar } from 'quasar';
 import { ISprintBoardColumn, PlanningItem } from 'src/entities';
+import { useRoute, useRouter } from 'vue-router';
 const tab = ref('all');
 const iterationStore = useIterationStore();
 const discussionStore = useDiscussionStore();
@@ -22,8 +20,19 @@ onMounted(async () => {
   if (project) {
     discussionStore.ofProject(project.key);
   }
-  if (activeStore.activeProject && iterationStore.iterations.length) {
+  const route = useRoute();
+  if (route.params.iteration && typeof route.params.iteration == 'string') {
+    tab.value = route.params.iteration;
+  } else if (activeStore.activeProject && iterationStore.iterations.length) {
     tab.value = iterationStore.iterations[0].key;
+    const router = useRouter();
+    router.replace({
+      name: 'board',
+      params: {
+        project: project?.key,
+        iteration: iterationStore.iterations[0].key,
+      },
+    });
   }
 });
 async function changeOnColumn(
@@ -46,18 +55,32 @@ async function changeOnColumn(
 <template>
   <q-page class="justify-evenly q-pa-sm">
     <q-tabs v-model="tab" inline-label dense class="text-teal">
-      <q-tab
+      <q-route-tab
         name="all"
+        :to="{
+          name: 'board',
+          params: {
+            project: activeStore.activeProject?.key,
+            iteration: 'all',
+          },
+        }"
         icon="dashboard"
         label="Product"
         v-if="$q.screen.lt.md"
       />
-      <q-tab
+      <q-route-tab
         v-for="i in iterationStore.iterations"
         :key="i.key"
         :name="i.key"
         icon="splitscreen"
         :label="i.name"
+        :to="{
+          name: 'board',
+          params: {
+            project: i.projectKey,
+            iteration: i.key,
+          },
+        }"
       />
     </q-tabs>
     <q-separator />
@@ -75,7 +98,6 @@ async function changeOnColumn(
           :key="i.key"
           :name="i.key"
         >
-          <div class="text-h6 q-px-sm">{{ i.name }}</div>
           <div
             class="kanban-board row"
             v-if="typeof activeStore.activeProject?.boardColumns == 'object'"
@@ -96,7 +118,9 @@ async function changeOnColumn(
                 @change="(e) => changeOnColumn(column, e, i.key)"
               >
                 <template #header>
-                  <div class="text-h6 q-pa-sm">{{ column.name }}</div>
+                  <q-badge class="text-h6 q-ma-sm q-px-sm full-width">{{
+                    column.name
+                  }}</q-badge>
                 </template>
                 <template #item="{ element }">
                   <q-card
