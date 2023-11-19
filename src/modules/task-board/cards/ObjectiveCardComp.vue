@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
+import CommonCardAction from './CommonCardActionComp.vue';
 import { IObjective } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
@@ -27,23 +28,20 @@ defineProps({
         {{ task.specifics }}, {{ task.enables }}, {{ task.mesures }},
         {{ task.due }}
       </div>
-      <q-space />
-      <q-badge v-if="typeof task.iteration == 'object'" dense>{{
-        task.iteration.name || task.iteration
-      }}</q-badge>
     </template>
     <template #footer>
       <recent-active-members :profiles="getProfiles(task.assignees)" />
+      <q-space />
+      <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
+        task.iteration.name || task.iteration
+      }}</q-badge>
     </template>
     <template #bottom>
       <q-linear-progress :value="0.5" />
     </template>
     <template #dropdown>
       <div class="row bg-transaparent no-shadow">
-        <q-btn round icon="person" size="sm"
-          ><q-tooltip>Assign</q-tooltip></q-btn
-        >
-        <q-btn round icon="edit" size="sm"><q-tooltip>Edit</q-tooltip></q-btn>
+        <common-card-action :task="task" />
       </div>
     </template>
   </base-card>

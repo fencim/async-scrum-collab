@@ -26,7 +26,7 @@ const showDetails = ref(false);
     </div>
     <div
       class="row q-px-sm full-width justify-end q-py-xs"
-      v-if="!!$slots['footer'] && (showDetails || maxed)"
+      v-if="!!$slots['footer']"
     >
       <slot name="footer" />
     </div>

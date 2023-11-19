@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { IGoal } from 'src/entities';
+import CommonCardAction from './CommonCardActionComp.vue';
+import { DiscussionItem, IGoal } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 defineProps({
@@ -12,6 +13,11 @@ defineProps({
   mini: Boolean,
   maxed: Boolean,
 });
+function iterationKey(task: DiscussionItem) {
+  return typeof task.iteration == 'object'
+    ? task.iteration.key
+    : task.iteration;
+}
 </script>
 <template>
   <base-card :maxed="maxed" :mini="mini" :task="task">
@@ -22,23 +28,19 @@ defineProps({
       <q-chip dense color="primary">{{ task.priority || 'P1' }}</q-chip>
       <q-chip dense color="secondary">{{ task.dueDate || 'ND' }}</q-chip>
     </template>
-    <template #details>
-      <q-badge v-if="typeof task.iteration == 'object'" dense>{{
-        task.iteration.name || task.iteration
-      }}</q-badge>
-    </template>
+    <template #details> </template>
     <template #footer>
       <recent-active-members :profiles="getProfiles(task.assignees)" />
+      <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
+        task.iteration.name || task.iteration
+      }}</q-badge>
     </template>
     <template #bottom>
       <q-linear-progress :value="0.5" />
     </template>
     <template #dropdown>
       <div class="row bg-transaparent no-shadow">
-        <q-btn round icon="person" size="sm"
-          ><q-tooltip>Assign</q-tooltip></q-btn
-        >
-        <q-btn round icon="edit" size="sm"><q-tooltip>Edit</q-tooltip></q-btn>
+        <common-card-action :task="task" />
       </div>
     </template>
   </base-card>

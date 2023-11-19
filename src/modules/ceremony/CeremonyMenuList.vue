@@ -1,6 +1,20 @@
 <template>
   <q-list padding class="menu-list">
     <q-item
+      clickable
+      :to="{
+        name: 'board',
+        params: {
+          project: activeProjectKey,
+        },
+      }"
+    >
+      <q-item-section avatar>
+        <q-icon name="dashboard" />
+      </q-item-section>
+      <q-tooltip>Task board</q-tooltip>
+    </q-item>
+    <q-item
       v-if="activeCeremony"
       clickable
       :active="!activeItemKey"
@@ -73,10 +87,10 @@ export default defineComponent({
   data() {
     return {
       discussionStore,
-      activeProjectKey: 'AP',
-      activeIterationKey: 'AI',
-      activeCeremonyKey: 'AC',
-      activeItemKey: '0',
+      activeProjectKey: '',
+      activeIterationKey: '',
+      activeCeremonyKey: '',
+      activeItemKey: '',
       activeProject: undefined as IProject | undefined,
       activeCeremony: undefined as ICeremony | undefined,
     };
@@ -97,22 +111,16 @@ export default defineComponent({
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
       this.activeProject = projectStore.activeProject;
-      this.activeIterationKey =
-        (this.$route.params.iteration &&
-          String(this.$route.params.iteration)) ||
-        '';
-      this.activeCeremonyKey =
-        (this.$route.params.ceremony && String(this.$route.params.ceremony)) ||
-        '';
+      this.activeIterationKey = (this.$route.params.iteration as string) || '';
+      this.activeCeremonyKey = (this.$route.params.ceremony as string) || '';
+      this.activeItemKey = (this.$route.params.item as string) || '';
       this.activeCeremony = await ceremonyStore.withKey(
         this.activeProjectKey,
         this.activeIterationKey,
         this.activeCeremonyKey
       );
-      this.activeItemKey =
-        (this.$route.params.item && String(this.$route.params.item)) || '';
-      if (ceremonyStore.activeCeremony) {
-        discussionStore.discussionsOf(ceremonyStore.activeCeremony);
+      if (this.activeProjectKey) {
+        discussionStore.ofProject(this.activeProjectKey);
       }
     },
     discussionItems() {

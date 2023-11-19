@@ -451,6 +451,9 @@ export default defineComponent({
       this.dialogVote = false;
     },
     async assesItem() {
+      this.discussion =
+        (await discussionStore.getUpdated(this.discussion?.key || '')) ||
+        this.discussion;
       if (this.discussion && this.project) {
         const report = discussionStore.checkCompleteness(
           this.discussion,

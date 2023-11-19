@@ -6,7 +6,7 @@ import {
   ICeremony, IDiscussion,
   IProject, IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
   PlanningItem,
-  RetroItem, IBoardColumn
+  RetroItem, IBoardColumn, IIteration
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
@@ -35,6 +35,9 @@ export const useDiscussionStore = defineStore('discussion', {
     },
   },
   actions: {
+    async getUpdated(key: string) {
+      return discussionResource.getData(key);
+    },
     getTaskBoard(columns: IBoardColumn[], iterationKey: string) {
       const boardTasks = this.productBacklog.tasks.filter(t =>
       ((typeof t.iteration == 'object' && t.iteration.key == iterationKey)
@@ -45,7 +48,9 @@ export const useDiscussionStore = defineStore('discussion', {
       })) as ISprintBoardColumn[];
     },
     fromIteration(projectKey: string, iterationKey: string) {
-      return this.discussions.filter(d => d && d.projectKey == projectKey && d.iteration == iterationKey);
+      return this.discussions.filter(d => d && d.projectKey == projectKey &&
+        (d.iteration == iterationKey ||
+          (d.iteration as (IIteration | undefined))?.key == iterationKey));
     },
     fromList(keys: string[], updatedList?: DiscussionItem[]) {
       if (updatedList) {
@@ -92,14 +97,14 @@ export const useDiscussionStore = defineStore('discussion', {
         return discussionResource.findOne({ key });
     },
     async saveDiscussion(discussion: DiscussionItem) {
-      if (discussion.type == 'story') {
-        discussion.acceptanceCriteria = [...(discussion.acceptanceCriteria || [])].map(ac => ({ ...ac }));
-        discussion.tasks = [...(discussion.tasks || [])];
-      }
-      await discussionResource.setData(discussion.key, {
-        ...discussion
-      });
-      const index = this.discussions.findIndex(i => i.key == discussion.key);
+      const copy = {
+        ...discussion,
+        iteration: typeof discussion.iteration == 'string'
+          ? discussion.iteration
+          : discussion.iteration?.key || ''
+      } as DiscussionItem;
+      await discussionResource.setData(copy.key, copy);
+      const index = this.discussions.findIndex(i => i.key == copy.key);
       if (index < 0) {
         this.discussions.push(discussion);
       } else {

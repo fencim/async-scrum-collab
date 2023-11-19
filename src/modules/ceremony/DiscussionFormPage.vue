@@ -302,7 +302,8 @@ export default defineComponent({
         } while (this.discussions.find((d) => d.key == key));
         this.theDiscussion.key = key;
       }
-      this.theDiscussion.iteration = this.activeIterationKey;
+      this.theDiscussion.iteration =
+        this.theDiscussion.iteration || this.activeIterationKey;
       this.theDiscussion.projectKey = this.activeProjectKey;
       await discussionStore.saveDiscussion(this.theDiscussion);
 
@@ -316,20 +317,23 @@ export default defineComponent({
           this.activeProject,
           convoStore.convo
         );
-
-        convoStore.sendMessage(
-          this.activeProjectKey,
-          this.theDiscussion.key,
-          'bot',
-          {
-            type: 'message',
-            message: `${profileStore.presentUser.name} updated this ${
-              this.theDiscussion.type
-            } and progressed from ${(
-              (this.theDiscussion.progress || 0) * 100
-            ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(2)}%`,
-          }
-        );
+        if (this.theDiscussion.progress != report[0].progress) {
+          convoStore.sendMessage(
+            this.activeProjectKey,
+            this.theDiscussion.key,
+            'bot',
+            {
+              type: 'message',
+              message: `${profileStore.presentUser.name} updated this ${
+                this.theDiscussion.type
+              } and progressed from ${(
+                (this.theDiscussion.progress || 0) * 100
+              ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(
+                2
+              )}%`,
+            }
+          );
+        }
       }
       if (this.$route.params.item) {
         await this.$router.replace({
