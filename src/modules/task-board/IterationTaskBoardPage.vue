@@ -135,7 +135,7 @@ async function changeOnColumn(
                     </template>
                     <template #item="{ element }">
                       <q-card
-                        class="list-group-item q-ma-sm q-pa-sm board-card"
+                        class="list-group-item q-ma-sm q-pa-sm board-card no-shadow"
                         :class="element.type + '-card'"
                       >
                         <component
@@ -163,11 +163,12 @@ async function changeOnColumn(
 </template>
 <style lang="sass">
 .board-card
+  border: 1px solid black
   border-left: 5px solid
 .goal-card
-  border-color: blue
+  border-left-color: blue
 .objective-card
-  border-color: purple
+  border-left-color: purple
 .story-card
-  border-color: green
+  border-left-color: green
 </style>

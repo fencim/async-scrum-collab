@@ -5,7 +5,7 @@ import {
   DiscussionItem,
   ICeremony, IDiscussion,
   IProject, IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
-  PlanningItem,
+  PlanningItem, IProfile,
   RetroItem, IBoardColumn, IIteration
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
@@ -96,19 +96,33 @@ export const useDiscussionStore = defineStore('discussion', {
       if (key)
         return discussionResource.findOne({ key });
     },
+    async assignTaskTo(task: DiscussionItem, profile: IProfile) {
+      const updated = (await this.getUpdated(task.key)) || task;
+      updated.assignees = updated.assignees?.map(a => typeof a == 'object' ? a.key : a) || [];
+      const existingIndex = updated.assignees.findIndex(a => a == profile.key);
+      if (existingIndex < 0) {
+        updated.assignees.push(profile.key);
+      } else {
+        updated.assignees.splice(existingIndex, 1);
+        updated.assignees.splice(0, 0, profile.key);
+      }
+      updated.assignedTo = profile.key;
+      return await this.saveDiscussion(updated);
+    },
     async saveDiscussion(discussion: DiscussionItem) {
       const copy = {
         ...discussion,
         iteration: typeof discussion.iteration == 'string'
           ? discussion.iteration
-          : discussion.iteration?.key || ''
+          : discussion.iteration?.key || '',
+        awareness: { ...discussion.awareness }
       } as DiscussionItem;
       await discussionResource.setData(copy.key, copy);
       const index = this.discussions.findIndex(i => i.key == copy.key);
       if (index < 0) {
         this.discussions.push(discussion);
       } else {
-        discussion = Object.assign(this.discussions[index] || {}, { ...discussion });
+        discussion = { ...(this.discussions[index] || {}), ...discussion };
         this.discussions.splice(index, 1, discussion);
       }
       await this.updateCeremonyProgress(discussion);
@@ -206,8 +220,6 @@ export const useDiscussionStore = defineStore('discussion', {
         { resolved: 0, pending: 0 });
 
       factors.push(this.logFactor(qProgress.resolved, qProgress.resolved + qProgress.pending, 'questions resolution'));
-
-
       factors.splice(0, 0, this.logFactor(
         factors.reduce((p, c) => (p + c.progress), 0),
         factors.length, 'overall progress factors'))

@@ -47,7 +47,7 @@ const showDetails = ref(false);
     v-else
     unelevated
     padding="0"
-    dropdown-icon="circle"
+    dropdown-icon="arrow_drop_down_circle"
     :outline="false"
     class="float-right vertical-middle"
     size="xs"

@@ -1,6 +1,10 @@
 <script lang="ts" setup>
-import { DiscussionItem } from 'src/entities';
+import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
+import { DiscussionItem, IProfile } from 'src/entities';
+import { useActiveStore } from 'src/stores/active.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
 import { PropType, defineProps } from 'vue';
+const activeStore = useActiveStore();
 
 defineProps({
   task: {
@@ -13,9 +17,25 @@ function iterationKey(task: DiscussionItem) {
     ? task.iteration.key
     : task.iteration;
 }
+function assignTaskTo(task: DiscussionItem, profile: IProfile) {
+  const discussionStore = useDiscussionStore();
+  return discussionStore.assignTaskTo(task, profile);
+}
 </script>
 <template>
-  <q-btn round icon="person" size="sm"><q-tooltip>Assign</q-tooltip></q-btn>
+  <q-btn-dropdown
+    round
+    content-class="bg-transparent no-shadow"
+    no-icon-animation
+    dropdown-icon="person"
+    size="sm"
+  >
+    <RecentActiveMembers
+      sizes="xs"
+      :profiles="activeStore.activeMembers"
+      @click-profile="(p) => assignTaskTo(task, p)"
+    />
+  </q-btn-dropdown>
   <q-btn
     :to="{
       name: 'editDiscussion',

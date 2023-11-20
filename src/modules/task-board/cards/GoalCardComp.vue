@@ -25,15 +25,24 @@ function iterationKey(task: DiscussionItem) {
       {{ task.description }}
     </template>
     <template #side>
-      <q-chip dense color="primary">{{ task.priority || 'P1' }}</q-chip>
-      <q-chip dense color="secondary">{{ task.dueDate || 'ND' }}</q-chip>
+      <div>
+        <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
+          task.iteration.name || task.iteration
+        }}</q-badge>
+      </div>
     </template>
-    <template #details> </template>
     <template #footer>
-      <recent-active-members :profiles="getProfiles(task.assignees)" />
-      <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
-        task.iteration.name || task.iteration
-      }}</q-badge>
+      <recent-active-members
+        sizes="xs"
+        :profiles="getProfiles(task.assignees)"
+      />
+      <q-space />
+      <div>
+        <q-badge dense color="primary">{{ task.priority || 'P1' }}</q-badge>
+        <q-badge v-if="task.dueDate" dense color="secondary">{{
+          task.dueDate || 'ND'
+        }}</q-badge>
+      </div>
     </template>
     <template #bottom>
       <q-linear-progress :value="0.5" />
