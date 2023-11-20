@@ -38,8 +38,10 @@ function iterationKey(task: DiscussionItem) {
       />
       <q-space />
       <div>
-        <q-badge dense color="primary">{{ task.priority || 'P1' }}</q-badge>
-        <q-badge v-if="task.dueDate" dense color="secondary">{{
+        <q-badge class="q-mr-xs" dense color="primary">{{
+          task.priority || 'P1'
+        }}</q-badge>
+        <q-badge dense :color="task.dueDate ? 'secondary' : 'negative'">{{
           task.dueDate || 'ND'
         }}</q-badge>
       </div>
