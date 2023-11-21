@@ -2,7 +2,7 @@
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import CommonCardAction from './CommonCardActionComp.vue';
-import { DiscussionItem, IGoal } from 'src/entities';
+import { IGoal } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 defineProps({
@@ -13,11 +13,6 @@ defineProps({
   mini: Boolean,
   maxed: Boolean,
 });
-function iterationKey(task: DiscussionItem) {
-  return typeof task.iteration == 'object'
-    ? task.iteration.key
-    : task.iteration;
-}
 </script>
 <template>
   <base-card :maxed="maxed" :mini="mini" :task="task">

@@ -130,8 +130,10 @@ export const useDiscussionStore = defineStore('discussion', {
     },
     async updateCeremonyProgress(discussion: DiscussionItem) {
       const ceremonyStore = useCeremonyStore();
+      const iterationKey = typeof discussion.iteration == 'object' ?
+        discussion.iteration?.key : discussion.iteration;
       const targetCeremony = ceremonyStore.ceremonies.find(
-        c => c.key == discussion.ceremonyKey && c.projectKey == discussion.projectKey);
+        c => c.iterationKey == iterationKey && c.projectKey == discussion.projectKey);
       if (targetCeremony) {
         const items = this.discussions.filter(
           i => i.ceremonyKey == discussion.ceremonyKey && i.projectKey == discussion.projectKey);

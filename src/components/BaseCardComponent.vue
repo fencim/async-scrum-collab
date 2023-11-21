@@ -1,12 +1,29 @@
 <script lang="ts" setup>
-import { defineProps, ref } from 'vue';
+import { DiscussionItem } from 'src/entities';
+import { PropType, defineProps, ref } from 'vue';
 defineProps({
   mini: Boolean,
   maxed: Boolean,
+  task: {
+    required: true,
+    type: Object as PropType<DiscussionItem>,
+  },
 });
 const showDetails = ref(false);
+function formatKey(key: string) {
+  const keyParts = /(?<projectKey>\w{4})(?<type>[^\d]*)(?<num>\d*)/.exec(key);
+  const { projectKey, type, num } = keyParts?.groups as {
+    projectKey: string;
+    type: string;
+    num: string;
+  };
+  return `${projectKey}-${num} (${type})`.toUpperCase();
+}
 </script>
 <template>
+  <q-badge class="float-left vertical-top text-bold">{{
+    formatKey(task.key || 'KEY')
+  }}</q-badge>
   <q-card-section class="q-px-sm no-shadow">
     <div class="row full-width">
       <div class="col self-center">

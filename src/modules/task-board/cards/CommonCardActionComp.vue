@@ -23,6 +23,21 @@ function assignTaskTo(task: DiscussionItem, profile: IProfile) {
 }
 </script>
 <template>
+  <q-btn
+    :to="{
+      name: 'discussionDetails',
+      params: {
+        project: task.projectKey,
+        iteration: iterationKey(task),
+        ceremony: iterationKey(task) + 'plan',
+        item: task.key,
+      },
+    }"
+    round
+    icon="info"
+    size="sm"
+    ><q-tooltip>Details</q-tooltip></q-btn
+  >
   <q-btn-dropdown
     round
     content-class="bg-transparent no-shadow"

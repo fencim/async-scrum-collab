@@ -4,6 +4,7 @@ import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { IStory } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
+import CommonCardAction from './CommonCardActionComp.vue';
 const props = defineProps({
   task: {
     required: true,
@@ -16,13 +17,26 @@ const props = defineProps({
 <template>
   <base-card :maxed="maxed" :mini="mini" :task="task">
     <template #title>
-      {{
-        `As ${props.task.targetUser}, I want to ${props.task.subject}, so that ${props.task.purpose}`
-      }}
+      <div v-if="!mini">
+        <div>
+          As
+          <span class="text-accent">{{ props.task.targetUser }}</span>
+        </div>
+        <div>
+          I want to <span class="text-secondary">{{ props.task.subject }}</span>
+        </div>
+        <div>
+          So that <span class="text-primary">{{ props.task.purpose }}</span>
+        </div>
+      </div>
+      <div v-else>{{ task.subject }}</div>
     </template>
     <template #side>
-      <q-chip dense color="primary">{{ task.priority || 'P1' }}</q-chip>
-      <q-chip dense color="secondary">{{ task.dueDate || 'No Due' }}</q-chip>
+      <div>
+        <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
+          task.iteration.name || task.iteration
+        }}</q-badge>
+      </div>
     </template>
     <template #details>
       <q-list
@@ -39,17 +53,26 @@ const props = defineProps({
       </q-list>
     </template>
     <template #footer>
-      <recent-active-members :profiles="getProfiles(task.assignees)" />
+      <recent-active-members
+        sizes="xs"
+        :profiles="getProfiles(task.assignees)"
+      />
+      <q-space />
+      <div>
+        <q-badge class="q-mr-xs" dense color="primary">{{
+          task.priority || 'P1'
+        }}</q-badge>
+        <q-badge dense :color="task.dueDate ? 'secondary' : 'negative'">{{
+          task.dueDate || 'ND'
+        }}</q-badge>
+      </div>
     </template>
     <template #bottom>
       <q-linear-progress :value="0.5" />
     </template>
     <template #dropdown>
       <div class="row bg-transaparent no-shadow">
-        <q-btn round icon="person" size="sm"
-          ><q-tooltip>Assign</q-tooltip></q-btn
-        >
-        <q-btn round icon="edit" size="sm"><q-tooltip>Edit</q-tooltip></q-btn>
+        <common-card-action :task="task" />
       </div>
     </template>
   </base-card>
