@@ -1,10 +1,19 @@
 <script lang="ts" setup>
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { IStory } from 'src/entities';
+import { DiscussionItem, ISprintBoardColumn, IStory } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 import CommonCardAction from './CommonCardActionComp.vue';
+const emits = defineEmits<{
+  (
+    e: 'taskMoved',
+    issue: DiscussionItem,
+    column?: ISprintBoardColumn,
+    iterationKey?: string
+  ): void;
+}>();
+
 const props = defineProps({
   task: {
     required: true,
@@ -72,7 +81,12 @@ const props = defineProps({
     </template>
     <template #dropdown>
       <div class="row bg-transaparent no-shadow">
-        <common-card-action :task="task" />
+        <common-card-action
+          :task="task"
+          @task-moved="
+            (issue, col, iteration) => $emit('taskMoved', issue, col, iteration)
+          "
+        />
       </div>
     </template>
   </base-card>

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import draggable from 'vuedraggable';
 import ProductBacklog from './ProductBacklogComponent.vue';
+import IterationTaskBoardDesktop from './IterationTaskBoardDesktopComponent.vue';
+import IterationTaskBoardMobile from './IterationTaskBoardMobileComponent.vue';
 
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
 
 import { ref, onMounted } from 'vue';
-import { getComponent } from './card-components';
-import { ISprintBoardColumn, PlanningItem } from 'src/entities';
+import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
 import { useRoute, useRouter } from 'vue-router';
 const tab = ref('all');
 const splitSection = ref(30);
@@ -36,21 +36,19 @@ onMounted(async () => {
     });
   }
 });
-async function changeOnColumn(
-  column: ISprintBoardColumn,
-  change: {
-    added?: { newIndex: number; element: PlanningItem };
-    removed: { oldIndex: number; element: PlanningItem };
-    moved: { newIndex: number; oldIndex: number; element: PlanningItem };
-  },
-  iterationKey: string
+async function taskMoved(
+  issue: DiscussionItem,
+  column?: ISprintBoardColumn,
+  iterationKey?: string
 ) {
-  if (change.added) {
-    const issue = { ...change.added.element };
+  if (column) {
     issue.status = column.key;
-    issue.iteration = iterationKey;
-    await discussionStore.saveDiscussion(issue);
   }
+  if (iterationKey) {
+    issue.iteration = iterationKey;
+    tab.value = iterationKey;
+  }
+  await discussionStore.saveDiscussion(issue);
 }
 </script>
 <template>
@@ -91,60 +89,32 @@ async function changeOnColumn(
         <product-backlog />
       </template>
       <template #after>
-        <div class="row">
+        <div class="row" :style="'min-height: ' + $q.screen.sizes.sm + 'px'">
           <q-tab-panels v-model="tab" class="col">
-            <q-tab-panel name="all" v-if="$q.screen.lt.md">
-              <product-backlog />
-            </q-tab-panel>
             <q-tab-pannel
               v-for="i in iterationStore.iterations"
               :key="i.key"
               :name="i.key"
             >
               <div
-                class="kanban-board row"
+                class="kanban-board row full-height"
                 v-if="
                   typeof activeStore.activeProject?.boardColumns == 'object'
                 "
               >
                 <div
-                  class="kanban-column col column"
+                  class="kanban-column col column full-height"
                   v-for="(column, columnIndex) in discussionStore.getTaskBoard(
                     activeStore.activeProject?.boardColumns,
                     i.key
                   )"
                   :key="columnIndex"
                 >
-                  <draggable
-                    class="col kanban-task-list dragArea list-group full-height"
-                    :list="column.tasks"
-                    group="tasks"
-                    item-key="key"
-                    @change="(e) => changeOnColumn(column, e, i.key)"
-                  >
-                    <template #header>
-                      <div class="row">
-                        <q-btn
-                          class="col q-ma-sm"
-                          :icon="column.icon"
-                          :color="column.color || 'accent'"
-                          dense
-                          >{{ column.name }}</q-btn
-                        >
-                      </div>
-                    </template>
-                    <template #item="{ element }">
-                      <q-card
-                        class="list-group-item q-ma-sm q-pa-sm board-card no-shadow"
-                        :class="element.type + '-card'"
-                      >
-                        <component
-                          :is="getComponent(element)"
-                          :task="element"
-                        />
-                      </q-card>
-                    </template>
-                  </draggable>
+                  <iteration-task-board-desktop
+                    :column="column"
+                    :iteration="i"
+                    @task-added="taskMoved"
+                  />
                 </div>
               </div>
             </q-tab-pannel>
@@ -157,6 +127,26 @@ async function changeOnColumn(
         <q-tab-panel name="all">
           <product-backlog />
         </q-tab-panel>
+        <q-tab-pannel
+          v-for="i in iterationStore.iterations"
+          :key="i.key"
+          :name="i.key"
+        >
+          <div
+            v-if="typeof activeStore.activeProject?.boardColumns == 'object'"
+          >
+            <iteration-task-board-mobile
+              :columns="
+                discussionStore.getTaskBoard(
+                  activeStore.activeProject?.boardColumns,
+                  i.key
+                )
+              "
+              :iteration="i"
+              @task-moved="taskMoved"
+            />
+          </div>
+        </q-tab-pannel>
       </q-tab-panels>
     </div>
   </q-page>

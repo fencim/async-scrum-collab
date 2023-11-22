@@ -1,11 +1,27 @@
 <script lang="ts" setup>
+import { type } from 'os';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import { DiscussionItem, IProfile } from 'src/entities';
+import {
+  DiscussionItem,
+  IIteration,
+  IProfile,
+  ISprintBoardColumn,
+} from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useIterationStore } from 'src/stores/iterations.store';
 import { PropType, defineProps } from 'vue';
 const activeStore = useActiveStore();
-
+const iterationStore = useIterationStore();
+const discussionStore = useDiscussionStore();
+const emits = defineEmits<{
+  (
+    e: 'taskMoved',
+    issue: DiscussionItem,
+    column?: ISprintBoardColumn,
+    iterationKey?: string
+  ): void;
+}>();
 defineProps({
   task: {
     required: true,
@@ -15,11 +31,27 @@ defineProps({
 function iterationKey(task: DiscussionItem) {
   return typeof task.iteration == 'object'
     ? task.iteration.key
-    : task.iteration;
+    : task.iteration || '';
 }
 function assignTaskTo(task: DiscussionItem, profile: IProfile) {
-  const discussionStore = useDiscussionStore();
   return discussionStore.assignTaskTo(task, profile);
+}
+function moveTask(
+  task: DiscussionItem,
+  column?: ISprintBoardColumn,
+  iteration?: string
+) {
+  const copy = { ...task };
+  emits('taskMoved', copy, column, iteration || iterationKey(task));
+}
+function getColumns(): ISprintBoardColumn[] {
+  return (activeStore.activeProject?.boardColumns || []).map((c) => ({
+    ...c,
+    tasks: [],
+  }));
+}
+function getIterations() {
+  return iterationStore.iterations || [];
 }
 </script>
 <template>
@@ -81,4 +113,52 @@ function assignTaskTo(task: DiscussionItem, profile: IProfile) {
     size="sm"
     ><q-tooltip>Convo</q-tooltip></q-btn
   >
+  <q-btn-dropdown
+    round
+    v-if="$q.screen.lt.md"
+    no-icon-animation
+    dropdown-icon="exit_to_app"
+    size="sm"
+  >
+    <q-list>
+      <q-item
+        clickable
+        dense
+        @click="moveTask(task, undefined, iteration.key)"
+        v-close-popup
+        v-for="iteration in getIterations()"
+        :key="iteration.key"
+        :active="iteration.key == iterationKey(task)"
+      >
+        <q-item-section avatar>
+          <q-icon name="splitscreen" />
+        </q-item-section>
+        {{ iteration.name }}
+      </q-item>
+    </q-list>
+  </q-btn-dropdown>
+  <q-btn-dropdown
+    round
+    v-if="$q.screen.lt.md"
+    no-icon-animation
+    dropdown-icon="switch_left"
+    size="sm"
+  >
+    <q-list>
+      <q-item
+        dense
+        clickable
+        v-close-popup
+        @click="moveTask(task, column)"
+        v-for="column in getColumns()"
+        :key="column.key"
+        :active="column.key == task.status"
+      >
+        <q-item-section avatar>
+          <q-icon :name="column.icon" />
+        </q-item-section>
+        {{ column.name }}
+      </q-item>
+    </q-list>
+  </q-btn-dropdown>
 </template>
