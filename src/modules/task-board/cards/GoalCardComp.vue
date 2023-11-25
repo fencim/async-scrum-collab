@@ -6,7 +6,7 @@ import { DiscussionItem, IGoal, ISprintBoardColumn } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 
-const emits = defineEmits<{
+defineEmits<{
   (
     e: 'taskMoved',
     issue: DiscussionItem,

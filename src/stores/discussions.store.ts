@@ -115,7 +115,8 @@ export const useDiscussionStore = defineStore('discussion', {
         iteration: typeof discussion.iteration == 'string'
           ? discussion.iteration
           : discussion.iteration?.key || '',
-        awareness: { ...discussion.awareness }
+        awareness: { ...discussion.awareness },
+        assignees: (discussion.assignees || []).map(a => typeof a == 'object' ? a.key : a)
       } as DiscussionItem;
       await discussionResource.setData(copy.key, copy);
       const index = this.discussions.findIndex(i => i.key == copy.key);

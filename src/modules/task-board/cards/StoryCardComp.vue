@@ -5,7 +5,7 @@ import { DiscussionItem, ISprintBoardColumn, IStory } from 'src/entities';
 import { defineProps, PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 import CommonCardAction from './CommonCardActionComp.vue';
-const emits = defineEmits<{
+defineEmits<{
   (
     e: 'taskMoved',
     issue: DiscussionItem,
@@ -44,6 +44,10 @@ const props = defineProps({
       <div>
         <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
           task.iteration.name || task.iteration
+        }}</q-badge>
+        <q-space />
+        <q-badge v-if="task.complexity" class="text-h6 on-right">{{
+          task.complexity
         }}</q-badge>
       </div>
     </template>

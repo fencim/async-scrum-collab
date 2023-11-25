@@ -1,12 +1,6 @@
 <script lang="ts" setup>
-import { type } from 'os';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
-import {
-  DiscussionItem,
-  IIteration,
-  IProfile,
-  ISprintBoardColumn,
-} from 'src/entities';
+import { DiscussionItem, IProfile, ISprintBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';

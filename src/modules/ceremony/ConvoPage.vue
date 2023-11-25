@@ -8,7 +8,7 @@
         </div>
       </template>
 
-      <div v-for="m in convoStore.convo" :key="m.key" :id="m.key">
+      <div v-for="m in messages()" :key="m.key" :id="m.key">
         <chat-message
           v-if="m.type == 'message'"
           :msg="m"
@@ -27,7 +27,6 @@
           :msg="m"
           @reply-to="replyTo = m"
           :curr-user="profileStore.presentUser?.key"
-          :reveal-votes="revealVotes"
         />
         <chat-response-message
           v-else-if="m.type == 'response'"
@@ -225,7 +224,7 @@ export default defineComponent({
       this.activeProject =
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
-      this.project = await projectStore.activeProject;
+      this.project = projectStore.activeProject;
 
       this.activeIteration =
         (this.$route.params.iteration &&
@@ -257,6 +256,7 @@ export default defineComponent({
         this.confirmDisagree();
       }
       this.assesItem();
+      convoStore.ofDiscussion(this.activeProject, this.activeItem);
     },
     messages() {
       if (discussionStore.activeDiscussion) {

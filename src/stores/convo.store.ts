@@ -33,7 +33,7 @@ export const useConvoStore = defineStore('convo', {
       today.setHours(0, 0, 0, 0);
       const stream = convoResource.streamWith({
         projectKey, discussion,
-        'date >=': today.toISOString()
+        //'date >=': today.toISOString()
       });
       this.streams[topic] = stream;
       stream.subscribe({

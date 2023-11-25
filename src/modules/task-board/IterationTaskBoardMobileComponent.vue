@@ -25,18 +25,19 @@ const emit = defineEmits<{
     column?: ISprintBoardColumn,
     iterationKey?: string
   ): void;
+  (e: 'taskOrdered', issue: DiscussionItem, before?: DiscussionItem): void;
 }>();
-async function changeOnColumn(
+async function draggRecord(
   column: ISprintBoardColumn,
   change: {
     added?: { newIndex: number; element: PlanningItem };
     removed: { oldIndex: number; element: PlanningItem };
     moved: { newIndex: number; oldIndex: number; element: PlanningItem };
-  },
-  iterationKey: string
+  }
 ) {
   if (change.moved) {
-    //TODO: Change Order
+    const replaced = column.tasks[change.moved.newIndex];
+    emit('taskOrdered', change.moved.element, replaced);
   }
 }
 
@@ -100,7 +101,7 @@ function taskMoved(
             :list="col.tasks || []"
             group="tasks"
             item-key="key"
-            @change="(e) => changeOnColumn(col, e, iteration.key)"
+            @change="(e) => draggRecord(col, e)"
           >
             <template #header>
               <div class="row">

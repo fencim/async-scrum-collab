@@ -37,12 +37,7 @@ export default defineComponent({
   },
   computed: {
     members() {
-      return [
-        ...activeStore.administrators,
-        ...activeStore.moderators,
-        ...activeStore.activeMembers,
-        ...activeStore.guests,
-      ];
+      return [...activeStore.activeMembers, ...activeStore.guests];
     },
   },
   mounted() {

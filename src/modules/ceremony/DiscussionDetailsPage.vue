@@ -201,7 +201,6 @@ export default defineComponent({
       activeCeremony: undefined as ICeremony | undefined,
       activeItemKey: '0',
       activeItem: undefined as DiscussionItem | undefined,
-      subTasks: [] as DiscussionItem[],
       theDiscussion: {} as DiscussionItem,
       membersAgreed: [] as IProfile[],
       membersDisagreed: [] as IProfile[],
@@ -252,6 +251,24 @@ export default defineComponent({
     convo() {
       return convoStore.convo;
     },
+    subTasks(): DiscussionItem[] {
+      if (this.theDiscussion && this.theDiscussion.type == 'story') {
+        if (
+          Array.isArray(this.theDiscussion.tasks) &&
+          this.theDiscussion.tasks.length &&
+          typeof this.theDiscussion.tasks[0] == 'object'
+        ) {
+          return this.theDiscussion.tasks as DiscussionItem[];
+        } else if (Array.isArray(this.theDiscussion.tasks)) {
+          return discussionStore.fromList(
+            this.theDiscussion.tasks.map((t) =>
+              typeof t == 'object' ? t.key : t
+            )
+          );
+        }
+      }
+      return [];
+    },
     unResolvedQuestions(): ConvoList {
       return this.convo
         .filter((c) => c.type == 'question' && !c.resolved)
@@ -289,12 +306,6 @@ export default defineComponent({
       this.theDiscussion =
         (await discussionStore.withKey(this.activeItemKey)) ||
         this.theDiscussion;
-      if (this.theDiscussion && this.theDiscussion.type == 'story') {
-        this.subTasks = await discussionStore.fromIteration(
-          this.activeProjectKey,
-          this.activeIterationKey
-        );
-      }
       await this.revealAwareMembers();
 
       await this.assesItem();
@@ -329,11 +340,14 @@ export default defineComponent({
                 (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
                 [] as IVote[]
               )
-              .map((c) => c.from as string)
+              .map((c) => c.from)
           ),
         ];
+
         this.membersVoted = activeStore.activeMembers.filter((m) =>
-          voted.includes(m.key)
+          voted.find(
+            (v) => (typeof v == 'object' && v.key == m.key) || v == m.key
+          )
         );
         this.progressReport = report;
       }
