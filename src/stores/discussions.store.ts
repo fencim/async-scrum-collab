@@ -244,7 +244,12 @@ export const useDiscussionStore = defineStore('discussion', {
     completenessOfItem(item: DiscussionItem) {
       let progress = 0;
       const feedbacks = [] as string[];
-
+      if (!item.dueDate) {
+        progress += 1;
+        feedbacks.push('Estimated Due Date is not set');
+      } else {
+        feedbacks.push('Estimated Due Date is set')
+      }
       switch (item.type) {
         case 'goal': case 'task':
           return {
@@ -276,12 +281,6 @@ export const useDiscussionStore = defineStore('discussion', {
             feedbacks.push('Enables is set')
           } else {
             feedbacks.push('Enables is not well defined')
-          }
-          if (item.due) {
-            progress += 1;
-            feedbacks.push('Due is set')
-          } else {
-            feedbacks.push('Due is not set')
           }
           return {
             factor: 'details',

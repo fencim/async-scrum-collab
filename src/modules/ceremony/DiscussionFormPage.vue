@@ -108,7 +108,7 @@
           <q-input
             class="col-6"
             filled
-            v-model="theDiscussion.due"
+            v-model="theDiscussion.dueDate"
             mask="date"
             label="Due"
             :rules="['date']"
@@ -116,7 +116,7 @@
             <template v-slot:append>
               <q-icon name="event" class="cursor-pointer">
                 <q-popup-proxy>
-                  <q-date v-model="theDiscussion.due">
+                  <q-date v-model="theDiscussion.dueDate">
                     <div class="row items-center justify-end">
                       <q-btn v-close-popup label="Close" color="primary" flat />
                     </div>

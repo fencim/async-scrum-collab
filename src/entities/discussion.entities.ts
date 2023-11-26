@@ -35,7 +35,6 @@ export interface IObjective extends IDiscussion {
   specifics?: string;
   mesures?: string;
   enables?: string;
-  due?: string;
 }
 export interface TechnicalTask extends IDiscussion {
   type: 'task';

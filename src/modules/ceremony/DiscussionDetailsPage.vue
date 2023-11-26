@@ -49,7 +49,7 @@
         </div>
         <div class="col-12">
           <strong>Due:</strong>
-          {{ date.formatDate(theDiscussion.due, 'MMM D, YYYY') }}
+          {{ date.formatDate(theDiscussion.dueDate, 'MMM D, YYYY') }}
         </div>
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'story'" class="row">
