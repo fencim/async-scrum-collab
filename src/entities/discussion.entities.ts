@@ -10,7 +10,7 @@ export interface IDiscussion extends IBaseEntity {
   complexity?: number;
   //board
   iteration?: string | IIteration;
-  closed?: boolean;
+  closedDate?: string;
   status?: string;
   responsibilityOf?: string;
   assignedTo?: string | IProfile;

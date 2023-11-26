@@ -26,25 +26,35 @@ defineProps({
   },
   mini: Boolean,
   maxed: Boolean,
+  noAction: Boolean,
 });
 </script>
 <template>
-  <base-card :maxed="maxed" :mini="mini" :task="task">
+  <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
     <template #title>
       {{ task.description }}
     </template>
-    <template #side>
-      <q-chip dense color="primary">{{ task.priority || 'P1' }}</q-chip>
-      <q-chip dense color="secondary">{{ task.dueDate || 'No Due' }}</q-chip>
-    </template>
+    <template #side> </template>
     <template #details>
       {{ task.info }}
     </template>
     <template #footer>
-      <recent-active-members :profiles="getProfiles(task.assignees)" />
+      <recent-active-members
+        sizes="xs"
+        :profiles="getProfiles(task.assignees)"
+      />
+      <q-space />
+      <div>
+        <q-badge class="q-mr-xs" dense color="primary">{{
+          task.priority || 'P1'
+        }}</q-badge>
+        <q-badge dense :color="task.dueDate ? 'secondary' : 'negative'">{{
+          task.dueDate || 'ND'
+        }}</q-badge>
+      </div>
     </template>
     <template #bottom>
-      <q-linear-progress :value="0.5" />
+      <q-linear-progress :value="task.progress || 0" />
     </template>
     <template #dropdown>
       <div class="row bg-transaparent no-shadow">

@@ -21,10 +21,11 @@ const props = defineProps({
   },
   mini: Boolean,
   maxed: Boolean,
+  noAction: Boolean,
 });
 </script>
 <template>
-  <base-card :maxed="maxed" :mini="mini" :task="task">
+  <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
     <template #title>
       <div v-if="!mini">
         <div>
@@ -81,7 +82,7 @@ const props = defineProps({
       </div>
     </template>
     <template #bottom>
-      <q-linear-progress :value="0.5" />
+      <q-linear-progress :value="task.progress || 0" />
     </template>
     <template #dropdown>
       <div class="row bg-transaparent no-shadow">

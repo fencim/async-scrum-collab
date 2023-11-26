@@ -82,13 +82,20 @@
             })
           "
         >
-          {{ (i.key.match(/\d+$/) || [])[0] }}
+          {{ formatKey(i.key) }}
           <q-badge v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
-          <q-tooltip
-            ><div class="text-caption">
-              {{ discussionStore.describeDiscussion(i) }}
-            </div>
-            <q-linear-progress :value="i.progress" />
+          <q-tooltip class="q-pa-none q-ma-none">
+            <q-card
+              style="min-width: 250px"
+              class="list-group-item q-ma-none q-pa-none board-card no-shadow"
+              :class="i.type + '-card'"
+            >
+              <component
+                :is="getComponent(i as PlanningItem)"
+                :task="i"
+                :no-action="true"
+              />
+            </q-card>
           </q-tooltip>
         </q-circular-progress>
       </div>
@@ -116,62 +123,52 @@
   </q-timeline>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { date } from 'quasar';
-import { DiscussionItem, IIteration, ICeremony } from 'src/entities';
+import { formatKey } from 'src/components/discussion.helper';
+import {
+  DiscussionItem,
+  IIteration,
+  ICeremony,
+  PlanningItem,
+} from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
-import { useProjectStore } from 'src/stores/projects.store';
-import { defineComponent, PropType } from 'vue';
-const projectStore = useProjectStore();
+import { computed, PropType } from 'vue';
+import { getComponent } from '../task-board/card-components';
+
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
-
-export default defineComponent({
-  name: 'IterationTimeline',
-  components: {},
-  props: {
-    project: {
-      type: String,
-      required: true,
-    },
-    iteration: {
-      type: Object as PropType<IIteration>,
-      required: true,
-    },
+const props = defineProps({
+  project: {
+    type: String,
+    required: true,
   },
-  data() {
-    return {
-      date,
-      projectStore,
-      ceremonyStore,
-      discussionStore,
-    };
-  },
-  computed: {
-    discussions() {
-      return discussionStore.discussions;
-    },
-    ceremonies() {
-      return ceremonyStore.ceremonies.filter(
-        (c) => c.iterationKey == this.iteration.key && c.type != 'scrum'
-      );
-    },
-  },
-  methods: {
-    isCurrent(iteration: object) {
-      const sprint = iteration as IIteration;
-      return date.isBetweenDates(new Date(), sprint.start, sprint.end);
-    },
-    isCurrentlyHappening(ceremony: ICeremony) {
-      return date.isBetweenDates(new Date(), ceremony.start, ceremony.end);
-    },
-    discussionFromList(list: string[]) {
-      return list
-        .map((key) => this.discussions.find((d) => d.key == key))
-        .filter((d) => d) as DiscussionItem[];
-    },
+  iteration: {
+    type: Object as PropType<IIteration>,
+    required: true,
   },
 });
+const ceremonies = computed(() => {
+  return ceremonyStore.ceremonies.filter(
+    (c) => c.iterationKey == props.iteration.key && c.type != 'scrum'
+  );
+});
+const discussions = computed(() => {
+  return discussionStore.discussions;
+});
+
+function isCurrent(iteration: object) {
+  const sprint = iteration as IIteration;
+  return date.isBetweenDates(new Date(), sprint.start, sprint.end);
+}
+function isCurrentlyHappening(ceremony: ICeremony) {
+  return date.isBetweenDates(new Date(), ceremony.start, ceremony.end);
+}
+function discussionFromList(list: string[]) {
+  return list
+    .map((key) => discussions.value.find((d) => d.key == key))
+    .filter((d) => d) as DiscussionItem[];
+}
 </script>
 <style></style>

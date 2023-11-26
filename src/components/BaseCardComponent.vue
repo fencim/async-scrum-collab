@@ -1,29 +1,39 @@
 <script lang="ts" setup>
 import { DiscussionItem } from 'src/entities';
 import { PropType, defineProps, ref } from 'vue';
+import { formatKey } from './discussion.helper';
 defineProps({
   mini: Boolean,
   maxed: Boolean,
+  noAction: Boolean,
   task: {
     required: true,
     type: Object as PropType<DiscussionItem>,
   },
 });
 const showDetails = ref(false);
-function formatKey(key: string) {
-  const keyParts = /(?<projectKey>\w{4})(?<type>[^\d]*)(?<num>\d*)/.exec(key);
-  const { projectKey, type, num } = keyParts?.groups as {
-    projectKey: string;
-    type: string;
-    num: string;
-  };
-  return `${projectKey}-${num} (${type})`.toUpperCase();
+function iterationKey(task: DiscussionItem) {
+  return typeof task.iteration == 'object'
+    ? task.iteration.key
+    : task.iteration || '';
 }
 </script>
 <template>
-  <q-badge class="float-left vertical-top text-bold">{{
-    formatKey(task.key || 'KEY')
-  }}</q-badge>
+  <q-btn
+    flat
+    dense
+    :to="{
+      name: 'discussionDetails',
+      params: {
+        project: task.projectKey,
+        iteration: iterationKey(task),
+        ceremony: iterationKey(task) + 'plan',
+        item: task.key,
+      },
+    }"
+  >
+    {{ formatKey(task.key || 'KEY') }}
+  </q-btn>
   <q-card-section class="q-px-sm no-shadow">
     <div class="row full-width">
       <div class="col self-center">
@@ -52,7 +62,7 @@ function formatKey(key: string) {
     </div>
   </div>
   <q-btn
-    v-if="!$slots['dropdown']"
+    v-if="!$slots['dropdown'] && !noAction"
     class="float-right vertical-middle"
     @click="showDetails = !showDetails"
     size="xs"
@@ -61,7 +71,7 @@ function formatKey(key: string) {
     flat
   />
   <q-btn-dropdown
-    v-else
+    v-else-if="!noAction"
     unelevated
     padding="0"
     dropdown-icon="arrow_drop_down_circle"

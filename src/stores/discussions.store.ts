@@ -13,6 +13,7 @@ import { useCeremonyStore } from './cermonies.store';
 import { useProfilesStore } from './profiles.store';
 import { useProjectStore } from './projects.store';
 import { useIterationStore } from './iterations.store';
+import { entityKey } from 'src/entities/base.entity';
 
 interface IDiscussionState {
   discussions: DiscussionItem[];
@@ -40,8 +41,7 @@ export const useDiscussionStore = defineStore('discussion', {
     },
     getTaskBoard(columns: IBoardColumn[], iterationKey: string) {
       const boardTasks = this.productBacklog.tasks.filter(t =>
-      ((typeof t.iteration == 'object' && t.iteration.key == iterationKey)
-        || (t.iteration == iterationKey)));
+        (entityKey(t.iteration || '') == iterationKey));
       return columns.map((c, index) => ({
         ...c,
         tasks: boardTasks.filter(t => (t.status == c.key || (index == 0 && !t.status)))
@@ -49,8 +49,7 @@ export const useDiscussionStore = defineStore('discussion', {
     },
     fromIteration(projectKey: string, iterationKey: string) {
       return this.discussions.filter(d => d && d.projectKey == projectKey &&
-        (d.iteration == iterationKey ||
-          (d.iteration as (IIteration | undefined))?.key == iterationKey));
+        (entityKey(d.iteration || '') == iterationKey));
     },
     fromList(keys: string[], updatedList?: DiscussionItem[]) {
       if (updatedList) {
@@ -137,7 +136,7 @@ export const useDiscussionStore = defineStore('discussion', {
         c => c.iterationKey == iterationKey && c.projectKey == discussion.projectKey);
       if (targetCeremony) {
         const items = this.discussions.filter(
-          i => i.ceremonyKey == discussion.ceremonyKey && i.projectKey == discussion.projectKey);
+          i => entityKey(i.iteration || '') == entityKey(discussion.iteration || '#') && i.projectKey == discussion.projectKey);
         const progress = items.reduce((p, c) => p + (c.progress || 0), 0) /
           Math.max(items.length, 1);
         if (progress !== targetCeremony.progress) {
@@ -180,12 +179,11 @@ export const useDiscussionStore = defineStore('discussion', {
       const questions = convo.filter(c => c.type == 'question') as IQuestion[];
       const votes = convo.filter(c =>
         (c.type == 'vote')
-        && members.includes(
-          (typeof c.from == 'object') ? c.from.key : c.from)) as IVote[];
+        && members.includes(entityKey(c.from || ''))) as IVote[];
 
       const vCast = votes.reduce((p, c) =>
       (typeof c.vote == 'undefined' ? {} :
-        { ...p, [typeof c.from == 'object' ? c.from.key : c.from]: c.vote }),
+        { ...p, [entityKey(c.from)]: c.vote }),
         {} as { [v: string]: string });
 
       const awareness = Object.values(item.awareness || {});

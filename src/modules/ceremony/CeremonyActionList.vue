@@ -32,11 +32,12 @@
       <q-separator />
       <q-item
         clickable
+        dense
         tag="a"
         :to="`/${activeProject}/${iteration?.key}/${ceremony?.key}/discussion/new`"
       >
         <q-item-section avatar>
-          <q-icon name="add" />
+          <q-icon name="add" size="sm" />
         </q-item-section>
         <q-tooltip>New Discussion Item</q-tooltip>
       </q-item>

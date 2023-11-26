@@ -1,7 +1,7 @@
 <template>
-  <q-item clickable :active="active" v-if="!hide">
+  <q-item dense clickable :active="active" v-if="!hide">
     <q-item-section v-if="icon" avatar>
-      <q-icon :name="icon" />
+      <q-icon :name="icon" size="xs" />
     </q-item-section>
     <q-tooltip>{{ title }}: {{ caption }}</q-tooltip>
   </q-item>

@@ -49,7 +49,7 @@
       size="lg"
     />
     <span v-else>
-      {{ (item.key.match(/\d+$/) || [item.key])[0] }}
+      {{ formatKey(item.key) }}
     </span>
     <q-badge color="red" v-if="item.unread" floating>{{ item.unread }}</q-badge>
     <q-badge
@@ -61,45 +61,53 @@
       >{{ (Number(item.progress) * 100).toFixed(0) }}%</q-badge
     >
     <q-tooltip
-      ><div class="text-caption">
-        {{ item.info || item.type }}
-      </div>
-      <q-linear-progress :value="item.progress" />
+      class="q-pa-none q-ma-none"
+      :anchor="'center right'"
+      :self="'center left'"
+      :offset="[10, 10]"
+    >
+      <q-card
+        style="min-width: 250px"
+        class="board-card no-shadow"
+        :class="item.type + '-card'"
+      >
+        <component
+          :is="getComponent(item as PlanningItem)"
+          :task="item"
+          :no-action="true"
+        />
+      </q-card>
     </q-tooltip>
   </q-circular-progress>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from 'vue';
-import { DiscussionItem, IProfile } from 'src/entities';
+<script lang="ts" setup>
+import { PropType } from 'vue';
+import { DiscussionItem, IProfile, PlanningItem } from 'src/entities';
+import { formatKey } from '../discussion.helper';
+import { getComponent } from 'src/modules/task-board/card-components';
 
-export default defineComponent({
-  name: 'DiscussionMenu',
-  emits: [],
-  props: {
-    item: {
-      type: Object as PropType<DiscussionItem>,
-      required: true,
-    },
-    reporter: {
-      type: Object as PropType<IProfile>,
-      required: false,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    currUser: {
-      type: String,
-    },
+defineProps({
+  item: {
+    type: Object as PropType<DiscussionItem>,
+    required: true,
   },
-  methods: {
-    initials(name?: string) {
-      const m = (name || 'C U').match(/\b\w/g);
-      return `${m && m[0]}${m && m[1]}`;
-    }, //initials
-  }, //methods
+  reporter: {
+    type: Object as PropType<IProfile>,
+    required: false,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  currUser: {
+    type: String,
+  },
 });
+function initials(name?: string) {
+  const m = (name || 'C U').match(/\b\w/g);
+  return `${m && m[0]}${m && m[1]}`;
+}
 </script>
 
 <style></style>
