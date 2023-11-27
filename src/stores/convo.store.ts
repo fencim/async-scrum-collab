@@ -62,7 +62,10 @@ export const useConvoStore = defineStore('convo', {
         from,
       } as Convo;
 
-      await convoResource.setData('', msg);
+      const record = await convoResource.setData('', msg);
+      if (record) {
+        this.convo.push(record)
+      }
     },
     async saveConvo(msg: Convo) {
       if (msg && msg.key) {
