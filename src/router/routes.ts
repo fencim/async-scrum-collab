@@ -71,6 +71,16 @@ const routes: RouteRecordRaw[] = [
 
         }
       }, {
+        name: 'calendar',
+        path: 'calendar/:iteration?',
+        meta: { actions: true },
+        components: {
+          default: () => import('src/modules/calendar/CalendarPage.vue'),
+          header: () => import('src/modules/project/ProjectToolbar.vue'),
+          actions: () => import('src/modules/project/ProjectActionList.vue')
+
+        }
+      }, {
         name: 'New Iteration',
         path: 'iteration/new', components: {
           default: () => import('src/modules/iteration/NewIterationPage.vue'),

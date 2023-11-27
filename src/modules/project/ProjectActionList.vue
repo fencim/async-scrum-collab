@@ -36,6 +36,20 @@
         <q-tooltip>Timeline</q-tooltip>
       </q-item>
       <q-item
+        clickable
+        :to="{
+          name: 'calendar',
+          params: {
+            project: project?.key,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="calendar_month" />
+        </q-item-section>
+        <q-tooltip>Calendar</q-tooltip>
+      </q-item>
+      <q-item
         v-if="$route.params.iteration"
         clickable
         :to="{

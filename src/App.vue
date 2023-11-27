@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts">
+import 'v-calendar/style.css';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import {
@@ -38,11 +39,13 @@ use([
   EffectScatterChart,
 ]);
 
-export default defineComponent({
+const app = defineComponent({
   name: 'App',
   setup() {
     const $q = useQuasar();
     $q.dark.set(true);
   },
 });
+
+export default app;
 </script>

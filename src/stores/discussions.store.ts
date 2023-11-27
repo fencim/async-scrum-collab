@@ -6,7 +6,7 @@ import {
   ICeremony, IDiscussion,
   IProject, IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
   PlanningItem, IProfile,
-  RetroItem, IBoardColumn, IIteration
+  RetroItem, IBoardColumn
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
