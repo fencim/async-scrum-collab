@@ -1,8 +1,6 @@
 {
-  "extends": "@quasar/app-webpack/tsconfig-preset",
+  "extends": "@quasar/app-vite/tsconfig-preset",
   "compilerOptions": {
-    "baseUrl": ".",
-    "target": "ES2019"
-  },
-  "exclude": ["functions"]
+    "baseUrl": "."
+  }
 }

@@ -4,7 +4,7 @@
       <q-card>
         <q-toolbar>
           <q-avatar>
-            <img src="icons/favicon-128x128.png" />
+            <img src="/icons/favicon-128x128.png" />
           </q-avatar>
           <q-toolbar-title
             ><span class="text-weight-bold">{{

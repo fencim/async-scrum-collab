@@ -1,6 +1,6 @@
-# Async Scrum Collab (async-scrum-collab)
+# Scrum (scrum)
 
-Async Scrum Collab for Ceremonies
+Async Scrum
 
 ## Install the dependencies
 ```bash
@@ -38,4 +38,4 @@ quasar build
 ```
 
 ### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js).
+See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).

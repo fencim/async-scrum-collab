@@ -1,4 +1,4 @@
-import SynchronizerWorker from 'worker-loader!./synchronizer.worker';
+import SynchronizerWorker from './synchronizer.worker?worker';
 import { SynchronizerMessageEvent, SynchronizerRequestEventNames } from './message.event';
 import './resource.registration';
 import resourceSynchronizer from './resource.synchronizer';

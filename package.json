@@ -1,23 +1,19 @@
 {
-  "name": "async-scrum-collab",
+  "name": "scrum",
   "version": "0.0.1",
-  "description": "Async Scrum Collab for Ceremonies",
-  "productName": "Async Scrum Collab",
-  "author": "Lucman M. Abdulrachman",
+  "description": "Async Scrum",
+  "productName": "Scrum",
+  "author": "Lucman Abdulrachman <lucman.abdulrachman@gmail.com>",
   "private": true,
   "scripts": {
-    "start": "quasar dev",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "quasar dev",
+    "build": "quasar build"
   },
   "dependencies": {
-    "@nestjs/config": "^2.1.0",
-    "@nestjs/jwt": "^8.0.1",
-    "@nestjs/passport": "^8.2.2",
-    "@nestjs/swagger": "^5.2.1",
     "@popperjs/core": "^2.11.8",
-    "@quasar/extras": "^1.0.0",
     "axios": "^1.3.5",
     "core-js": "^3.6.5",
     "cropperjs": "^1.5.12",
@@ -26,6 +22,7 @@
     "firebaseui": "^6.0.1",
     "mitt": "^3.0.0",
     "pinia": "^2.0.11",
+    "@quasar/extras": "^1.16.4",
     "quasar": "^2.6.0",
     "rxjs": "^7.5.6",
     "tweetnacl": "^1.0.3",
@@ -39,30 +36,19 @@
     "worker-loader": "^3.0.8"
   },
   "devDependencies": {
-    "@quasar/app-webpack": "^3.0.0",
-    "@types/node": "^12.20.21",
-    "@types/vue-cropperjs": "^4.1.2",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "eslint": "^8.10.0",
+    "eslint-plugin-vue": "^9.0.0",
     "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-vue": "^8.5.0",
     "prettier": "^2.5.1",
-    "workbox-webpack-plugin": "^6.0.0"
+    "@types/node": "^12.20.21",
+    "@quasar/app-vite": "^1.3.0",
+    "autoprefixer": "^10.4.2",
+    "typescript": "^4.5.4"
   },
-  "browserslist": [
-    "last 10 Chrome versions",
-    "last 10 Firefox versions",
-    "last 4 Edge versions",
-    "last 7 Safari versions",
-    "last 8 Android versions",
-    "last 8 ChromeAndroid versions",
-    "last 8 FirefoxAndroid versions",
-    "last 10 iOS versions",
-    "last 5 Opera versions"
-  ],
   "engines": {
-    "node": ">= 12.22.1",
+    "node": "^18 || ^16 || ^14.19",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1"
   }
