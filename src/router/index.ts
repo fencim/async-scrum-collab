@@ -12,9 +12,10 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
-import routes from './routes';
+import createPina from 'src/stores';
 import { IProject } from 'src/entities';
 
+createPina({});
 /*
  * If not building with SSR mode, you can
  * directly export the Router instantiation;
@@ -24,7 +25,8 @@ import { IProject } from 'src/entities';
  * with the Router instance.
  */
 
-export default route(function (/* { store, ssrContext } */) {
+export default route(async function (/* { store, ssrContext } */) {
+  const routes = (await import('./routes')).default;
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : (process.env.VUE_ROUTER_MODE === 'history' ? createWebHistory : createWebHashHistory);

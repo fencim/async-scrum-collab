@@ -1,26 +1,14 @@
 import { RouteRecordRaw } from 'vue-router';
-
+import mainLayout from 'src/layouts/MainLayout.vue';
+import authRoutes from './auth.routes';
 const routes: RouteRecordRaw[] = [
 
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => Promise.resolve(mainLayout),
     children: [
+      ...authRoutes,
       {
-        path: 'login',
-        name: 'login',
-        meta: { anonymous: true },
-        component: () => import('src/modules/credential/LoginPage.vue')
-      }, {
-        path: 'register',
-        name: 'register',
-        meta: { anonymous: true },
-        component: () => import('src/modules/credential/RegisterPage.vue')
-      }, {
-        path: 'logout',
-        name: 'logout',
-        component: () => import('src/modules/credential/LogoutPage.vue')
-      }, {
         name: 'home',
         meta: { actions: true },
         path: '', components: {

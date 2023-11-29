@@ -3,7 +3,7 @@ import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import CommonCardAction from './CommonCardActionComp.vue';
 import { DiscussionItem, IObjective, ISprintBoardColumn } from 'src/entities';
-import { defineProps, PropType } from 'vue';
+import { PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 
 defineEmits<{

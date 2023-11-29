@@ -8,7 +8,7 @@ import {
   ISprintBoardColumn,
   TechnicalTask,
 } from 'src/entities';
-import { defineProps, PropType } from 'vue';
+import { PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 defineEmits<{
   (

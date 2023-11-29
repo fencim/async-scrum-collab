@@ -3,9 +3,12 @@
 </template>
 
 <script lang="ts">
-import 'v-calendar/style.css';
+import { useQuasar } from 'quasar';
+import { defineComponent } from 'vue';
 import { use } from 'echarts/core';
+import 'v-calendar/style.css';
 import { CanvasRenderer } from 'echarts/renderers';
+
 import {
   PieChart,
   BarChart,
@@ -22,8 +25,6 @@ import {
   GridComponent,
 } from 'echarts/components';
 
-import { useQuasar } from 'quasar';
-import { defineComponent } from 'vue';
 use([
   CanvasRenderer,
   GridComponent,

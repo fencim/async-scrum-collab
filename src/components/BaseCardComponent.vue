@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { DiscussionItem } from 'src/entities';
-import { PropType, defineProps, ref } from 'vue';
+import { PropType, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 defineProps({
   mini: Boolean,

@@ -2,7 +2,7 @@
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { DiscussionItem, ISprintBoardColumn, IStory } from 'src/entities';
-import { defineProps, PropType } from 'vue';
+import { PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 import CommonCardAction from './CommonCardActionComp.vue';
 defineEmits<{
