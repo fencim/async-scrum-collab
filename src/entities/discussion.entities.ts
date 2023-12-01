@@ -112,3 +112,5 @@ export type DiscussionItem = PlanningItem | DailyScrumItem | ReviewItem | RetroI
 export interface ISprintBoardColumn extends IBoardColumn {
   tasks: PlanningItem[];
 }
+
+export interface IProgressFeedback { progress: number; feedback: string }

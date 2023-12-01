@@ -15,6 +15,7 @@ const emits = defineEmits<{
     column?: ISprintBoardColumn,
     iterationKey?: string
   ): void;
+  (e: 'taskOnView', issue: DiscussionItem): void;
 }>();
 defineProps({
   task: {
@@ -50,15 +51,8 @@ function getIterations() {
 </script>
 <template>
   <q-btn
-    :to="{
-      name: 'discussionDetails',
-      params: {
-        project: task.projectKey,
-        iteration: iterationKey(task),
-        ceremony: iterationKey(task) + 'plan',
-        item: task.key,
-      },
-    }"
+    v-close-popup
+    @click="emits('taskOnView', task)"
     round
     icon="info"
     size="sm"
@@ -66,6 +60,7 @@ function getIterations() {
   >
   <q-btn-dropdown
     round
+    v-close-popup
     content-class="bg-transparent no-shadow"
     no-icon-animation
     dropdown-icon="person"
@@ -87,6 +82,7 @@ function getIterations() {
         item: task.key,
       },
     }"
+    v-close-popup
     round
     icon="edit"
     size="sm"
@@ -102,6 +98,7 @@ function getIterations() {
         item: task.key,
       },
     }"
+    v-close-popup
     round
     icon="message"
     size="sm"
@@ -110,6 +107,7 @@ function getIterations() {
   <q-btn-dropdown
     round
     v-if="$q.screen.lt.md"
+    v-close-popup
     no-icon-animation
     dropdown-icon="exit_to_app"
     size="sm"
@@ -132,6 +130,7 @@ function getIterations() {
     </q-list>
   </q-btn-dropdown>
   <q-btn-dropdown
+    v-close-popup
     round
     v-if="$q.screen.lt.md"
     no-icon-animation

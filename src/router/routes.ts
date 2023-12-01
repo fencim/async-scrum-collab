@@ -1,13 +1,17 @@
 import { RouteRecordRaw } from 'vue-router';
 import mainLayout from 'src/layouts/MainLayout.vue';
+import plainLayout from 'src/layouts/PlainLayout.vue';
 import authRoutes from './auth.routes';
 const routes: RouteRecordRaw[] = [
-
+  {
+    path: '/auth',
+    component: () => Promise.resolve(plainLayout),
+    children: [...authRoutes]
+  },
   {
     path: '/',
     component: () => Promise.resolve(mainLayout),
     children: [
-      ...authRoutes,
       {
         name: 'home',
         meta: { actions: true },
@@ -25,7 +29,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:project',
-    component: () => import('layouts/MainLayout.vue'),
+    component: () => Promise.resolve(mainLayout),
     children: [
       {
         name: 'Project',
@@ -50,7 +54,7 @@ const routes: RouteRecordRaw[] = [
         },
       }, {
         name: 'board',
-        path: 'board/:iteration?',
+        path: 'board/:iteration?/:item?',
         meta: { actions: true },
         components: {
           default: () => import('src/modules/task-board/IterationTaskBoardPage.vue'),

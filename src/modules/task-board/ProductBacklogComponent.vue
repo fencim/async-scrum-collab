@@ -3,6 +3,10 @@ import draggable from 'vuedraggable';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
 import { ref } from 'vue';
+import { DiscussionItem } from 'src/entities';
+defineEmits<{
+  (e: 'taskOnView', issue: DiscussionItem): void;
+}>();
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
 type FilterOption = {
@@ -17,7 +21,6 @@ const filterOptions = ref<FilterOption[]>([
     value: 'goal',
   },
 ]);
-function onGrabTask() {}
 function getBacklog() {
   const backlog = (discussionStore.productBacklog.tasks || []).filter(
     (task) => {
@@ -60,7 +63,6 @@ function getBacklog() {
   <draggable
     class="col kanban-task-list dragArea list-group"
     :list="getBacklog()"
-    @change="onGrabTask"
     group="tasks"
     item-key="key"
   >
@@ -105,7 +107,12 @@ function getBacklog() {
         class="list-group-item q-ma-sm q-pa-sm board-card no-shadow"
         :class="element.type + '-card'"
       >
-        <component :is="getComponent(element)" :task="element" mini />
+        <component
+          :is="getComponent(element)"
+          :task="element"
+          mini
+          @task-on-view="(issue: DiscussionItem) => $emit('taskOnView', issue)"
+        />
       </q-card>
     </template>
   </draggable>

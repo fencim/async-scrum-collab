@@ -1,9 +1,6 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
-    <q-dialog
-      v-model="confirm"
-      @hide="signOut ? $router.replace('/') : logout()"
-    >
+    <q-dialog v-model="confirm" @hide="!signOut ? $router.back() : logout()">
       <q-card>
         <q-card-section horizontal>
           <q-card-section>
@@ -33,6 +30,7 @@ export default defineComponent({
   methods: {
     async logout() {
       await profileStore.signout();
+      this.signOut = true;
       this.$router.replace({
         name: 'login',
       });

@@ -13,6 +13,7 @@ defineEmits<{
     column?: ISprintBoardColumn,
     iterationKey?: string
   ): void;
+  (e: 'taskOnView', issue: DiscussionItem): void;
 }>();
 
 defineProps({
@@ -26,7 +27,13 @@ defineProps({
 });
 </script>
 <template>
-  <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
+  <base-card
+    @task-on-view="(issue) => $emit('taskOnView', issue)"
+    :maxed="maxed"
+    :mini="mini"
+    :no-action="noAction"
+    :task="task"
+  >
     <template #title>
       {{ task.description }}
     </template>
@@ -40,7 +47,7 @@ defineProps({
     <template #details>
       <div>
         {{ task.specifics }}, {{ task.enables }}, {{ task.mesures }},
-        {{ task.due }}
+        {{ task.dueDate }}
       </div>
     </template>
     <template #footer>
@@ -65,6 +72,7 @@ defineProps({
       <div class="row bg-transaparent no-shadow">
         <common-card-action
           :task="task"
+          @task-on-view="(issue) => $emit('taskOnView', issue)"
           @task-moved="
             (issue, col, iteration) => $emit('taskMoved', issue, col, iteration)
           "

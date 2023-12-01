@@ -2,6 +2,9 @@
 import { DiscussionItem } from 'src/entities';
 import { PropType, ref } from 'vue';
 import { formatKey } from './discussion.helper';
+defineEmits<{
+  (e: 'taskOnView', issue: DiscussionItem): void;
+}>();
 defineProps({
   mini: Boolean,
   maxed: Boolean,
@@ -19,19 +22,7 @@ function iterationKey(task: DiscussionItem) {
 }
 </script>
 <template>
-  <q-btn
-    flat
-    dense
-    :to="{
-      name: 'discussionDetails',
-      params: {
-        project: task.projectKey,
-        iteration: iterationKey(task),
-        ceremony: iterationKey(task) + 'plan',
-        item: task.key,
-      },
-    }"
-  >
+  <q-btn flat dense @click="$emit('taskOnView', task)">
     {{ formatKey(task.key || 'KEY') }}
   </q-btn>
   <q-card-section class="q-px-sm no-shadow">
