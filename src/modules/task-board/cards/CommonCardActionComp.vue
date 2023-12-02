@@ -60,7 +60,6 @@ function getIterations() {
   >
   <q-btn-dropdown
     round
-    v-close-popup
     content-class="bg-transparent no-shadow"
     no-icon-animation
     dropdown-icon="person"
@@ -68,6 +67,7 @@ function getIterations() {
   >
     <RecentActiveMembers
       sizes="xs"
+      v-close-popup
       :profiles="activeStore.activeMembers"
       @click-profile="(p) => assignTaskTo(task, p)"
     />
@@ -107,7 +107,6 @@ function getIterations() {
   <q-btn-dropdown
     round
     v-if="$q.screen.lt.md"
-    v-close-popup
     no-icon-animation
     dropdown-icon="exit_to_app"
     size="sm"
@@ -130,7 +129,6 @@ function getIterations() {
     </q-list>
   </q-btn-dropdown>
   <q-btn-dropdown
-    v-close-popup
     round
     v-if="$q.screen.lt.md"
     no-icon-animation
