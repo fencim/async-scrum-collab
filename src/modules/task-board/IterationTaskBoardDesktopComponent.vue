@@ -27,7 +27,6 @@ const emit = defineEmits<{
     column: ISprintBoardColumn,
     iterationKey: string
   ): void;
-  (e: 'taskOnView', issue: DiscussionItem): void;
 }>();
 async function changeOnColumn(
   column: ISprintBoardColumn,
@@ -69,11 +68,7 @@ async function changeOnColumn(
         class="list-group-item q-ma-sm q-pa-sm board-card"
         :class="element.type + '-card'"
       >
-        <component
-          :is="getComponent(element)"
-          :task="element"
-          @task-on-view="(issue: DiscussionItem) => $emit('taskOnView', issue)"
-        />
+        <component :is="getComponent(element)" :task="element" />
       </q-card>
     </template>
   </draggable>

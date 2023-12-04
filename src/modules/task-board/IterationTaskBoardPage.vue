@@ -8,23 +8,14 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
 
 import { ref, onMounted } from 'vue';
-import {
-  DiscussionItem,
-  IIteration,
-  ISprintBoardColumn,
-  IStory,
-} from 'src/entities';
+import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
 import { useRoute, useRouter } from 'vue-router';
-import CardDetails from 'src/components/CardDetails.vue';
-import DiscussionForm from 'src/components/DiscussionForm.vue';
-import { convoBus } from '../ceremony/convo-bus';
 const tab = ref('all');
-const selectedItem = ref<undefined | DiscussionItem>();
 const splitSection = ref(30);
 const iterationStore = useIterationStore();
 const discussionStore = useDiscussionStore();
 const activeStore = useActiveStore();
-const showItemBottomSheet = ref(false);
+
 onMounted(async () => {
   const project = activeStore.activeProject;
   if (project) {
@@ -44,12 +35,6 @@ onMounted(async () => {
       },
     });
   }
-  if (route.params.item && selectedItem.value?.key !== route.params.item) {
-    const item = await discussionStore.withKey(route.params.item as string);
-    if (item) {
-      viewTaskDetails(item);
-    }
-  }
 });
 async function taskMoved(
   issue: DiscussionItem,
@@ -64,20 +49,6 @@ async function taskMoved(
     tab.value = iterationKey;
   }
   await discussionStore.saveDiscussion(issue);
-}
-function viewTaskDetails(issue: DiscussionItem) {
-  selectedItem.value = issue;
-  showItemBottomSheet.value = true;
-  const route = useRoute();
-  if (route.params.item !== issue.key) {
-    useRouter().replace({
-      name: 'board',
-      params: {
-        ...route.params,
-        item: issue.key,
-      },
-    });
-  }
 }
 </script>
 <template>
@@ -115,7 +86,7 @@ function viewTaskDetails(issue: DiscussionItem) {
     <q-splitter v-model="splitSection" v-if="!$q.screen.lt.md">
       <template #before>
         <div class="text-h6 q-px-sm">Product Backlog</div>
-        <product-backlog @task-on-view="viewTaskDetails" />
+        <product-backlog />
       </template>
       <template #after>
         <div class="row" :style="'min-height: ' + $q.screen.sizes.sm + 'px'">
@@ -143,7 +114,6 @@ function viewTaskDetails(issue: DiscussionItem) {
                     :column="column"
                     :iteration="i"
                     @task-added="taskMoved"
-                    @task-on-view="viewTaskDetails"
                   />
                 </div>
               </div>
@@ -155,7 +125,7 @@ function viewTaskDetails(issue: DiscussionItem) {
     <div v-else>
       <q-tab-panels v-model="tab" class="col">
         <q-tab-panel name="all">
-          <product-backlog @task-on-view="viewTaskDetails" />
+          <product-backlog />
         </q-tab-panel>
         <q-tab-panel
           v-for="i in iterationStore.iterations"
@@ -174,16 +144,12 @@ function viewTaskDetails(issue: DiscussionItem) {
               "
               :iteration="i"
               @task-moved="taskMoved"
-              @task-on-view="viewTaskDetails"
             />
           </div>
         </q-tab-panel>
       </q-tab-panels>
     </div>
   </q-page>
-  <q-dialog v-model="showItemBottomSheet" :position="'bottom'">
-    <card-details v-if="selectedItem" :item="selectedItem" />
-  </q-dialog>
 </template>
 <style lang="sass">
 .board-card

@@ -71,7 +71,6 @@ defineProps({
       <div class="row bg-transaparent no-shadow">
         <common-card-action
           :task="task"
-          @task-on-view="(issue) => $emit('taskOnView', issue)"
           @task-moved="
             (issue, col, iteration) => $emit('taskMoved', issue, col, iteration)
           "

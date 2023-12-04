@@ -41,6 +41,8 @@ const props = defineProps({
 });
 let convo: Convo[] = [];
 const task = ref<DiscussionItem>(props.item);
+const tab = ref('progress');
+const splitterModel = ref(20);
 onMounted(async () => {
   const discussionStore = useDiscussionStore();
   const activeStore = useActiveStore();
@@ -187,32 +189,27 @@ function asProgress(progress: IProgressFeedback) {
       <div class="col-12">
         <strong>Description:</strong> {{ task.description }}
       </div>
-      <div class="col-12"><strong>Specifics:</strong> {{ task.specifics }}</div>
-      <div class="col-12"><strong>Measures:</strong> {{ task.mesures }}</div>
-      <div class="col-12"><strong>Enables:</strong> {{ task.enables }}</div>
-      <div class="col-12">
+      <div class="col-6"><strong>Specifics:</strong> {{ task.specifics }}</div>
+      <div class="col-6"><strong>Measures:</strong> {{ task.mesures }}</div>
+      <div class="col-6"><strong>Enables:</strong> {{ task.enables }}</div>
+      <div class="col-6">
         <strong>Due:</strong>
         {{ date.formatDate(task.dueDate, 'MMM D, YYYY') }}
       </div>
     </q-card-section>
     <q-card-section v-else-if="task.type == 'story'" class="row">
-      {{ task.targetUser }}
-      {{ task.subject }}
-      {{ task.purpose }}
-      <q-table
-        title="Acceptance Criteria"
-        class="col-12"
-        :rows="task.acceptanceCriteria"
-        :columns="acceptanceCriteriaColumns"
-      >
-      </q-table>
-      <q-table
-        v-if="task.tasks && task.tasks.length"
-        title="Sub-Tasks"
-        class="col-12"
-        :rows="subTasks"
-      >
-      </q-table>
+      <div>
+        As
+        <span class="text-accent">{{ task.targetUser }}</span>
+      </div>
+      ,&nbsp;
+      <div>
+        I want to <span class="text-secondary">{{ task.subject }}</span>
+      </div>
+      ,&nbsp;
+      <div>
+        So that <span class="text-primary">{{ task.purpose }}</span>
+      </div>
     </q-card-section>
     <q-card-section horizontal>
       <q-card-section>
@@ -260,33 +257,77 @@ function asProgress(progress: IProgressFeedback) {
       </q-card-section>
     </q-card-section>
     <q-card-section>
-      <q-table
-        title="Progress"
-        :rows="progressReport"
-        grid
-        :rows-per-page-options="[0]"
-        hide-bottom
-      >
-        <template v-slot:item="props">
-          <div class="q-pa-xs col-12">
-            <q-card v-for="row in [asProgress(props.row)]" :key="row.feedback">
-              <q-card-section class="q-py-xs">
-                <div
-                  class="text-bold"
-                  :class="
-                    /\b(only|no|not)\b/i.test(line) ? 'text-negative' : ''
-                  "
-                  v-for="line in row.feedback.split('\n')"
-                  :key="line"
-                >
-                  {{ line }}
-                </div>
-                <q-linear-progress instant-feedback :value="row.progress" />
-              </q-card-section>
-            </q-card>
-          </div>
+      <q-splitter v-model="splitterModel" style="height: 250px">
+        <template v-slot:before>
+          <q-tabs v-model="tab" vertical>
+            <q-tab name="progress">Progress</q-tab>
+            <q-tab name="acceptance" v-if="task.type == 'story'"
+              >Acceptance</q-tab
+            >
+            <q-tab name="subTasks" v-if="task.type == 'story'">SubTasks</q-tab>
+          </q-tabs>
         </template>
-      </q-table>
+        <template v-slot:after>
+          <q-tab-panels v-model="tab">
+            <q-tab-panel name="progress">
+              <q-table
+                dense
+                :rows="progressReport"
+                grid
+                :rows-per-page-options="[0]"
+                hide-bottom
+              >
+                <template v-slot:item="props">
+                  <div class="q-pa-xs col-12">
+                    <q-card
+                      v-for="row in [asProgress(props.row)]"
+                      :key="row.feedback"
+                    >
+                      <q-card-section class="q-py-xs">
+                        <div
+                          class="text-bold"
+                          :class="
+                            /\b(only|no|not)\b/i.test(line)
+                              ? 'text-negative'
+                              : ''
+                          "
+                          v-for="line in row.feedback.split('\n')"
+                          :key="line"
+                        >
+                          {{ line }}
+                        </div>
+                        <q-linear-progress
+                          instant-feedback
+                          :value="row.progress"
+                        />
+                      </q-card-section>
+                    </q-card>
+                  </div>
+                </template>
+              </q-table>
+            </q-tab-panel>
+            <q-tab-panel name="acceptance" v-if="task.type == 'story'">
+              <q-table
+                dense
+                class="col-12"
+                :rows="task.acceptanceCriteria"
+                :columns="acceptanceCriteriaColumns"
+              >
+              </q-table>
+            </q-tab-panel>
+            <q-tab-panel name="subTasks" v-if="task.type == 'story'">
+              <q-table
+                dense
+                v-if="task.tasks && task.tasks.length"
+                title="Sub-Tasks"
+                class="col-12"
+                :rows="subTasks"
+              >
+              </q-table>
+            </q-tab-panel>
+          </q-tab-panels>
+        </template>
+      </q-splitter>
     </q-card-section>
   </q-card>
 </template>

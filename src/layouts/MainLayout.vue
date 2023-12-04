@@ -18,6 +18,9 @@
       class="no-scroll"
     >
       <router-view name="menu" />
+      <q-dialog v-model="showItemBottomSheet" :position="'bottom'">
+        <card-details v-if="selectedItem" :item="selectedItem" />
+      </q-dialog>
       <q-dialog v-model="showItemTopSheet" :position="'top'">
         <discussion-form
           :type="newTaskPreFields.type || 'story'"
@@ -60,6 +63,7 @@ import TheSynchronizer from 'src/components/TheSynchronizer.vue';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { DiscussionItem, IIteration, IStory } from 'src/entities';
+import CardDetails from 'src/components/CardDetails.vue';
 import DiscussionForm from 'src/components/DiscussionForm.vue';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 const profileStore = useProfilesStore();
@@ -82,6 +86,16 @@ function evalDrawers() {
   leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
 }
 //dialogs
+const selectedItem = ref<undefined | DiscussionItem>();
+const showItemBottomSheet = ref(false);
+function viewTaskDetails(issue: DiscussionItem) {
+  selectedItem.value = issue;
+  showItemBottomSheet.value = true;
+}
+convoBus.on('viewTask', (e) => {
+  viewTaskDetails(e as DiscussionItem);
+});
+//new discussion
 const newTaskPreFields = ref({
   type: 'story' as DiscussionItem['type'],
   status: '',
@@ -90,6 +104,7 @@ const newTaskPreFields = ref({
 });
 const showItemTopSheet = ref(false);
 function newTask(status?: string) {
+  newTaskPreFields.value.type = 'story';
   newTaskPreFields.value.status = status || newTaskPreFields.value.status;
   showItemTopSheet.value = true;
 }

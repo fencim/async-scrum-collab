@@ -29,7 +29,6 @@ const emit = defineEmits<{
     iterationKey?: string
   ): void;
   (e: 'taskOrdered', issue: DiscussionItem, before?: DiscussionItem): void;
-  (e: 'taskOnView', issue: DiscussionItem): void;
 }>();
 async function draggRecord(
   column: ISprintBoardColumn,
@@ -127,7 +126,6 @@ function taskMoved(
                 <component
                   :is="getComponent(element)"
                   :task="element"
-                  @task-on-view="(issue: DiscussionItem) => $emit('taskOnView', issue)"
                   @task-moved="
             (issue:DiscussionItem, col?:ISprintBoardColumn, iteration?:string) =>
             taskMoved(issue, col, iteration)

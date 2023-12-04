@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { DiscussionItem, IProfile, ISprintBoardColumn } from 'src/entities';
+import { convoBus } from 'src/modules/ceremony/convo-bus';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
@@ -15,7 +16,6 @@ const emits = defineEmits<{
     column?: ISprintBoardColumn,
     iterationKey?: string
   ): void;
-  (e: 'taskOnView', issue: DiscussionItem): void;
 }>();
 defineProps({
   task: {
@@ -52,7 +52,7 @@ function getIterations() {
 <template>
   <q-btn
     v-close-popup
-    @click="emits('taskOnView', task)"
+    @click="convoBus.emit('viewTask', task)"
     round
     icon="info"
     size="sm"

@@ -2,9 +2,8 @@
 import { DiscussionItem } from 'src/entities';
 import { PropType, ref } from 'vue';
 import { formatKey } from './discussion.helper';
-defineEmits<{
-  (e: 'taskOnView', issue: DiscussionItem): void;
-}>();
+import { convoBus } from 'src/modules/ceremony/convo-bus';
+
 defineProps({
   mini: Boolean,
   maxed: Boolean,
@@ -15,14 +14,9 @@ defineProps({
   },
 });
 const showDetails = ref(false);
-function iterationKey(task: DiscussionItem) {
-  return typeof task.iteration == 'object'
-    ? task.iteration.key
-    : task.iteration || '';
-}
 </script>
 <template>
-  <q-btn flat dense @click="$emit('taskOnView', task)">
+  <q-btn flat dense @click="convoBus.emit('viewTask', task)">
     {{ formatKey(task.key || 'KEY') }}
   </q-btn>
   <q-card-section class="q-px-sm no-shadow">
@@ -30,7 +24,7 @@ function iterationKey(task: DiscussionItem) {
       <div class="col self-center">
         <slot name="title" />
       </div>
-      <div class="col-4 row justify-end">
+      <div class="col-4 row justify-end" v-if="!!$slots['side']">
         <slot name="side" />
       </div>
     </div>

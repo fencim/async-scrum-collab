@@ -4,10 +4,6 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
 import { ref } from 'vue';
 import { DiscussionItem, IStory } from 'src/entities';
-defineEmits<{
-  (e: 'taskOnView', issue: DiscussionItem): void;
-  (e: 'taskNewSubTask', refStory: IStory): void;
-}>();
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
 type FilterOption = {
@@ -108,13 +104,7 @@ function getBacklog() {
         class="list-group-item q-ma-sm q-pa-sm board-card no-shadow"
         :class="element.type + '-card'"
       >
-        <component
-          :is="getComponent(element)"
-          :task="element"
-          mini
-          @task-new-sub-task="(refStory: IStory) => $emit('taskNewSubTask', refStory)"
-          @task-on-view="(issue: DiscussionItem) => $emit('taskOnView', issue)"
-        />
+        <component :is="getComponent(element)" :task="element" mini />
       </q-card>
     </template>
   </draggable>

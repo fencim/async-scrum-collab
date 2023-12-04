@@ -42,11 +42,9 @@ defineProps({
     <template #title>
       {{ task.description }}
     </template>
-    <template #side>
+    <template #side v-if="mini && typeof task.iteration == 'object'">
       <div>
-        <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
-          task.iteration.name || task.iteration
-        }}</q-badge>
+        <q-badge dense>{{ task.iteration.name || task.iteration }}</q-badge>
       </div>
     </template>
     <template #details>
@@ -77,7 +75,6 @@ defineProps({
       <div class="row bg-transaparent no-shadow">
         <common-card-action
           :task="task"
-          @task-on-view="(issue) => $emit('taskOnView', issue)"
           @task-moved="
             (issue, col, iteration) => $emit('taskMoved', issue, col, iteration)
           "
