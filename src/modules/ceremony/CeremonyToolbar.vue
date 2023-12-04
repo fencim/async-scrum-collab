@@ -6,7 +6,7 @@
         <q-btn
           flat
           dense
-          :to="{ name: 'Project', params: { project: activeProject } }"
+          :to="{ name: 'projectHome', params: { project: activeProject } }"
           >{{ activeProject }}</q-btn
         >
         :

@@ -11,7 +11,7 @@
               horizontal
               @click="
                 $router.replace({
-                  name: 'Project',
+                  name: 'projectHome',
                   params: { project: props.row.key },
                 })
               "
@@ -98,7 +98,12 @@ export default defineComponent({
           projectKey,
           profilesStore.presentUser?.key
         );
-        await this.$router.replace(`/${projectKey}/`);
+        await this.$router.replace({
+          name: 'projectHome',
+          params: {
+            project: projectKey,
+          },
+        });
       }
     },
   },

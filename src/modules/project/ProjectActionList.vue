@@ -24,7 +24,7 @@
       <q-item
         clickable
         :to="{
-          name: 'Project',
+          name: 'projectHome',
           params: {
             project: project?.key,
           },

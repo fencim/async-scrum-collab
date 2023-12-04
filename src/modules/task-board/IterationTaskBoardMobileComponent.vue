@@ -6,8 +6,11 @@ import {
   DiscussionItem,
   IIteration,
   ISprintBoardColumn,
+  IStory,
   PlanningItem,
 } from 'src/entities';
+import { convoBus } from '../ceremony/convo-bus';
+
 const props = defineProps({
   columns: {
     required: true,
@@ -111,6 +114,7 @@ function taskMoved(
                   :icon="col.icon"
                   :color="col.color || 'accent'"
                   dense
+                  @click="convoBus.emit('newTask', col.key)"
                   >{{ col.name }}</q-btn
                 >
               </div>

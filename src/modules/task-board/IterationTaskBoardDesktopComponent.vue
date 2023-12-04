@@ -8,6 +8,7 @@ import {
   ISprintBoardColumn,
   PlanningItem,
 } from 'src/entities';
+import { convoBus } from '../ceremony/convo-bus';
 defineProps({
   column: {
     required: true,
@@ -18,6 +19,7 @@ defineProps({
     type: Object as PropType<IIteration>,
   },
 });
+
 const emit = defineEmits<{
   (
     e: 'taskAdded',
@@ -57,6 +59,7 @@ async function changeOnColumn(
           :icon="column.icon"
           :color="column.color || 'accent'"
           dense
+          @click="convoBus.emit('newTask', column.key)"
           >{{ column.name }}</q-btn
         >
       </div>

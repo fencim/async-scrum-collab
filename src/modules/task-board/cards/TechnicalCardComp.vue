@@ -6,6 +6,7 @@ import CommonCardAction from './CommonCardActionComp.vue';
 import {
   DiscussionItem,
   ISprintBoardColumn,
+  IStory,
   TechnicalTask,
 } from 'src/entities';
 import { PropType } from 'vue';

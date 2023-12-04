@@ -22,6 +22,10 @@ export interface IDiscussion extends IBaseEntity {
   priority?: number;
   unread?: number;
   info?: string;
+  //relations
+  parrent?: string | DiscussionItem;
+  childOf?: string | DiscussionItem;
+  relatesTo?: (string | DiscussionItem)[];
 }
 
 export interface IGoal extends IDiscussion {

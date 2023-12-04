@@ -115,6 +115,7 @@ export const useDiscussionStore = defineStore('discussion', {
           ? discussion.iteration
           : discussion.iteration?.key || '',
         awareness: { ...discussion.awareness },
+        ceremonyKey: discussion.ceremonyKey || '',
         assignees: (discussion.assignees || []).map(a => typeof a == 'object' ? a.key : a)
       } as DiscussionItem;
       await discussionResource.setData(copy.key, copy);

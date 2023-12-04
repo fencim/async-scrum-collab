@@ -37,7 +37,14 @@ export default defineComponent({
   },
   computed: {
     members() {
-      return [...activeStore.activeMembers, ...activeStore.guests];
+      return [
+        ...activeStore.moderators,
+        ...activeStore.activeMembers,
+        ...activeStore.guests,
+      ].filter(
+        (p, index, self) =>
+          index == self.findIndex((x) => x?.key && x.key === p.key)
+      );
     },
   },
   mounted() {

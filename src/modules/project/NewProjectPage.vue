@@ -135,7 +135,7 @@ export default defineComponent({
         );
 
         this.$router.replace({
-          name: 'Project',
+          name: 'projectHome',
           params: {
             project: this.theProject?.key,
           },

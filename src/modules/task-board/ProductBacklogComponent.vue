@@ -3,9 +3,10 @@ import draggable from 'vuedraggable';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
 import { ref } from 'vue';
-import { DiscussionItem } from 'src/entities';
+import { DiscussionItem, IStory } from 'src/entities';
 defineEmits<{
   (e: 'taskOnView', issue: DiscussionItem): void;
+  (e: 'taskNewSubTask', refStory: IStory): void;
 }>();
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
@@ -111,6 +112,7 @@ function getBacklog() {
           :is="getComponent(element)"
           :task="element"
           mini
+          @task-new-sub-task="(refStory: IStory) => $emit('taskNewSubTask', refStory)"
           @task-on-view="(issue: DiscussionItem) => $emit('taskOnView', issue)"
         />
       </q-card>

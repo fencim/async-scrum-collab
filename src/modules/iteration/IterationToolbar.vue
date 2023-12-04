@@ -6,7 +6,7 @@
         <q-btn
           flat
           dense
-          :to="{ name: 'Project', params: { project: activeProject } }"
+          :to="{ name: 'projectHome', params: { project: activeProject } }"
           >{{ projectStore.activeProject?.key }}</q-btn
         >
         : {{ iterationStore.activeIteration?.name }}

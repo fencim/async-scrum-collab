@@ -2,7 +2,12 @@
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import CommonCardAction from './CommonCardActionComp.vue';
-import { DiscussionItem, IObjective, ISprintBoardColumn } from 'src/entities';
+import {
+  DiscussionItem,
+  IObjective,
+  ISprintBoardColumn,
+  IStory,
+} from 'src/entities';
 import { PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 

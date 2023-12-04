@@ -5,6 +5,7 @@ import { DiscussionItem, ISprintBoardColumn, IStory } from 'src/entities';
 import { PropType } from 'vue';
 import { getProfiles } from './card-helpers';
 import CommonCardAction from './CommonCardActionComp.vue';
+import { convoBus } from 'src/modules/ceremony/convo-bus';
 defineEmits<{
   (
     e: 'taskMoved',
@@ -99,6 +100,14 @@ const props = defineProps({
             (issue, col, iteration) => $emit('taskMoved', issue, col, iteration)
           "
         />
+        <q-btn
+          v-close-popup
+          round
+          icon="add_task"
+          size="sm"
+          @click="convoBus.emit('newSubTask', task)"
+          ><q-tooltip>New Sub Task</q-tooltip></q-btn
+        >
       </div>
     </template>
   </base-card>

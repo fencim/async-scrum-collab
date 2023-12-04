@@ -5,7 +5,7 @@
     round
     size="xl"
     :to="{
-      name: 'Project',
+      name: 'projectHome',
       params: { project: projectStore.activeProject?.key },
     }"
     :style="

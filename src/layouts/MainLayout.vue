@@ -18,6 +18,14 @@
       class="no-scroll"
     >
       <router-view name="menu" />
+      <q-dialog v-model="showItemTopSheet" :position="'top'">
+        <discussion-form
+          :type="newTaskPreFields.type || 'story'"
+          :status="newTaskPreFields.status || ''"
+          :iteration="newTaskPreFields.iteration"
+          :ref-story="newTaskPreFields.refStory"
+        />
+      </q-dialog>
     </q-drawer>
     <q-drawer
       v-model="rightDrawerOpen"
@@ -44,54 +52,56 @@
   </q-layout>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { useSynchronizerStore } from 'src/stores/synchronizer.store';
 import TheSynchronizer from 'src/components/TheSynchronizer.vue';
-import { defineComponent } from 'vue';
+import { onMounted, onUpdated, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { DiscussionItem, IIteration, IStory } from 'src/entities';
+import DiscussionForm from 'src/components/DiscussionForm.vue';
+import { convoBus } from 'src/modules/ceremony/convo-bus';
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
 const synchronizerStore = useSynchronizerStore();
+const leftDrawerOpen = ref(false);
+const rightDrawerOpen = ref(false);
 
-export default defineComponent({
-  name: 'MainLayout',
-  components: {
-    TheSynchronizer,
-  },
-  data() {
-    return {
-      synchronizerStore,
-      leftDrawerOpen: false,
-      rightDrawerOpen: false,
-      recentProfiles: [],
-    };
-  },
-  async created() {
-    await profileStore.init();
-    await projectStore.init();
-  },
-  updated() {
-    this.evalDrawers();
-  },
-  mounted() {
-    this.evalDrawers();
-  },
-  beforeRouteUpdate() {
-    this.evalDrawers();
-  },
-  methods: {
-    evalDrawers() {
-      this.rightDrawerOpen = !!(this.$route.meta && this.$route.meta.actions);
-      this.leftDrawerOpen = !!(this.$route.meta && this.$route.meta.menus);
-    },
-    goto(link: string) {
-      link.replace('/', '');
-      //return this.$router.replace(link);
-    },
-    toggleLeftDrawer() {
-      this.leftDrawerOpen = !this.leftDrawerOpen;
-    },
-  },
+onMounted(async () => {
+  await profileStore.init();
+  await projectStore.init();
+  evalDrawers();
+});
+onUpdated(() => {
+  evalDrawers();
+});
+const $route = useRoute();
+function evalDrawers() {
+  rightDrawerOpen.value = !!($route.meta && $route.meta.actions);
+  leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
+}
+//dialogs
+const newTaskPreFields = ref({
+  type: 'story' as DiscussionItem['type'],
+  status: '',
+  iteration: undefined as IIteration | undefined,
+  refStory: undefined as IStory | undefined,
+});
+const showItemTopSheet = ref(false);
+function newTask(status?: string) {
+  newTaskPreFields.value.status = status || newTaskPreFields.value.status;
+  showItemTopSheet.value = true;
+}
+function newSubTask(refStory: IStory) {
+  newTaskPreFields.value.refStory = refStory;
+  newTaskPreFields.value.type = 'task';
+  showItemTopSheet.value = true;
+}
+convoBus.on('newTask', (e) => {
+  newTask(e as string);
+});
+convoBus.on('newSubTask', (e) => {
+  newSubTask(e as IStory);
 });
 </script>

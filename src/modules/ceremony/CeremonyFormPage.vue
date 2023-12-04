@@ -19,7 +19,7 @@
             round
             dense
             icon="close"
-            :to="{ name: 'Project', params: { project: activeProjectKey } }"
+            :to="{ name: 'projectHome', params: { project: activeProjectKey } }"
           />
         </q-toolbar>
 

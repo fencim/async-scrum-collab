@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
     component: () => Promise.resolve(mainLayout),
     children: [
       {
-        name: 'Project',
+        name: 'projectHome',
         meta: { actions: true },
         path: 'timeline', components: {
           default: () => import('src/modules/project/ProjectPage.vue'),

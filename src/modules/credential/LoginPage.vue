@@ -1,7 +1,7 @@
 <template>
   <q-page class="column q-pa-sm">
     <q-form @submit="signIn">
-      <q-card class="q-pa-sm">
+      <q-card class="q-pa-sm" :class="$q.screen.gt.sm ? 'q-ma-xl' : 'q-my-xl'">
         <q-card-section>
           <div class="text-h6">Login</div>
         </q-card-section>

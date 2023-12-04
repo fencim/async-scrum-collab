@@ -20,7 +20,7 @@
             dense
             icon="close"
             :to="{
-              name: 'Project',
+              name: 'projectHome',
               params: {
                 project: activeProjectKey,
               },

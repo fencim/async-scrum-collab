@@ -8,9 +8,16 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
 
 import { ref, onMounted } from 'vue';
-import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
+import {
+  DiscussionItem,
+  IIteration,
+  ISprintBoardColumn,
+  IStory,
+} from 'src/entities';
 import { useRoute, useRouter } from 'vue-router';
 import CardDetails from 'src/components/CardDetails.vue';
+import DiscussionForm from 'src/components/DiscussionForm.vue';
+import { convoBus } from '../ceremony/convo-bus';
 const tab = ref('all');
 const selectedItem = ref<undefined | DiscussionItem>();
 const splitSection = ref(30);
@@ -113,7 +120,7 @@ function viewTaskDetails(issue: DiscussionItem) {
       <template #after>
         <div class="row" :style="'min-height: ' + $q.screen.sizes.sm + 'px'">
           <q-tab-panels v-model="tab" class="col">
-            <q-tab-pannel
+            <q-tab-panel
               v-for="i in iterationStore.iterations"
               :key="i.key"
               :name="i.key"
@@ -140,7 +147,7 @@ function viewTaskDetails(issue: DiscussionItem) {
                   />
                 </div>
               </div>
-            </q-tab-pannel>
+            </q-tab-panel>
           </q-tab-panels>
         </div>
       </template>
@@ -150,7 +157,7 @@ function viewTaskDetails(issue: DiscussionItem) {
         <q-tab-panel name="all">
           <product-backlog @task-on-view="viewTaskDetails" />
         </q-tab-panel>
-        <q-tab-pannel
+        <q-tab-panel
           v-for="i in iterationStore.iterations"
           :key="i.key"
           :name="i.key"
@@ -170,7 +177,7 @@ function viewTaskDetails(issue: DiscussionItem) {
               @task-on-view="viewTaskDetails"
             />
           </div>
-        </q-tab-pannel>
+        </q-tab-panel>
       </q-tab-panels>
     </div>
   </q-page>
