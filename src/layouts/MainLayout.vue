@@ -18,17 +18,6 @@
       class="no-scroll"
     >
       <router-view name="menu" />
-      <q-dialog v-model="showItemBottomSheet" :position="'bottom'">
-        <card-details v-if="selectedItem" :item="selectedItem" />
-      </q-dialog>
-      <q-dialog v-model="showItemTopSheet" :position="'top'">
-        <discussion-form
-          :type="newTaskPreFields.type || 'story'"
-          :status="newTaskPreFields.status || ''"
-          :iteration="newTaskPreFields.iteration"
-          :ref-story="newTaskPreFields.refStory"
-        />
-      </q-dialog>
     </q-drawer>
     <q-drawer
       v-model="rightDrawerOpen"
@@ -46,6 +35,18 @@
 
     <q-page-container style="padding-right: 56px">
       <router-view />
+      <q-dialog v-model="showItemBottomSheet" :position="'bottom'">
+        <card-details v-if="selectedItem" :item="selectedItem" />
+      </q-dialog>
+      <q-dialog v-model="showItemTopSheet" :position="'top'">
+        <discussion-form
+          :type="newTaskPreFields.type || 'story'"
+          :status="newTaskPreFields.status || ''"
+          :iteration="newTaskPreFields.iteration"
+          :ref-story="newTaskPreFields.refStory"
+          :item="newTaskPreFields.item"
+        />
+      </q-dialog>
     </q-page-container>
     <TheSynchronizer
       :byModule="synchronizerStore.byModule"
@@ -97,12 +98,19 @@ convoBus.on('viewTask', (e) => {
 });
 //new discussion
 const newTaskPreFields = ref({
+  item: undefined as DiscussionItem | undefined,
   type: 'story' as DiscussionItem['type'],
   status: '',
   iteration: undefined as IIteration | undefined,
   refStory: undefined as IStory | undefined,
 });
 const showItemTopSheet = ref(false);
+function editTask(task: DiscussionItem) {
+  newTaskPreFields.value.type = task.type;
+  newTaskPreFields.value.status = task.status || newTaskPreFields.value.status;
+  newTaskPreFields.value.item = task;
+  showItemTopSheet.value = true;
+}
 function newTask(status?: string) {
   newTaskPreFields.value.type = 'story';
   newTaskPreFields.value.status = status || newTaskPreFields.value.status;
@@ -115,6 +123,9 @@ function newSubTask(refStory: IStory) {
 }
 convoBus.on('newTask', (e) => {
   newTask(e as string);
+});
+convoBus.on('editTask', (e) => {
+  editTask(e as DiscussionItem);
 });
 convoBus.on('newSubTask', (e) => {
   newSubTask(e as IStory);

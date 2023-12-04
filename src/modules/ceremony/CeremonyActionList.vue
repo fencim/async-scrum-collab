@@ -151,15 +151,8 @@ export default defineComponent({
 
     async actOn(action: ActionItem) {
       if (action.key == 'view') {
-        await this.$router.replace({
-          name: 'discussionDetails',
-          params: {
-            project: this.activeProject,
-            iteration: this.activeIteration,
-            ceremony: this.activeCeremony,
-            item: this.activeItem,
-          },
-        });
+        const discusssion = await discussionStore.withKey(this.activeItem);
+        convoBus.emit('viewTask', discusssion);
       } else if (action.key == 'convo') {
         await this.$router.replace({
           name: 'convo',

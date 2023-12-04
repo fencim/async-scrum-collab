@@ -3,6 +3,7 @@ import { DiscussionItem } from 'src/entities';
 import { PropType, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
+import RecentActiveMembers from './RecentActiveMembers.vue';
 
 defineProps({
   mini: Boolean,
@@ -16,9 +17,26 @@ defineProps({
 const showDetails = ref(false);
 </script>
 <template>
-  <q-btn flat dense @click="convoBus.emit('viewTask', task)">
-    {{ formatKey(task.key || 'KEY') }}
-  </q-btn>
+  <div class="row">
+    <q-btn flat dense @click="convoBus.emit('viewTask', task)">
+      {{ formatKey(task.key || 'KEY') }}
+    </q-btn>
+    <q-space />
+    <recent-active-members
+      v-if="typeof task.assignedTo == 'object'"
+      :profiles="[task.assignedTo]"
+      sizes="sm"
+    />
+    <q-btn
+      v-else
+      class="no-pointer-events"
+      round
+      icon="person"
+      size="sm"
+      flat
+      dense
+    ></q-btn>
+  </div>
   <q-card-section class="q-px-sm no-shadow">
     <div class="row full-width">
       <div class="col self-center">

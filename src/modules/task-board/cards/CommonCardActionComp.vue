@@ -73,15 +73,7 @@ function getIterations() {
     />
   </q-btn-dropdown>
   <q-btn
-    :to="{
-      name: 'editDiscussion',
-      params: {
-        project: task.projectKey,
-        iteration: iterationKey(task),
-        ceremony: iterationKey(task) + 'plan',
-        item: task.key,
-      },
-    }"
+    @click="convoBus.emit('editTask', task)"
     v-close-popup
     round
     icon="edit"

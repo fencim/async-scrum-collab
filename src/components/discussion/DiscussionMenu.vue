@@ -31,7 +31,7 @@
     size="40px"
     :thickness="0.15"
     color="grey"
-    track-color="transparent"
+    track-color="black"
   >
     <q-icon
       v-if="item.type == 'went-well'"

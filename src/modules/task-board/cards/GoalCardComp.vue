@@ -18,7 +18,6 @@ defineEmits<{
     column?: ISprintBoardColumn,
     iterationKey?: string
   ): void;
-  (e: 'taskOnView', issue: DiscussionItem): void;
 }>();
 
 defineProps({
@@ -32,13 +31,7 @@ defineProps({
 });
 </script>
 <template>
-  <base-card
-    @task-on-view="(issue) => $emit('taskOnView', issue)"
-    :maxed="maxed"
-    :mini="mini"
-    :no-action="noAction"
-    :task="task"
-  >
+  <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
     <template #title>
       {{ task.description }}
     </template>

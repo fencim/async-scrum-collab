@@ -24,7 +24,6 @@ export interface IDiscussion extends IBaseEntity {
   info?: string;
   //relations
   parrent?: string | DiscussionItem;
-  childOf?: string | DiscussionItem;
   relatesTo?: (string | DiscussionItem)[];
 }
 

@@ -34,9 +34,9 @@
         font-size="12px"
         class="text-white q-ma-sm text-uppercase"
         size="40px"
-        :thickness="0.3"
+        :thickness="0.2"
         color="grey"
-        track-color="transparent"
+        track-color="black"
       >
         {{ (Number(activeCeremony.progress || 0) * 100).toFixed(0) }}%
       </q-circular-progress>

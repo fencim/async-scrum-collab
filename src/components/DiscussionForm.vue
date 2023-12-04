@@ -252,6 +252,7 @@ onMounted(async () => {
   }
   theDiscussion.value = {
     ...theDiscussion.value,
+    ...(props.item || {}),
     projectKey: activeProjectKey.value,
     iteration:
       theDiscussion.value.iteration ||
@@ -297,13 +298,20 @@ async function submitDiscussion() {
   theDiscussion.value.iteration =
     theDiscussion.value.iteration || activeIterationKey.value;
   theDiscussion.value.projectKey = activeProjectKey.value;
+  if (props.refStory) {
+    theDiscussion.value.parrent = entityKey(props.refStory);
+  }
   await discussionStore.saveDiscussion(theDiscussion.value);
 
   if (activeCeremony.value) {
     activeCeremony.value.discussions.push(theDiscussion.value.key);
     await ceremonyStore.saveCeremony(activeCeremony.value);
   }
-  if (activeProject.value && profileStore.presentUser) {
+  if (
+    activeProject.value &&
+    profileStore.presentUser &&
+    convoStore.convo.length
+  ) {
     const report = discussionStore.checkCompleteness(
       theDiscussion.value,
       activeProject.value,

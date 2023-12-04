@@ -75,7 +75,9 @@ export const useDiscussionStore = defineStore('discussion', {
             }
             if (Array.isArray(m.assignees) && typeof m.assignees[0] == 'string') {
               m.assignees = await profileStore.selectProjectMembers(m.assignees as string[]);
+              m.assignedTo = (m.assignees as IProfile[]).find(a => a.key == m.assignedTo) || m.assignedTo;
             }
+
             if (m.iteration && typeof m.iteration == 'string') {
               m.iteration = await iterationStore.getIteration(m.iteration);
             }
@@ -109,15 +111,14 @@ export const useDiscussionStore = defineStore('discussion', {
       return await this.saveDiscussion(updated);
     },
     async saveDiscussion(discussion: DiscussionItem) {
-      const copy = {
+      const copy = (({
         ...discussion,
-        iteration: typeof discussion.iteration == 'string'
-          ? discussion.iteration
-          : discussion.iteration?.key || '',
+        iteration: discussion.iteration && entityKey(discussion.iteration) || discussion.iteration,
+        assignedTo: discussion.assignedTo && entityKey(discussion.assignedTo) || discussion.assignedTo,
         awareness: { ...discussion.awareness },
         ceremonyKey: discussion.ceremonyKey || '',
         assignees: (discussion.assignees || []).map(a => typeof a == 'object' ? a.key : a)
-      } as DiscussionItem;
+      })) as DiscussionItem;
       await discussionResource.setData(copy.key, copy);
       const index = this.discussions.findIndex(i => i.key == copy.key);
       if (index < 0) {
