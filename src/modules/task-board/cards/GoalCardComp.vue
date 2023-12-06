@@ -2,13 +2,8 @@
 import BaseCard from 'src/components/BaseCardComponent.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import CommonCardAction from './CommonCardActionComp.vue';
-import {
-  DiscussionItem,
-  IGoal,
-  ISprintBoardColumn,
-  IStory,
-} from 'src/entities';
-import { PropType } from 'vue';
+import { DiscussionItem, IGoal, ISprintBoardColumn } from 'src/entities';
+import { PropType, ref } from 'vue';
 import { getProfiles } from './card-helpers';
 
 defineEmits<{
@@ -19,8 +14,7 @@ defineEmits<{
     iterationKey?: string
   ): void;
 }>();
-
-defineProps({
+const props = defineProps({
   task: {
     required: true,
     type: Object as PropType<IGoal>,
@@ -29,6 +23,7 @@ defineProps({
   maxed: Boolean,
   noAction: Boolean,
 });
+const dueDate = ref(props.task.dueDate || '');
 </script>
 <template>
   <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
@@ -52,9 +47,16 @@ defineProps({
         <q-badge class="q-mr-xs" dense color="primary">{{
           task.priority || 'P1'
         }}</q-badge>
-        <q-badge dense :color="task.dueDate ? 'secondary' : 'negative'">{{
-          task.dueDate || 'ND'
-        }}</q-badge>
+        <q-chip dense :color="task.dueDate ? 'secondary' : 'negative'"
+          >{{ task.dueDate || 'ND' }}
+          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+            <q-date v-model="dueDate">
+              <div class="row items-center justify-end">
+                <q-btn v-close-popup label="Close" color="primary" flat />
+              </div>
+            </q-date>
+          </q-popup-proxy>
+        </q-chip>
       </div>
     </template>
     <template #bottom>

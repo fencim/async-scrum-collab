@@ -11,9 +11,15 @@
     >
       <q-avatar :size="sizes || '32px'">
         <img v-if="p && p.avatar" :src="p.avatar" />
+        <span v-else-if="p?.key == profileStore.presentUser?.key">Me</span>
         <span v-else>{{ initials(p?.name) }}</span>
       </q-avatar>
-      <q-tooltip>{{ p?.name }}</q-tooltip>
+      <q-tooltip
+        >{{ p?.name
+        }}<span v-if="p?.key == profileStore.presentUser?.key"
+          >(Me)</span
+        ></q-tooltip
+      >
     </q-btn>
     <q-btn
       class="extra"
@@ -33,11 +39,17 @@
 
 <script lang="ts">
 import { IProfile } from 'src/entities';
+import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent, PropType } from 'vue';
 const MAX_PROFILE_COUNT = 5;
 export default defineComponent({
   name: 'RecentActiveMembers',
   emits: ['clickProfile', 'ctrlClick'],
+  data() {
+    return {
+      profileStore: useProfilesStore(),
+    };
+  },
   props: {
     profiles: {
       type: Object as PropType<IProfile[]>,

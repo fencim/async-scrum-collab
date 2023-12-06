@@ -55,7 +55,7 @@
             use-chips
             label="Select logo"
           />
-          <div v-else>
+          <div v-else class="col-4">
             <span>Icon</span>
             <the-image-cropper :file="[icon]" @cropImage="cropImage" />
           </div>

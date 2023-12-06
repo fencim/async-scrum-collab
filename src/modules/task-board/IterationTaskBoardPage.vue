@@ -10,6 +10,7 @@ import { useActiveStore } from 'src/stores/active.store';
 import { ref, onMounted } from 'vue';
 import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
 import { useRoute, useRouter } from 'vue-router';
+import { date } from 'quasar';
 const tab = ref('all');
 const splitSection = ref(30);
 const iterationStore = useIterationStore();
@@ -43,11 +44,15 @@ async function taskMoved(
 ) {
   if (column) {
     issue.status = column.key;
+    if (column.doneState) {
+      issue.doneDate = date.formatDate(new Date(), 'YYYY/MM/DD');
+    }
   }
   if (iterationKey) {
     issue.iteration = iterationKey;
     tab.value = iterationKey;
   }
+
   await discussionStore.saveDiscussion(issue);
 }
 </script>

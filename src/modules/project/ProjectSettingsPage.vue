@@ -374,28 +374,31 @@ export default defineComponent({
       editingCol: defaultNewBoardCol,
     };
   },
-  async mounted() {
-    await this.resetSelected();
-    this.taskboardColumns = activeStore.activeProject?.boardColumns?.map(
-      (c) => ({ ...c })
-    ) || [
-      {
-        key: 'to-do',
-        name: 'To do',
-        icon: 'not_started',
-      },
-      {
-        key: 'in-progress',
-        name: 'In Progress',
-        icon: 'pending',
-      },
-      {
-        key: 'done',
-        name: 'Done',
-        icon: 'done',
-        doneState: true,
-      },
-    ];
+  mounted() {
+    this.resetSelected();
+    this.taskboardColumns =
+      activeStore.activeProject?.boardColumns?.map((c) => ({ ...c })) || [];
+    if (!this.taskboardColumns?.length) {
+      this.taskboardColumns = [
+        {
+          key: 'to-do',
+          name: 'To do',
+          icon: 'not_started',
+        },
+        {
+          key: 'in-progress',
+          name: 'In Progress',
+          icon: 'pending',
+        },
+        {
+          key: 'done',
+          name: 'Done',
+          icon: 'done',
+          doneState: true,
+        },
+      ];
+      this.saved = false;
+    }
   },
 
   methods: {

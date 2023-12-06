@@ -12,10 +12,20 @@
           Discussion of {{ activeProject?.name }}</q-toolbar-title
         >
       </q-toolbar>
+      <div v-if="refStory" class="q-pa-sm q-mx-sm shadow-5 rounded-borders">
+        <component
+          class=""
+          :is="getComponent(refStory)"
+          :task="refStory"
+          mini
+          no-action
+        />
+      </div>
       <q-card-section class="row" v-if="!item">
         <q-select
           class="col-12"
           emit-value
+          v-if="!refStory"
           map-options
           label="Type"
           v-model="theDiscussion.type"
@@ -28,6 +38,9 @@
           option-value="v"
           option-label="t"
         />
+        <q-badge v-else class="text-capitalize">{{
+          theDiscussion.type
+        }}</q-badge>
       </q-card-section>
       <q-card-section
         v-if="theDiscussion.type == 'goal' || theDiscussion.type == 'task'"
@@ -166,6 +179,7 @@ import {
   IStory,
 } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
+import { getComponent } from 'src/modules/task-board/card-components';
 import { useActiveStore } from 'src/stores/active.store';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useConvoStore } from 'src/stores/convo.store';

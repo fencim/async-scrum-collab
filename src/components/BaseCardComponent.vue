@@ -4,7 +4,10 @@ import { PropType, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 import RecentActiveMembers from './RecentActiveMembers.vue';
-
+import { useActiveStore } from 'src/stores/active.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+const activeStore = useActiveStore();
+const discussionStore = useDiscussionStore();
 defineProps({
   mini: Boolean,
   maxed: Boolean,
@@ -27,15 +30,22 @@ const showDetails = ref(false);
       :profiles="[task.assignedTo]"
       sizes="sm"
     />
-    <q-btn
+    <q-btn-dropdown
       v-else
-      class="no-pointer-events"
-      round
-      icon="person"
-      size="sm"
-      flat
       dense
-    ></q-btn>
+      rounded
+      content-class="bg-transparent no-shadow"
+      no-icon-animation
+      dropdown-icon="person"
+      size="sm"
+    >
+      <RecentActiveMembers
+        sizes="xs"
+        v-close-popup
+        :profiles="activeStore.activeMembers"
+        @click-profile="(p) => discussionStore.assignTaskTo(task, p)"
+      />
+    </q-btn-dropdown>
   </div>
   <q-card-section class="q-px-sm no-shadow">
     <div class="row full-width">

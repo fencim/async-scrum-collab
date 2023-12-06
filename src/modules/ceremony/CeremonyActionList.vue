@@ -34,7 +34,7 @@
         clickable
         dense
         tag="a"
-        :to="`/${activeProject}/${iteration?.key}/${ceremony?.key}/discussion/new`"
+        @click="convoBus.emit('newTask', 'story')"
       >
         <q-item-section avatar>
           <q-icon name="add" size="sm" />

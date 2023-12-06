@@ -40,7 +40,7 @@ const props = defineProps({
           So that <span class="text-primary">{{ props.task.purpose }}</span>
         </div>
       </div>
-      <div v-else>{{ task.subject }}</div>
+      <div v-else class="text-capital">{{ task.subject }}</div>
     </template>
     <template
       #side
@@ -108,3 +108,8 @@ const props = defineProps({
     </template>
   </base-card>
 </template>
+<style lang="css" scoped>
+.text-capital::first-letter {
+  text-transform: capitalize;
+}
+</style>

@@ -3,7 +3,6 @@ import draggable from 'vuedraggable';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
 import { ref } from 'vue';
-import { DiscussionItem, IStory } from 'src/entities';
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
 type FilterOption = {
