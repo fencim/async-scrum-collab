@@ -5,6 +5,7 @@ import CommonCardAction from './CommonCardActionComp.vue';
 import { DiscussionItem, IGoal, ISprintBoardColumn } from 'src/entities';
 import { PropType, ref } from 'vue';
 import { getProfiles } from './card-helpers';
+import CommonCardFooterComp from './CommonCardFooterComp.vue';
 
 defineEmits<{
   (
@@ -23,7 +24,6 @@ const props = defineProps({
   maxed: Boolean,
   noAction: Boolean,
 });
-const dueDate = ref(props.task.dueDate || '');
 </script>
 <template>
   <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
@@ -38,26 +38,7 @@ const dueDate = ref(props.task.dueDate || '');
       </div>
     </template>
     <template #footer>
-      <recent-active-members
-        sizes="xs"
-        :profiles="getProfiles(task.assignees)"
-      />
-      <q-space />
-      <div>
-        <q-badge class="q-mr-xs" dense color="primary">{{
-          task.priority || 'P1'
-        }}</q-badge>
-        <q-chip dense :color="task.dueDate ? 'secondary' : 'negative'"
-          >{{ task.dueDate || 'ND' }}
-          <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-            <q-date v-model="dueDate">
-              <div class="row items-center justify-end">
-                <q-btn v-close-popup label="Close" color="primary" flat />
-              </div>
-            </q-date>
-          </q-popup-proxy>
-        </q-chip>
-      </div>
+      <common-card-footer-comp :task="task" :maxed="maxed" :mini="mini" />
     </template>
     <template #bottom>
       <q-linear-progress :value="task.progress || 0" />

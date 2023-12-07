@@ -32,6 +32,22 @@
       <q-separator />
       <q-item
         clickable
+        :to="{
+          name: 'burn-down',
+          params: {
+            project: project?.key || activeProject,
+            iteration: iteration?.key || activeIteration,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="trending_down" />
+        </q-item-section>
+        <q-tooltip>Burn Down</q-tooltip>
+      </q-item>
+      <q-separator />
+      <q-item
+        clickable
         dense
         tag="a"
         @click="convoBus.emit('newTask', 'story')"

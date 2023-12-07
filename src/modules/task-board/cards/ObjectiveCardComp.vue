@@ -10,6 +10,7 @@ import {
 } from 'src/entities';
 import { PropType } from 'vue';
 import { getProfiles } from './card-helpers';
+import CommonCardFooterComp from './CommonCardFooterComp.vue';
 
 defineEmits<{
   (
@@ -47,19 +48,7 @@ defineProps({
       </div>
     </template>
     <template #footer>
-      <recent-active-members
-        sizes="xs"
-        :profiles="getProfiles(task.assignees)"
-      />
-      <q-space />
-      <div>
-        <q-badge class="q-mr-xs" dense color="primary">{{
-          task.priority || 'P1'
-        }}</q-badge>
-        <q-badge dense :color="task.dueDate ? 'secondary' : 'negative'">{{
-          task.dueDate || 'ND'
-        }}</q-badge>
-      </div>
+      <common-card-footer-comp :task="task" :maxed="maxed" :mini="mini" />
     </template>
     <template #bottom>
       <q-linear-progress :value="task.progress || 0" />
