@@ -236,6 +236,7 @@ class FirebaseSevice {
     }
     return value;
   }
+
   clone<T>(val: T) {
     return JSON.parse(
       JSON.stringify(val)

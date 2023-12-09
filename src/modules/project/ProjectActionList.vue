@@ -67,6 +67,22 @@
         <q-tooltip>Planning Meeting</q-tooltip>
       </q-item>
       <q-item
+        v-if="$route.params.iteration"
+        clickable
+        :to="{
+          name: 'burn-down',
+          params: {
+            project: project?.key || activeProject,
+            iteration: $route.params.iteration,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="trending_down" />
+        </q-item-section>
+        <q-tooltip>Burn Down</q-tooltip>
+      </q-item>
+      <q-item
         clickable
         :to="{
           name: 'settings',

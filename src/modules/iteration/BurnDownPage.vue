@@ -7,9 +7,11 @@ import { date } from 'quasar';
 import { useRoute } from 'vue-router';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { ICeremony } from 'src/entities';
+import { useDiscussionStore } from 'src/stores/discussions.store';
 const route = useRoute();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
+const discussionStore = useDiscussionStore();
 const iteration =
   iterationStore.activeIteration ||
   iterationStore.iterations.find((i) => i.key == route.params?.iteration);
@@ -20,6 +22,11 @@ const dailyScrums = (
 ).sort((a, b) => {
   return date.getDateDiff(a.start, b.start, 'days');
 });
+const discussions =
+  (iteration &&
+    discussionStore.fromIteration(iteration.projectKey, iteration.key)) ||
+  [];
+const mappedDiscussions = discussions.filter((d) => d.dueDate && d.assignedTo);
 const loading = ref(false);
 const startDate = iteration && date.formatDate(iteration.start, 'YYYY/MM/DD');
 const endDate = iteration && date.formatDate(iteration.end, 'YYYY/MM/DD');
@@ -59,11 +66,61 @@ const xAxis = (() => {
     } else {
       return date.formatDate(d, 'ddd');
     }
-    2;
   });
 })();
+const totalPoints = mappedDiscussions.reduce(
+  (p, c) => (c.complexity || 0) + p,
+  0
+);
+const planned = (() => {
+  let remainingPts = totalPoints;
+  return workDays.map((workday, i) => {
+    const tasks = mappedDiscussions.filter(
+      (d) => d.dueDate && date.getDateDiff(workday, d.dueDate, 'days') == 0
+    );
+    const subTotalPts = tasks.reduce((p, c) => (c.complexity || 0) + p, 0);
+    remainingPts -= subTotalPts;
+    return Math.round(remainingPts);
+  });
+})();
+const ideal = (() => {
+  let remainingPts = totalPoints;
+  const idealDailyBurn = totalPoints / daysCount;
+  return workDays.map((d, i) => {
+    const standUpMeeting = dailyScrums.find(
+      (c) => date.getDateDiff(d, c.start, 'days') == 0
+    );
+    if (standUpMeeting) {
+      remainingPts -= idealDailyBurn;
+    }
+    const burn = remainingPts;
+    return burn;
+  });
+})();
+let totalCompleted = 0;
+const actual = (() => {
+  let remainingPts = totalPoints;
+  const now = new Date();
+  return workDays.map((workday, i) => {
+    if (date.getDateDiff(workday, now, 'days') <= 0) {
+      return undefined;
+    }
+    const compleltedTasks = discussions.filter(
+      (d) => d.doneDate && date.getDateDiff(workday, d.doneDate, 'days') == 0
+    );
+    const subTotalPts = compleltedTasks.reduce(
+      (p, c) => (c.complexity || 0) + p,
+      0
+    );
+    totalCompleted += subTotalPts;
+    remainingPts -= subTotalPts;
+    return Math.round(remainingPts);
+  });
+})().filter((d) => typeof d !== 'undefined');
+
 const chartOptions = ref<EChartsOption>({
   title: {},
+  legend: {},
   xAxis: {
     type: 'category',
     data: xAxis,
@@ -74,39 +131,24 @@ const chartOptions = ref<EChartsOption>({
   tooltip: {
     trigger: 'axis',
   },
-  legend: {},
   series: [
     {
       type: 'line',
       name: 'Ideal',
       label: 'Ideal',
-      data: (() => {
-        const totalPoints = 100;
-        let remainingPts = totalPoints;
-        const idealDailyBurn = totalPoints / daysCount;
-        return workDays.map((d, i) => {
-          const standUpMeeting = dailyScrums.find(
-            (c) => date.getDateDiff(d, c.start, 'days') == 0
-          );
-          if (standUpMeeting) {
-            remainingPts -= idealDailyBurn;
-          }
-          const burn = Math.round(remainingPts);
-          return burn;
-        });
-      })(),
+      data: ideal,
     } as LineSeriesOption,
     {
       type: 'line',
       name: 'Planned',
       label: 'Planned',
-      data: [100, 88, 80, 66, 60, 55, 0],
+      data: planned,
     } as LineSeriesOption,
     {
       type: 'line',
       name: 'Actual',
       label: 'Actual',
-      data: [100, 78],
+      data: actual,
     } as LineSeriesOption,
   ],
 });

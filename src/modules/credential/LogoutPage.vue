@@ -9,7 +9,9 @@
           <q-card-section> Are you sure? You want to logout? </q-card-section>
         </q-card-section>
         <q-card-actions align="center">
-          <q-btn @click="logout()" v-close-popup color="primary">Yes</q-btn>
+          <q-btn :loading="loading" @click="logout()" color="primary"
+            >Yes</q-btn
+          >
           <q-btn v-close-popup>Cancel</q-btn>
         </q-card-actions>
       </q-card>
@@ -25,12 +27,15 @@ const profileStore = useProfilesStore();
 export default defineComponent({
   name: 'LogoutPage',
   data() {
-    return { confirm: true, signOut: false };
+    return { confirm: true, signOut: false, loading: false };
   },
   methods: {
     async logout() {
+      this.loading = true;
       await profileStore.signout();
       this.signOut = true;
+      this.loading = false;
+      this.confirm = false;
       this.$router.replace({
         name: 'login',
       });

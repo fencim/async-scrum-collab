@@ -5,6 +5,7 @@ import { firebaseService } from 'src/services/firebase.service';
 import { logsResource } from 'src/resources/logs.resource';
 import { sessionResource } from 'src/resources/session.resource';
 import { synchronizerConnection } from 'src/workers/synchronizer/synchronizer.connection';
+import { UserCredential } from 'firebase/auth';
 
 const botProfile = { avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' };
 interface IProfileState {
@@ -24,7 +25,6 @@ export const useProfilesStore = defineStore('Profiles', {
       return this.theUser;
     }
   },
-
   actions: {
     async authenticate() {
       if (!this.getUser()) {
@@ -33,23 +33,29 @@ export const useProfilesStore = defineStore('Profiles', {
       }
     },
     async signout() {
+      const cleanUp = async () => {
+        this.theUser = undefined;
+        await firebaseService.signout();
+        await convoResource.deleteAll();
+        await discussionResource.deleteAll();
+        await iterationResource.deleteAll();
+        await mediaResource.deleteAll();
+        await projectResource.deleteAll();
+        await profileResource.deleteAll();
+        await sessionResource.deleteAll();
+      }
       if (this.theUser) {
-        await logsResource.setData('', {
-          type: 'auth-logout',
-          username: this.theUser.email || this.theUser.key,
-        }, undefined, async (info) => {
-          if (info.status == 'synced') {
-            this.theUser = undefined;
-            await firebaseService.signout();
-            await convoResource.deleteAll();
-            await discussionResource.deleteAll();
-            await iterationResource.deleteAll();
-            await mediaResource.deleteAll();
-            await projectResource.deleteAll();
-            await profileResource.deleteAll();
-            await sessionResource.deleteAll();
-          }
-        })
+        return new Promise(async (resolve) => {
+          await logsResource.setData('', {
+            type: 'auth-logout',
+            username: this.theUser!.email || this.theUser!.key,
+          }, undefined, async (info) => {
+            if (info.status == 'synced') {
+              await cleanUp();
+              resolve(undefined);
+            }
+          })
+        }).catch(() => cleanUp())
 
       }
     },
@@ -101,6 +107,7 @@ export const useProfilesStore = defineStore('Profiles', {
       this.theUser = this.profiles.find(p => p.key == profileKey);
     },
     async signInWithGoogle() {
+      this.theUser = undefined;
       const cred = await firebaseService.signInWithGoolgeAccount();
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
@@ -129,9 +136,13 @@ export const useProfilesStore = defineStore('Profiles', {
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
       if (this.theUser) {
-        logsResource.setData('', {
-          type: 'auth-login',
-          username: this.theUser.email || this.theUser.key,
+        return new Promise<UserCredential>((resolve) => {
+          logsResource.setData('', {
+            type: 'auth-login',
+            username: this.theUser!.email || this.theUser!.key,
+          }, true, () => {
+            resolve(cred)
+          })
         })
       }
       return cred;

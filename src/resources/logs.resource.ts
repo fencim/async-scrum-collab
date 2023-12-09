@@ -48,7 +48,7 @@ class LogsResource extends BaseResource<IActivityLog> {
     value.user = this.userKey || value.user;
     value.date = (new Date()).toISOString();
     value.key = this.getKeyOf(value);
-    return super.setData(key, value, createOnlyOrStatus, cb, remarks);
+    return super.setData(key || value.key, value, createOnlyOrStatus, cb, remarks);
   }
   constructor() {
     super('logs', 'key')
