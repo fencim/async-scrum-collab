@@ -2,7 +2,7 @@
 import draggable from 'vuedraggable';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
 type FilterOption = {
@@ -10,28 +10,22 @@ type FilterOption = {
   value: string;
   display: string;
 };
-const filterOptions = ref<FilterOption[]>([
-  {
-    type: 'Type',
-    display: 'Goal',
-    value: 'goal',
-  },
-]);
-function getBacklog() {
-  const backlog = (discussionStore.productBacklog.tasks || []).filter(
-    (task) => {
-      if (!keywords.value || keywords.value.length == 0) return true;
-      return keywords.value.find(
-        (f) =>
-          (f.type == 'Type' && task.type == f.value) ||
-          (f.type == 'Iteration' &&
-            ((typeof task.iteration == 'object' &&
-              task.iteration.key == f.value) ||
-              f.value == task.iteration))
-      );
-    }
-  );
-  filterOptions.value = backlog.reduce((p, c) => {
+
+const backlog = computed(() => {
+  return (discussionStore.productBacklog.tasks || []).filter((task) => {
+    if (!keywords.value || keywords.value.length == 0) return true;
+    return keywords.value.find(
+      (f) =>
+        (f.type == 'Type' && task.type == f.value) ||
+        (f.type == 'Iteration' &&
+          ((typeof task.iteration == 'object' &&
+            task.iteration.key == f.value) ||
+            f.value == task.iteration))
+    );
+  });
+});
+const filterOptions = computed(() => {
+  return backlog.value.reduce((p, c) => {
     const iteration = typeof c.iteration == 'object' ? c.iteration : undefined;
     if (
       typeof iteration == 'object' &&
@@ -52,13 +46,12 @@ function getBacklog() {
     }
     return p;
   }, [] as FilterOption[]);
-  return backlog;
-}
+});
 </script>
 <template>
   <draggable
     class="col kanban-task-list dragArea list-group"
-    :list="getBacklog()"
+    :list="backlog"
     group="tasks"
     item-key="key"
   >

@@ -25,6 +25,9 @@ const showDetails = ref(false);
       {{ formatKey(task.key || 'KEY') }}
     </q-btn>
     <q-space />
+    <q-badge class="q-mr-xs" v-if="task.doneDate" dense color="primary">{{
+      task.doneDate
+    }}</q-badge>
     <recent-active-members
       v-if="typeof task.assignedTo == 'object'"
       :profiles="[task.assignedTo]"

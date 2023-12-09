@@ -46,15 +46,21 @@ export const useProfilesStore = defineStore('Profiles', {
       }
       if (this.theUser) {
         return new Promise(async (resolve) => {
+          const timeout = setTimeout(() => {
+            cleanUp();
+            resolve(undefined);
+          }, 5000)
           await logsResource.setData('', {
             type: 'auth-logout',
             username: this.theUser!.email || this.theUser!.key,
           }, undefined, async (info) => {
+            clearTimeout(timeout);
             if (info.status == 'synced') {
               await cleanUp();
               resolve(undefined);
             }
           })
+
         }).catch(() => cleanUp())
 
       }
@@ -89,6 +95,11 @@ export const useProfilesStore = defineStore('Profiles', {
     },
     async get(key: string) {
       return this.profiles.find(p => p.key == key) || profileResource.findOne({ key });
+    },
+    fromKeys(keys: string[]) {
+      return (keys.map(key => {
+        return this.profiles.find(p => p.key == key);
+      })).filter(p => p) as IProfile[];
     },
     async selectProjectMembers(members: string[]) {
       const profiles = (await Promise.all(members.map(async (m) => {

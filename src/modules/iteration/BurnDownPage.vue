@@ -1,17 +1,37 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { LineSeriesOption, EChartsOption } from 'echarts';
 import VChart from 'vue-echarts';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { date } from 'quasar';
 import { useRoute } from 'vue-router';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
-import { ICeremony } from 'src/entities';
+import { DiscussionItem, ICeremony, IProfile } from 'src/entities';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { formatKey } from 'src/components/discussion.helper';
+import { convoBus } from '../ceremony/convo-bus';
+import { useActiveStore } from 'src/stores/active.store';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { entityKey } from 'src/entities/base.entity';
 const route = useRoute();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
+const profileStore = useProfilesStore();
+const activeStore = useActiveStore();
+onMounted(async () => {
+  const project = activeStore.activeProject;
+  if (project) {
+    discussionStore.ofProject(project.key);
+  }
+});
+const keywords = ref<null | FilterOption[]>(null);
+type FilterOption = {
+  type: 'Assignee' | 'Type';
+  value: string;
+  display: string;
+};
+
 const iteration =
   iterationStore.activeIteration ||
   iterationStore.iterations.find((i) => i.key == route.params?.iteration);
@@ -22,11 +42,55 @@ const dailyScrums = (
 ).sort((a, b) => {
   return date.getDateDiff(a.start, b.start, 'days');
 });
-const discussions =
-  (iteration &&
-    discussionStore.fromIteration(iteration.projectKey, iteration.key)) ||
-  [];
-const mappedDiscussions = discussions.filter((d) => d.dueDate && d.assignedTo);
+const today = computed(() => new Date());
+const discussions = computed(() => {
+  return (
+    (iteration &&
+      discussionStore.fromIteration(iteration.projectKey, iteration.key)) ||
+    []
+  ).filter((task) => {
+    if (!keywords.value || keywords.value.length == 0) return true;
+    return keywords.value.find(
+      (f) =>
+        (f.type == 'Type' && task.type == f.value) ||
+        (f.type == 'Assignee' &&
+          typeof task.assignees == 'object' &&
+          task.assignees.find((a) => entityKey(a) == f.value))
+    );
+  });
+});
+const filterOptions = computed(() => {
+  return discussions.value.reduce((p, c) => {
+    const isAssigneesObj =
+      Array.isArray(c.assignees) && typeof c.assignees[0] == 'object';
+    const assigneees = isAssigneesObj
+      ? (c.assignees as IProfile[])
+      : (profileStore.fromKeys((c.assignees as string[]) || []) as IProfile[]);
+    assigneees?.forEach((assignee) => {
+      if (
+        typeof assigneees == 'object' &&
+        !p.find((o) => o.type == 'Assignee' && o.value == assignee.key)
+      ) {
+        p.push({
+          type: 'Assignee',
+          value: assignee.key,
+          display: assignee.name,
+        });
+      }
+    });
+    if (c.type && !p.find((o) => o.type == 'Type' && o.value == c.type)) {
+      p.push({
+        type: 'Type',
+        value: c.type,
+        display: c.type.replace(/^\w/, (m) => m.toUpperCase()),
+      });
+    }
+    return p;
+  }, [] as FilterOption[]);
+});
+const mappedDiscussions = computed(() => {
+  return discussions.value.filter((d) => d.dueDate && d.assignedTo);
+});
 const loading = ref(false);
 const startDate = iteration && date.formatDate(iteration.start, 'YYYY/MM/DD');
 const endDate = iteration && date.formatDate(iteration.end, 'YYYY/MM/DD');
@@ -68,24 +132,23 @@ const xAxis = (() => {
     }
   });
 })();
-const totalPoints = mappedDiscussions.reduce(
-  (p, c) => (c.complexity || 0) + p,
-  0
-);
-const planned = (() => {
-  let remainingPts = totalPoints;
+const totalPoints = computed(() => {
+  return mappedDiscussions.value.reduce((p, c) => (c.complexity || 0) + p, 0);
+});
+const planned = computed(() => {
+  let remainingPts = totalPoints.value;
   return workDays.map((workday, i) => {
-    const tasks = mappedDiscussions.filter(
+    const tasks = mappedDiscussions.value.filter(
       (d) => d.dueDate && date.getDateDiff(workday, d.dueDate, 'days') == 0
     );
     const subTotalPts = tasks.reduce((p, c) => (c.complexity || 0) + p, 0);
     remainingPts -= subTotalPts;
     return Math.round(remainingPts);
   });
-})();
-const ideal = (() => {
-  let remainingPts = totalPoints;
-  const idealDailyBurn = totalPoints / daysCount;
+});
+const ideal = computed(() => {
+  let remainingPts = totalPoints.value;
+  const idealDailyBurn = totalPoints.value / daysCount;
   return workDays.map((d, i) => {
     const standUpMeeting = dailyScrums.find(
       (c) => date.getDateDiff(d, c.start, 'days') == 0
@@ -96,71 +159,196 @@ const ideal = (() => {
     const burn = remainingPts;
     return burn;
   });
-})();
-let totalCompleted = 0;
-const actual = (() => {
-  let remainingPts = totalPoints;
+});
+const totalCompleted = ref(0);
+const actual = computed(() => {
+  let remainingPts = totalPoints.value;
   const now = new Date();
-  return workDays.map((workday, i) => {
-    if (date.getDateDiff(workday, now, 'days') <= 0) {
-      return undefined;
-    }
-    const compleltedTasks = discussions.filter(
-      (d) => d.doneDate && date.getDateDiff(workday, d.doneDate, 'days') == 0
-    );
-    const subTotalPts = compleltedTasks.reduce(
-      (p, c) => (c.complexity || 0) + p,
-      0
-    );
-    totalCompleted += subTotalPts;
-    remainingPts -= subTotalPts;
-    return Math.round(remainingPts);
-  });
-})().filter((d) => typeof d !== 'undefined');
+  return workDays
+    .map((workday, i) => {
+      if (date.getDateDiff(workday, now, 'days') > 0) {
+        return undefined;
+      }
+      const compleltedTasks = discussions.value.filter(
+        (d) => d.doneDate && date.getDateDiff(workday, d.doneDate, 'days') == 0
+      );
+      const subTotalPts = compleltedTasks.reduce(
+        (p, c) => (c.complexity || 0) + p,
+        0
+      );
+      totalCompleted.value += subTotalPts;
+      remainingPts -= subTotalPts;
+      return Math.round(remainingPts);
+    })
+    .filter((d) => typeof d !== 'undefined');
+});
+const plannedTasks = computed(() => {
+  return mappedDiscussions.value.reduce((p, c) => {
+    const dueDate = date.formatDate(c.dueDate!, 'YYYY/MM/DD');
+    const exist = p[dueDate] || [];
+    exist.push(c);
+    p[dueDate] = exist;
+    return p;
+  }, {} as { [date: string]: DiscussionItem[] });
+});
+const completedTasks = computed(() => {
+  return mappedDiscussions.value
+    .filter((t) => t.doneDate)
+    .reduce((p, c) => {
+      const dueDate = date.formatDate(c.doneDate!, 'YYYY/MM/DD');
+      const exist = p[dueDate] || [];
+      exist.push(c);
+      p[dueDate] = exist;
+      return p;
+    }, {} as { [date: string]: DiscussionItem[] });
+});
 
-const chartOptions = ref<EChartsOption>({
-  title: {},
-  legend: {},
-  xAxis: {
-    type: 'category',
-    data: xAxis,
-  },
-  yAxis: {
-    type: 'value',
-  },
-  tooltip: {
-    trigger: 'axis',
-  },
-  series: [
-    {
-      type: 'line',
-      name: 'Ideal',
-      label: 'Ideal',
-      data: ideal,
-    } as LineSeriesOption,
-    {
-      type: 'line',
-      name: 'Planned',
-      label: 'Planned',
-      data: planned,
-    } as LineSeriesOption,
-    {
-      type: 'line',
-      name: 'Actual',
-      label: 'Actual',
-      data: actual,
-    } as LineSeriesOption,
-  ],
+function plannedPtsOnDay(d: Date) {
+  const tasks = plannedTasks.value[date.formatDate(d, 'YYYY/MM/DD')] || [];
+  return tasks.reduce((p, c) => (c.complexity || 0) + p, 0);
+}
+
+const chartOptions = computed<EChartsOption>(() => {
+  return {
+    title: {},
+    legend: {},
+    xAxis: {
+      type: 'category',
+      data: xAxis,
+    },
+    yAxis: {
+      type: 'value',
+    },
+    tooltip: {
+      trigger: 'axis',
+    },
+    series: [
+      {
+        type: 'line',
+        name: 'Ideal',
+        label: 'Ideal',
+        data: ideal.value,
+      } as LineSeriesOption,
+      {
+        type: 'line',
+        name: 'Planned',
+        label: 'Planned',
+        data: planned.value,
+      } as LineSeriesOption,
+      {
+        type: 'line',
+        name: 'Actual',
+        label: 'Actual',
+        data: actual.value,
+      } as LineSeriesOption,
+    ],
+  };
 });
 </script>
 <template>
-  <div>
+  <div class="row">
+    <q-select
+      class="q-pa-sm col-12"
+      dense
+      filled
+      v-model="keywords"
+      use-input
+      use-chips
+      hide-dropdown-icon
+      multiple
+      :options="filterOptions"
+      input-debounce="0"
+    >
+      <template #selected-item="{ opt, removeAtIndex, index }">
+        <q-chip
+          v-if="keywords"
+          dense
+          removable
+          text-color="primary"
+          class="q-my-none q-ml-xs q-mr-none"
+          @remove="removeAtIndex(index)"
+        >
+          {{ opt.type }} : {{ opt.display }}
+        </q-chip>
+        <q-badge v-else>*none*</q-badge>
+      </template>
+      <template #option="{ opt, itemProps }">
+        <q-item v-bind="itemProps">
+          <q-item-section>
+            <q-item-label caption>{{ opt.type }}</q-item-label>
+            <q-item-label>{{ opt.display }}</q-item-label>
+          </q-item-section>
+        </q-item>
+      </template>
+    </q-select>
     <VChart
-      class="col-6"
+      class="col-12"
       :option="chartOptions"
       autoresize
       :style="{ height: '500px' }"
       :loading="loading"
     />
+  </div>
+  <div class="row q-px-xl">
+    <div
+      class="col row q-px-xs"
+      v-for="workday in workDays"
+      :key="workday.getTime()"
+    >
+      <q-chip class="col-12 text-center"
+        >{{ date.formatDate(workday, 'MMM DD') }} ({{
+          plannedPtsOnDay(workday)
+        }})</q-chip
+      >
+    </div>
+  </div>
+  <div class="row q-px-xl">
+    <div class="col-12 text-title">
+      Planned
+      <q-separator />
+    </div>
+    <div
+      class="col row q-px-xs"
+      v-for="workday in workDays"
+      :key="workday.getTime()"
+    >
+      <q-chip
+        v-for="task in plannedTasks[date.formatDate(workday, 'YYYY/MM/DD')]"
+        :key="task.key"
+        :color="
+          (task.doneDate && date.getDateDiff(task.dueDate!, today, 'days') >= 0) ||
+          (!task.doneDate && date.getDateDiff(task.dueDate!, today, 'days') >= 0)
+            ? 'secondary'
+            : 'negative'
+        "
+        class="col-12"
+        dense
+        clickable
+        @click="convoBus.emit('viewTask', task)"
+        >{{ formatKey(task.key) }}<q-space />{{ task.complexity }}</q-chip
+      >
+    </div>
+  </div>
+  <div class="row q-px-xl">
+    <div class="col-12 text-title">
+      Actual
+      <q-separator />
+    </div>
+    <div
+      class="col row q-px-xs"
+      v-for="workday in workDays"
+      :key="workday.getTime()"
+    >
+      <q-chip
+        v-for="task in completedTasks[date.formatDate(workday, 'YYYY/MM/DD')]"
+        :key="task.key"
+        dense
+        :color="!task.dueDate || date.getDateDiff(task.dueDate!, task.doneDate!, 'days') >=0 ? 'primary': 'negative'"
+        class="col-12"
+        clickable
+        @click="convoBus.emit('viewTask', task)"
+        >{{ formatKey(task.key) }}<q-space />{{ task.complexity }}</q-chip
+      >
+    </div>
   </div>
 </template>
