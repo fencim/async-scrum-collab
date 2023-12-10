@@ -1,17 +1,20 @@
 <script lang="ts" setup>
 import { DiscussionItem } from 'src/entities';
-import { PropType, ref } from 'vue';
+import { PropType, computed, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 import RecentActiveMembers from './RecentActiveMembers.vue';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { date } from 'quasar';
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
+const today = computed(() => date.formatDate(new Date(), 'YYYY/MM/DD'));
 defineProps({
   mini: Boolean,
   maxed: Boolean,
   noAction: Boolean,
+  headerOnly: Boolean,
   task: {
     required: true,
     type: Object as PropType<DiscussionItem>,
@@ -21,13 +24,36 @@ const showDetails = ref(false);
 </script>
 <template>
   <div class="row">
-    <q-btn flat dense @click="convoBus.emit('viewTask', task)">
+    <q-btn
+      class="text-bold"
+      flat
+      dense
+      @click="convoBus.emit('viewTask', task)"
+    >
       {{ formatKey(task.key || 'KEY') }}
     </q-btn>
+    <div v-if="headerOnly" class="self-center">
+      <slot name="title" />
+    </div>
     <q-space />
-    <q-badge class="q-mr-xs" v-if="task.doneDate" dense color="primary">{{
-      task.doneDate
-    }}</q-badge>
+    <q-badge
+      floating
+      rounded
+      v-if="headerOnly && typeof task.iteration == 'object'"
+      dense
+      >{{ task.iteration.name || task.iteration }}</q-badge
+    >
+    <q-badge
+      class="q-mr-xs self-center"
+      v-if="task.doneDate"
+      dense
+      :color="
+          (date.getDateDiff(task.dueDate!, task.doneDate, 'days') >= 0)
+            ? 'primary'
+            : 'negative'
+        "
+      >{{ date.formatDate(task.doneDate, 'MMM DD') }}</q-badge
+    >
     <recent-active-members
       v-if="typeof task.assignedTo == 'object'"
       :profiles="[task.assignedTo]"
@@ -50,7 +76,7 @@ const showDetails = ref(false);
       />
     </q-btn-dropdown>
   </div>
-  <q-card-section class="q-px-sm no-shadow">
+  <q-card-section v-if="!headerOnly" class="q-px-sm no-shadow">
     <div class="row full-width">
       <div class="col self-center">
         <slot name="title" />
@@ -60,7 +86,7 @@ const showDetails = ref(false);
       </div>
     </div>
   </q-card-section>
-  <div>
+  <div v-if="!headerOnly">
     <div
       class="row q-px-sm full-width justify-end q-py-xs"
       v-if="!!$slots['details'] && (showDetails || maxed || !mini)"
@@ -78,7 +104,7 @@ const showDetails = ref(false);
     </div>
   </div>
   <q-btn
-    v-if="!$slots['dropdown'] && !noAction"
+    v-if="!$slots['dropdown'] && !noAction && !headerOnly"
     class="float-right vertical-middle"
     @click="showDetails = !showDetails"
     size="xs"

@@ -33,10 +33,9 @@
       </div>
       <recent-active-members :profiles="members" />
     </q-toolbar-title>
-    <div>
-      <the-synchronizer />
-      <the-present-user />
-    </div>
+
+    <the-synchronizer />
+    <the-present-user />
   </q-toolbar>
 </template>
 

@@ -126,6 +126,7 @@ function taskMoved(
                 <component
                   :is="getComponent(element)"
                   :task="element"
+                  header-only
                   @task-moved="
             (issue:DiscussionItem, col?:ISprintBoardColumn, iteration?:string) =>
             taskMoved(issue, col, iteration)

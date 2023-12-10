@@ -24,10 +24,17 @@ const props = defineProps({
   mini: Boolean,
   maxed: Boolean,
   noAction: Boolean,
+  headerOnly: Boolean,
 });
 </script>
 <template>
-  <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
+  <base-card
+    :header-only="headerOnly"
+    :maxed="maxed"
+    :mini="mini"
+    :no-action="noAction"
+    :task="task"
+  >
     <template #title>
       <div v-if="!mini">
         <div>

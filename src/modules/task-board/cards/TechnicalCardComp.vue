@@ -1,16 +1,13 @@
 <script lang="ts" setup>
 import BaseCard from 'src/components/BaseCardComponent.vue';
-import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import CommonCardAction from './CommonCardActionComp.vue';
 
 import {
   DiscussionItem,
   ISprintBoardColumn,
-  IStory,
   TechnicalTask,
 } from 'src/entities';
 import { PropType } from 'vue';
-import { getProfiles } from './card-helpers';
 import CommonCardFooterComp from './CommonCardFooterComp.vue';
 defineEmits<{
   (
@@ -29,10 +26,17 @@ defineProps({
   mini: Boolean,
   maxed: Boolean,
   noAction: Boolean,
+  headerOnly: Boolean,
 });
 </script>
 <template>
-  <base-card :maxed="maxed" :mini="mini" :no-action="noAction" :task="task">
+  <base-card
+    :header-only="headerOnly"
+    :maxed="maxed"
+    :mini="mini"
+    :no-action="noAction"
+    :task="task"
+  >
     <template #title>
       {{ task.description }}
     </template>

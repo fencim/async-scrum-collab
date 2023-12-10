@@ -96,7 +96,12 @@ const filterOptions = computed(() => {
         class="list-group-item q-ma-sm q-pa-sm board-card no-shadow"
         :class="element.type + '-card'"
       >
-        <component :is="getComponent(element)" :task="element" mini />
+        <component
+          :is="getComponent(element)"
+          :task="element"
+          :header-only="$q.screen.lt.md"
+          mini
+        />
       </q-card>
     </template>
   </draggable>
