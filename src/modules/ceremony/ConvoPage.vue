@@ -1,14 +1,18 @@
 <template>
   <q-page class="justify-between q-pa-sm column q-pb-xl">
     <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
-    <q-infinite-scroll reverse id="messages-container">
+    <q-infinite-scroll
+      @load="(i, done) => done()"
+      reverse
+      id="messages-container"
+    >
       <template v-slot:loading>
         <div class="row justify-center q-my-md">
           <q-spinner color="primary" name="dots" size="40px" />
         </div>
       </template>
 
-      <div v-for="m in messages()" :key="m.key" :id="m.key">
+      <div v-for="m in messages" :key="m.key" :id="m.key">
         <chat-message
           v-if="m.type == 'message'"
           :msg="m"
@@ -216,6 +220,15 @@ export default defineComponent({
     await nextTick();
     this.scrollToBottom();
   },
+  computed: {
+    messages() {
+      if (discussionStore.activeDiscussion) {
+        const active = discussionStore.activeDiscussion;
+        return convoStore.convo.filter((m) => m.discussion == active.key);
+      }
+      return convoStore.convo;
+    },
+  },
   methods: {
     asFromAvatar(msg: Convo | undefined) {
       return typeof msg?.from == 'object' ? msg?.from.avatar : '';
@@ -258,13 +271,7 @@ export default defineComponent({
       this.assesItem();
       convoStore.ofDiscussion(this.activeProject, this.activeItem);
     },
-    messages() {
-      if (discussionStore.activeDiscussion) {
-        const active = discussionStore.activeDiscussion;
-        return convoStore.convo.filter((m) => m.discussion == active.key);
-      }
-      return convoStore.convo;
-    },
+
     async sendMessage() {
       if (this.askingQuestion) {
         convoStore.sendMessage(
@@ -470,7 +477,7 @@ export default defineComponent({
         msg.feedback = { ...msg.feedback } || {};
         msg.feedback[profileStore.presentUser?.key] = resolution;
         await convoStore.saveConvo({ ...msg });
-        const messages = this.messages();
+        const messages = this.messages;
         let qMsg = messages.find((m) => m.key == msg.ref);
         while (qMsg && qMsg.type != 'question' && resolution == 'agree') {
           if (qMsg.type == 'response' && qMsg.ref) {

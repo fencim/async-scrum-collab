@@ -6,6 +6,21 @@ import { DocStatus } from 'src/resources';
 import { webStatusService } from 'src/services/web-status.service';
 import { AccessStatus, firebaseService } from 'src/services/firebase.service';
 
+export interface IResourceStatus {
+  module: string,
+  entity: string,
+  total: number;
+  synched: number;
+  saved?: number;
+  updated?: number;
+  patched?: number;
+  deleted?: number;
+  error: number;
+  createError?: number;
+  updatedError?: number;
+  patchedError?: number;
+  deletedError?: number;
+}
 const synchronizerWorker = new SynchronizerWorker();
 
 function postMessage(event: SynchronizerRequestEventNames, data?: any) {
@@ -16,6 +31,7 @@ function postMessage(event: SynchronizerRequestEventNames, data?: any) {
 }
 
 class SynchronizerConnection {
+  updateCb?: (update: IResourceStatus) => void;
   resumeSynching(module?: string, entity?: string) {
     postMessage('resumeSynching', { module, entity });
   }
@@ -50,7 +66,7 @@ synchronizerWorker.addEventListener(
       //   from: 'synchronizer',
       // });
     } else if (message.event == 'syncStatus') {
-      //$store.ref.commit('synchronizer/setStatusOf', message.data);
+      synchronizerConnection.updateCb?.call(synchronizerConnection, message.data);
     } else if (message.event == 'docStatusChanged') {
       const info = message.data as {
         subject: string;

@@ -1,20 +1,6 @@
 import { defineStore } from 'pinia';
-import { synchronizerConnection } from 'src/workers/synchronizer/synchronizer.connection';
-export interface IResourceStatus {
-  module: string,
-  entity: string,
-  total: number;
-  synched: number;
-  saved?: number;
-  updated?: number;
-  patched?: number;
-  deleted?: number;
-  error: number;
-  createError?: number;
-  updatedError?: number;
-  patchedError?: number;
-  deletedError?: number;
-}
+import { IResourceStatus, synchronizerConnection } from 'src/workers/synchronizer/synchronizer.connection';
+
 
 interface ISynchronizerState {
   resources: IResourceStatus[];
@@ -72,5 +58,17 @@ export const useSynchronizerStore = defineStore('synchronizerStore', {
     retrySynching(payload?: { module?: string, entity?: string }) {
       synchronizerConnection.retrySynching(payload);
     },
+    setStatusOf(update: IResourceStatus) {
+      const index = this.resources.findIndex((r) => (r.module == update.module && r.entity == update.entity));
+      if (index >= 0) {
+        this.resources[0] = update;
+      } else {
+        this.resources.push(update);
+      }
+    },
   }
 });
+synchronizerConnection.updateCb = (update) => {
+  const instance = useSynchronizerStore();
+  instance.setStatusOf(update);
+}

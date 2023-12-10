@@ -41,7 +41,7 @@ function formatDate(d: string) {
       task.priority || 'P1'
     }}</q-badge>
     <q-chip clickable dense :color="task.dueDate ? 'secondary' : 'negative'"
-      >{{ formatDate(task.dueDate) || 'ND' }}
+      >{{ (task.dueDate && formatDate(task.dueDate)) || 'ND' }}
       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
         <q-date v-model="dueDate" :options="withInIterationOnly">
           <div class="row items-center justify-end">

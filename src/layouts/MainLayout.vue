@@ -49,7 +49,7 @@
       </q-dialog>
     </q-page-container>
     <TheSynchronizer
-      :byModule="synchronizerStore.byModule"
+      :byModule="byModule"
       :synchingTotal="synchronizerStore.synchingTotal"
       :synchingTotalError="synchronizerStore.synchingTotalError"
     />
@@ -61,7 +61,7 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { useSynchronizerStore } from 'src/stores/synchronizer.store';
 import TheSynchronizer from 'src/components/TheSynchronizer.vue';
-import { onMounted, onUpdated, ref } from 'vue';
+import { computed, onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { DiscussionItem, IIteration, IStory } from 'src/entities';
 import CardDetails from 'src/components/CardDetails.vue';
@@ -80,6 +80,9 @@ onMounted(async () => {
 });
 onUpdated(() => {
   evalDrawers();
+});
+const byModule = computed(() => {
+  return synchronizerStore.byModule;
 });
 const $route = useRoute();
 function evalDrawers() {

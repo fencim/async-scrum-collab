@@ -42,7 +42,7 @@ const dailyScrums = (
 ).sort((a, b) => {
   return date.getDateDiff(a.start, b.start, 'days');
 });
-const today = computed(() => new Date());
+const today = computed(() => date.formatDate(new Date(), 'YYYY/MM/DD'));
 const discussions = computed(() => {
   return (
     (iteration &&
@@ -212,6 +212,15 @@ const chartOptions = computed<EChartsOption>(() => {
   return {
     title: {},
     legend: {},
+    toolbox: {
+      show: true,
+      feature: {
+        saveAsImage: {
+          name: iteration?.name + '-burn-down' || 'burn-down',
+          backgroundColor: 'transparent',
+        },
+      },
+    },
     xAxis: {
       type: 'category',
       data: xAxis,
@@ -316,7 +325,7 @@ const chartOptions = computed<EChartsOption>(() => {
         v-for="task in plannedTasks[date.formatDate(workday, 'YYYY/MM/DD')]"
         :key="task.key"
         :color="
-          (task.doneDate && date.getDateDiff(task.dueDate!, today, 'days') >= 0) ||
+          (task.doneDate && date.getDateDiff(task.dueDate!, task.doneDate, 'days') >= 0) ||
           (!task.doneDate && date.getDateDiff(task.dueDate!, today, 'days') >= 0)
             ? 'secondary'
             : 'negative'
