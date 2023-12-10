@@ -37,6 +37,8 @@
       <recent-active-members :profiles="members" @ctrl-click="setAsUser" />
       <q-linear-progress :value="ceremony?.progress" />
     </q-toolbar-title>
+
+    <the-synchronizer />
     <hour-glass v-if="ceremony" :start="ceremony.start" :end="ceremony.end" />
     <the-present-user />
   </q-toolbar>
@@ -55,6 +57,7 @@ import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { ICeremony, IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
 import { useActiveStore } from 'src/stores/active.store';
+import TheSynchronizer from 'src/components/TheSynchronizer.vue';
 
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();
@@ -69,6 +72,7 @@ export default defineComponent({
     HourGlass,
     RecentActiveMembers,
     ThePresentUser,
+    TheSynchronizer,
   },
   data() {
     return {

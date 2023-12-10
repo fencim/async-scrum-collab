@@ -1,128 +1,117 @@
 <template>
-  <q-page-sticky
-    v-if="props.byModule && props.byModule.length > 0"
-    position="bottom-right"
-    :offset="[65, 65]"
-    :style="{ zIndex: 999 }"
+  <q-btn
+    v-if="byModule && byModule.length > 0"
+    data-cy="onViewSync"
+    color="beige"
+    icon="sync"
+    :dense="$q.screen.lt.md"
+    flat
+    round
   >
-    <q-btn
-      data-cy="onViewSync"
-      color="beige"
-      icon="sync"
-      :dense="$q.screen.lt.md"
-      flat
-      round
+    <q-badge
+      v-if="synchingTotal || synchingTotalError"
+      :color="!synchingTotalError ? 'primary' : 'negative'"
+      rounded
+      floating
+      >{{ synchingTotalError || synchingTotal }}
+      <q-tooltip>
+        {{
+          !synchingTotalError
+            ? `${'Synching'} ${synchingTotal}`
+            : `${synchingTotalError} ${'Errors'}`
+        }}
+      </q-tooltip>
+    </q-badge>
+    <q-menu
+      class="text-grey-9 q-pb-sm"
+      transition-show="scale"
+      transition-hide="scale"
+      :offset="[-10, 20]"
+      style="width: 500px"
     >
-      <q-badge
-        v-if="props.synchingTotal || props.synchingTotalError"
-        :color="!props.synchingTotalError ? 'primary' : 'negative'"
-        rounded
-        floating
-        >{{ props.synchingTotalError || props.synchingTotal }}
-        <q-tooltip>
-          {{
-            !props.synchingTotalError
-              ? `${'Synching'} ${props.synchingTotal}`
-              : `${props.synchingTotalError} ${'Errors'}`
-          }}
-        </q-tooltip>
-      </q-badge>
-      <q-menu
-        class="text-grey-9 q-pb-sm"
-        transition-show="scale"
-        transition-hide="scale"
-        :offset="[-10, 20]"
-        style="width: 500px"
-      >
-        <div v-if="props.byModule && props.byModule.length > 0">
-          <div class="q-pr-sm q-pt-sm text-right">
-            <q-icon name="show_chart" size="sm" />
+      <div v-if="byModule && byModule.length > 0">
+        <div class="q-pr-sm q-pt-sm text-right">
+          <q-icon name="show_chart" size="sm" />
+        </div>
+        <div
+          v-for="(syncModule, index) in byModule"
+          :key="index"
+          class="row items-center justify-between"
+        >
+          <div class="q-pl-md col-12 text-capitalize text-h6 text-weight-bold">
+            {{ syncModule.module }}
           </div>
           <div
-            v-for="(syncModule, index) in props.byModule"
-            :key="index"
-            class="row items-center justify-between"
+            v-for="(resource, idx) in syncModule.resources"
+            :key="idx"
+            class="q-pl-xl q-pt-sm col-12 row items-center"
           >
-            <div
-              class="q-pl-md col-12 text-capitalize text-h6 text-weight-bold"
-            >
-              {{ syncModule.module }}
-            </div>
-            <div
-              v-for="(resource, idx) in syncModule.resources"
-              :key="idx"
-              class="q-pl-xl q-pt-sm col-12 row items-center"
-            >
-              <div class="col">
-                <div class="col-12 row items-center justify-between">
-                  <span>{{ resource.entity }}</span>
-                  <div class="col-2 text-caption text-right">
-                    {{ syncPercent(resource.synched, resource.total) }}%
-                  </div>
-                </div>
-                <div class="q-my-xs col-12">
-                  <q-linear-progress
-                    rounded
-                    :value="syncProgress(resource.synched, resource.total)"
-                    :buffer="syncBuffer(resource.error, resource.total)"
-                  />
-                </div>
-                <div
-                  class="col-12 text-caption"
-                  v-if="resource.synched != resource.total"
-                >
-                  {{ resource.synched }} of {{ resource.total }}
-                  {{ 'transaction not synced' }}
-                </div>
-                <div class="col-12 text-caption" v-else>
-                  {{ 'all synched' }} ({{ resource.synched }})
+            <div class="col">
+              <div class="col-12 row items-center justify-between">
+                <span>{{ resource.entity }}</span>
+                <div class="col-2 text-caption text-right">
+                  {{ syncPercent(resource.synched, resource.total) }}%
                 </div>
               </div>
-              <div class="col-2 text-center">
-                <q-btn
-                  @click="
-                    synchronizerStore.retrySynching({
-                      module: resource.module,
-                      entity: resource.entity,
-                    })
-                  "
-                  color="grey-9"
-                  icon="sync"
-                  dense
-                  flat
-                  round
-                >
-                  <q-badge
-                    v-if="resource.error"
-                    :color="'negative'"
-                    rounded
-                    floating
-                    >{{ resource.error }}
-                    <q-tooltip>
-                      {{ `${resource.error} ${'Errors'}` }}
-                    </q-tooltip>
-                  </q-badge>
-                </q-btn>
+              <div class="q-my-xs col-12">
+                <q-linear-progress
+                  rounded
+                  :value="syncProgress(resource.synched, resource.total)"
+                  :buffer="syncBuffer(resource.error, resource.total)"
+                />
+              </div>
+              <div
+                class="col-12 text-caption"
+                v-if="resource.synched != resource.total"
+              >
+                {{ resource.synched }} of {{ resource.total }}
+                {{ 'transaction not synced' }}
+              </div>
+              <div class="col-12 text-caption" v-else>
+                {{ 'all synched' }} ({{ resource.synched }})
               </div>
             </div>
-            <div
-              v-if="props.byModule.length != index + 1"
-              class="col-12 q-my-sm"
-            >
-              <q-separator color="grey-6" />
+            <div class="col-2 text-center">
+              <q-btn
+                @click="
+                  synchronizerStore.retrySynching({
+                    module: resource.module,
+                    entity: resource.entity,
+                  })
+                "
+                color="grey-9"
+                icon="sync"
+                dense
+                flat
+                round
+              >
+                <q-badge
+                  v-if="resource.error"
+                  :color="'negative'"
+                  rounded
+                  floating
+                  >{{ resource.error }}
+                  <q-tooltip>
+                    {{ `${resource.error} ${'Errors'}` }}
+                  </q-tooltip>
+                </q-badge>
+              </q-btn>
             </div>
           </div>
+          <div v-if="byModule.length != index + 1" class="col-12 q-my-sm">
+            <q-separator color="grey-6" />
+          </div>
         </div>
-        <div v-else class="q-pa-md text-primary">
-          {{ 'All data are synced!' }}
-        </div>
-      </q-menu>
-    </q-btn>
-  </q-page-sticky>
+      </div>
+      <div v-else class="q-pa-md text-primary">
+        {{ 'All data are synced!' }}
+      </div>
+    </q-menu>
+  </q-btn>
 </template>
 
 <script setup lang="ts">
-import { PropType } from 'vue';
+import { computed } from 'vue';
 import {
   ISyncByModule,
   useSynchronizerStore,
@@ -131,10 +120,15 @@ import resourceSynchronizer from 'src/workers/synchronizer/resource.synchronizer
 import { useQuasar } from 'quasar';
 const $q = useQuasar();
 const synchronizerStore = useSynchronizerStore();
-const props = defineProps({
-  byModule: Object as PropType<ISyncByModule[]>,
-  synchingTotal: Number,
-  synchingTotalError: Number,
+
+const byModule = computed(() => {
+  return synchronizerStore.byModule;
+});
+const synchingTotal = computed(() => {
+  return synchronizerStore.synchingTotal;
+});
+const synchingTotalError = computed(() => {
+  return synchronizerStore.synchingTotalError;
 });
 resourceSynchronizer.subscribe((info) => {
   const timeout = 3000;

@@ -48,20 +48,13 @@
         />
       </q-dialog>
     </q-page-container>
-    <TheSynchronizer
-      :byModule="byModule"
-      :synchingTotal="synchronizerStore.synchingTotal"
-      :synchingTotalError="synchronizerStore.synchingTotalError"
-    />
   </q-layout>
 </template>
 
 <script lang="ts" setup>
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { useSynchronizerStore } from 'src/stores/synchronizer.store';
-import TheSynchronizer from 'src/components/TheSynchronizer.vue';
-import { computed, onMounted, onUpdated, ref } from 'vue';
+import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { DiscussionItem, IIteration, IStory } from 'src/entities';
 import CardDetails from 'src/components/CardDetails.vue';
@@ -69,7 +62,6 @@ import DiscussionForm from 'src/components/DiscussionForm.vue';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
-const synchronizerStore = useSynchronizerStore();
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);
 
@@ -81,9 +73,7 @@ onMounted(async () => {
 onUpdated(() => {
   evalDrawers();
 });
-const byModule = computed(() => {
-  return synchronizerStore.byModule;
-});
+
 const $route = useRoute();
 function evalDrawers() {
   rightDrawerOpen.value = !!($route.meta && $route.meta.actions);

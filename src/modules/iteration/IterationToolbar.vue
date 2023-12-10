@@ -33,18 +33,10 @@
       </div>
       <recent-active-members :profiles="members" />
     </q-toolbar-title>
-    <q-btn
-      dense
-      round
-      icon="calendar_month"
-      :to="
-        '/' +
-        (activeProject || 'AP') +
-        '/' +
-        (activeIteration || 'AI') +
-        '/today'
-      "
-    />
+    <div>
+      <the-synchronizer />
+      <the-present-user />
+    </div>
   </q-toolbar>
 </template>
 
@@ -56,6 +48,8 @@ import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { date } from 'quasar';
 import { useActiveStore } from 'src/stores/active.store';
+import TheSynchronizer from 'src/components/TheSynchronizer.vue';
+import ThePresentUser from 'src/components/ThePresentUser.vue';
 
 const activeStore = useActiveStore();
 const projectStore = useProjectStore();
@@ -64,7 +58,12 @@ const iterationStore = useIterationStore();
 export default defineComponent({
   name: 'ProjectToolbar',
 
-  components: { ThePresentProject, RecentActiveMembers },
+  components: {
+    ThePresentProject,
+    RecentActiveMembers,
+    TheSynchronizer,
+    ThePresentUser,
+  },
   data() {
     return {
       date,

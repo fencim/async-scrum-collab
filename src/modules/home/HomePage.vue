@@ -1,6 +1,6 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
-    <q-table grid :rows="projectStore.projects">
+    <q-table grid :rows="projectStore.projects" hide-bottom>
       <template v-slot:item="props">
         <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
           <q-card>

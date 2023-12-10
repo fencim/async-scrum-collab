@@ -8,6 +8,7 @@
       </div>
       <recent-active-members :profiles="members" />
     </q-toolbar-title>
+    <the-synchronizer />
     <the-present-user />
   </q-toolbar>
 </template>
@@ -20,12 +21,18 @@ import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { IProject } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
+import TheSynchronizer from 'src/components/TheSynchronizer.vue';
 const projectStore = useProjectStore();
 const activeStore = useActiveStore();
 export default defineComponent({
   name: 'ProjectToolbar',
 
-  components: { ThePresentUser, ThePresentProject, RecentActiveMembers },
+  components: {
+    ThePresentUser,
+    ThePresentProject,
+    RecentActiveMembers,
+    TheSynchronizer,
+  },
   data() {
     return {
       projectStore,

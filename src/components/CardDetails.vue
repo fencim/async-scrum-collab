@@ -16,6 +16,7 @@ import { PropType, computed, onMounted, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 import { getProfiles } from 'src/modules/task-board/cards/card-helpers';
 import RecentActiveMembers from './RecentActiveMembers.vue';
+import { convoBus } from 'src/modules/ceremony/convo-bus';
 const acceptanceCriteriaColumns = [
   {
     name: 'given',
@@ -148,7 +149,14 @@ function asProgress(progress: IProgressFeedback) {
 <template>
   <q-card :style="{ width: $q.screen.sizes.md + 'px' }">
     <q-toolbar>
-      <q-btn flat class="text-h6" dense color="primary">
+      <q-btn
+        flat
+        class="text-h6"
+        dense
+        @click="convoBus.emit('editTask', task)"
+        v-close-popup
+        color="primary"
+      >
         {{ formatKey(task.key || 'KEY') }}
       </q-btn>
       <q-space />
