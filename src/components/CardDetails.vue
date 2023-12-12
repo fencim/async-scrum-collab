@@ -16,7 +16,7 @@ import { PropType, computed, onMounted, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 import { getProfiles } from 'src/modules/task-board/cards/card-helpers';
 import RecentActiveMembers from './RecentActiveMembers.vue';
-import { convoBus } from 'src/modules/ceremony/convo-bus';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 const acceptanceCriteriaColumns = [
   {
     name: 'given',
@@ -153,7 +153,14 @@ function asProgress(progress: IProgressFeedback) {
         flat
         class="text-h6"
         dense
-        @click="convoBus.emit('editTask', task)"
+        @click="
+          TheDialogs.emit({
+            type: 'editTask',
+            arg: {
+              item: task,
+            },
+          })
+        "
         v-close-popup
         color="primary"
       >

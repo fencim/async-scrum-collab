@@ -20,7 +20,7 @@ export const TheWorkflows = {
   off(desc: WorkflowEvents) {
     theBus.off(desc.type);
   },
-  emit(desc: Omit<WorkflowStructs, 'permissions'>) {
+  emit(desc: WorkflowStructs) {
     theBus.emit(desc.type, desc.arg);
   },
 };

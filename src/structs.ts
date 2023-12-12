@@ -1,7 +1,6 @@
-export type Struct<E extends string, A, P = []> = {
+export type Struct<E extends string, A> = {
   type: E,
-  arg: A,
-  permissions: P
+  arg: A
 };
 export type EmitStruct<T extends { type: string; arg: A }, A = T['arg']> = {
   type: T['type'];

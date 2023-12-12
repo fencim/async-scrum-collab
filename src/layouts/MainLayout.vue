@@ -35,16 +35,8 @@
 
     <q-page-container style="padding-right: 56px">
       <router-view />
+      <DiscussionDetailsDialog />
       <DiscussionFormDialog />
-      <q-dialog v-model="showItemTopSheet" :position="'top'">
-        <discussion-form
-          :type="newTaskPreFields.type || 'story'"
-          :status="newTaskPreFields.status || ''"
-          :iteration="newTaskPreFields.iteration"
-          :ref-story="newTaskPreFields.refStory"
-          :item="newTaskPreFields.item"
-        />
-      </q-dialog>
     </q-page-container>
   </q-layout>
 </template>
@@ -54,16 +46,14 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { DiscussionItem, IIteration, IStory } from 'src/entities';
-import DiscussionForm from 'src/components/DiscussionForm.vue';
-import { convoBus } from 'src/modules/ceremony/convo-bus';
 import DiscussionFormDialog from 'src/dialogs/discussion/DiscussionFormDialog.vue';
-const profileStore = useProfilesStore();
-const projectStore = useProjectStore();
+import DiscussionDetailsDialog from 'src/dialogs/discussion/DiscussionDetailsDialog.vue';
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);
 
 onMounted(async () => {
+  const profileStore = useProfilesStore();
+  const projectStore = useProjectStore();
   await profileStore.init();
   await projectStore.init();
   evalDrawers();
@@ -71,44 +61,9 @@ onMounted(async () => {
 onUpdated(() => {
   evalDrawers();
 });
-
 const $route = useRoute();
 function evalDrawers() {
   rightDrawerOpen.value = !!($route.meta && $route.meta.actions);
   leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
 }
-//new discussion
-const newTaskPreFields = ref({
-  item: undefined as DiscussionItem | undefined,
-  type: 'story' as DiscussionItem['type'],
-  status: '',
-  iteration: undefined as IIteration | undefined,
-  refStory: undefined as IStory | undefined,
-});
-const showItemTopSheet = ref(false);
-function editTask(task: DiscussionItem) {
-  newTaskPreFields.value.type = task.type;
-  newTaskPreFields.value.status = task.status || newTaskPreFields.value.status;
-  newTaskPreFields.value.item = task;
-  showItemTopSheet.value = true;
-}
-function newTask(status?: string) {
-  newTaskPreFields.value.type = 'story';
-  newTaskPreFields.value.status = status || newTaskPreFields.value.status;
-  showItemTopSheet.value = true;
-}
-function newSubTask(refStory: IStory) {
-  newTaskPreFields.value.refStory = refStory;
-  newTaskPreFields.value.type = 'task';
-  showItemTopSheet.value = true;
-}
-convoBus.on('newTask', (e) => {
-  newTask(e as string);
-});
-convoBus.on('editTask', (e) => {
-  editTask(e as DiscussionItem);
-});
-convoBus.on('newSubTask', (e) => {
-  newSubTask(e as IStory);
-});
 </script>

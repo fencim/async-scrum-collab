@@ -2,15 +2,11 @@ import { convoBus } from 'src/modules/ceremony/convo-bus';
 import { Struct, ToEmit, ToType } from 'src/structs';
 import { Discussions } from './discussion/definition';
 
-
 export type DialogStructs =
-  | Discussions
-  | Struct<'none', undefined>;
+  | Discussions;
 
 type DialogEvents = ToEmit<DialogStructs, DialogStructs>;
 export type WorkflowTypes = ToType<DialogStructs, DialogStructs>;
-
-
 const theBus = convoBus;
 export const TheDialogs = {
   on(desc: DialogEvents) {
@@ -21,7 +17,7 @@ export const TheDialogs = {
   off(desc: DialogEvents) {
     theBus.off(desc.type);
   },
-  emit(desc: Omit<DialogStructs, 'permissions'>) {
+  emit(desc: DialogStructs) {
     theBus.emit(desc.type, desc.arg);
   },
 };

@@ -74,7 +74,14 @@ function getIterations() {
     />
   </q-btn-dropdown>
   <q-btn
-    @click="convoBus.emit('editTask', task)"
+    @click="
+      TheDialogs.emit({
+        type: 'editTask',
+        arg: {
+          item: task,
+        },
+      })
+    "
     v-close-popup
     round
     icon="edit"

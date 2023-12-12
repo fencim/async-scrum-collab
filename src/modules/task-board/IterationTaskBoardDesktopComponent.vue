@@ -9,6 +9,7 @@ import {
   PlanningItem,
 } from 'src/entities';
 import { convoBus } from '../ceremony/convo-bus';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 defineProps({
   column: {
     required: true,
@@ -58,7 +59,14 @@ async function changeOnColumn(
           :icon="column.icon"
           :color="column.color || 'accent'"
           dense
-          @click="convoBus.emit('newTask', column.key)"
+          @click="
+            TheDialogs.emit({
+              type: 'newTask',
+              arg: {
+                status: column.key,
+              },
+            })
+          "
           >{{ column.name }}</q-btn
         >
       </div>

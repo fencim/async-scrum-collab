@@ -50,7 +50,14 @@
         clickable
         dense
         tag="a"
-        @click="convoBus.emit('newTask', 'story')"
+        @click="
+          TheDialogs.emit({
+            type: 'newTask',
+            arg: {
+              status: '',
+            },
+          })
+        "
       >
         <q-item-section avatar>
           <q-icon name="add" size="sm" />
@@ -87,6 +94,7 @@ export default defineComponent({
   components: { EssentialLink },
   data() {
     return {
+      TheDialogs,
       convoBus,
       discussionStore,
       convoStore,
@@ -169,7 +177,7 @@ export default defineComponent({
     async actOn(action: ActionItem) {
       if (action.key == 'view') {
         const discusssion = await discussionStore.withKey(this.activeItem);
-        TheDialogs.emit({ type: 'viewTask', arg: discusssion });
+        discusssion && TheDialogs.emit({ type: 'viewTask', arg: discusssion });
       } else if (action.key == 'convo') {
         await this.$router.replace({
           name: 'convo',
