@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { DiscussionItem, IProfile, ISprintBoardColumn } from 'src/entities';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 import { useActiveStore } from 'src/stores/active.store';
@@ -52,7 +53,7 @@ function getIterations() {
 <template>
   <q-btn
     v-close-popup
-    @click="convoBus.emit('viewTask', task)"
+    @click="TheDialogs.emit({ type: 'viewTask', arg: task })"
     round
     icon="info"
     size="sm"

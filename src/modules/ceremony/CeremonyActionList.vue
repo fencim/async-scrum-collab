@@ -73,6 +73,7 @@ import { ActionItem } from './ceremony.action-list';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useConvoStore } from 'src/stores/convo.store';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
@@ -168,7 +169,7 @@ export default defineComponent({
     async actOn(action: ActionItem) {
       if (action.key == 'view') {
         const discusssion = await discussionStore.withKey(this.activeItem);
-        convoBus.emit('viewTask', discusssion);
+        TheDialogs.emit({ type: 'viewTask', arg: discusssion });
       } else if (action.key == 'convo') {
         await this.$router.replace({
           name: 'convo',

@@ -2,11 +2,11 @@
 import { DiscussionItem } from 'src/entities';
 import { PropType, computed, ref } from 'vue';
 import { formatKey } from './discussion.helper';
-import { convoBus } from 'src/modules/ceremony/convo-bus';
 import RecentActiveMembers from './RecentActiveMembers.vue';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { date } from 'quasar';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
 defineProps({
@@ -27,7 +27,7 @@ const showDetails = ref(false);
       class="text-bold"
       flat
       dense
-      @click="convoBus.emit('viewTask', task)"
+      @click="TheDialogs.emit({ type: 'viewTask', arg: task })"
     >
       {{ formatKey(task.key || 'KEY') }}
     </q-btn>

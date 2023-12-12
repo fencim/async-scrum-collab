@@ -61,7 +61,9 @@
 <script lang="ts">
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 const profileStore = useProfilesStore();
+
 enum LoginAction {
   none,
   userAndPassword,

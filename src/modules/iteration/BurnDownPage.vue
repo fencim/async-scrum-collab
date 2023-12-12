@@ -14,6 +14,7 @@ import { useActiveStore } from 'src/stores/active.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { entityKey } from 'src/entities/base.entity';
 import draggable from 'vuedraggable';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 const route = useRoute();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
@@ -349,7 +350,7 @@ function updateDueDate(d: string, task: DiscussionItem) {
             class="full-width"
             dense
             clickable
-            @click="convoBus.emit('viewTask', element)"
+            @click="TheDialogs.emit({ type: 'viewTask', arg: element })"
             >{{ formatKey(element.key) }}<q-space />{{
               element.complexity
             }}</q-chip
@@ -376,7 +377,7 @@ function updateDueDate(d: string, task: DiscussionItem) {
         :color="!task.dueDate || date.getDateDiff(task.dueDate!, task.doneDate!, 'days') >=0 ? 'primary': 'negative'"
         class="col-12"
         clickable
-        @click="convoBus.emit('viewTask', task)"
+        @click="TheDialogs.emit({ type: 'viewTask', arg: task })"
         >{{ formatKey(task.key) }}<q-space />{{ task.complexity }}</q-chip
       >
     </div>

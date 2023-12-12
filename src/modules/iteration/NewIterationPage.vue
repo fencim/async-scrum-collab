@@ -92,21 +92,14 @@
 <script lang="ts">
 import { date } from 'quasar';
 import { IIteration, IProject, CeremonyType } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
+import { TheWorkflows } from 'src/workflows/the-workflows';
+import { Schedule } from 'src/workflows/iteration/definition';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
-const ceremonyStore = useCeremonyStore();
-type Schedule = {
-  key: string;
-  desc: string;
-  start: Date;
-  end: Date;
-  check: boolean;
-  type: CeremonyType;
-};
+
 export default defineComponent({
   name: 'IterationPage',
   components: {},
@@ -225,33 +218,32 @@ export default defineComponent({
   methods: {
     async submitNewIteration() {
       this.saving = true;
-      this.theIteration.start = this.range.from;
-      this.theIteration.end = this.range.to;
-      this.theIteration.key =
-        this.activeProjectKey + 'S' + this.iterations.length;
-      this.progressDetails = 'Saving Iteration Details';
-      await iterationStore.saveIteration(this.theIteration);
-      this.progress = 0.2;
-      if (this.scheduleCeremonies) {
-        for (let index = 0; index < this.planSched.length; index++) {
-          this.progress = 0.2 + 0.8 * (index / this.planSched.length);
-          const sched = this.planSched[index];
-          if (!sched.check) continue;
-          this.progressDetails = 'Scheduling ' + sched.desc;
-          await ceremonyStore.saveCeremony({
-            key: sched.key,
-            projectKey: this.theIteration.projectKey,
-            discussions: [],
-            start: date.formatDate(sched.start),
-            end: date.formatDate(sched.end),
-            type: sched.type,
-            iterationKey: this.theIteration.key,
-          });
-        }
-      }
-      this.$router.replace(
-        `/${this.activeProjectKey}/` + this.theIteration.key
-      );
+      TheWorkflows.emit({
+        type: 'createIteration',
+        arg: {
+          details: {
+            start: this.range.from,
+            end: this.range.to,
+            projectKey: this.activeProjectKey,
+            name: this.theIteration.name,
+          },
+          ceremonies: this.scheduleCeremonies ? this.planSched : [],
+          progress: (progress, details) => {
+            this.progress = progress;
+            this.progressDetails = details || this.progressDetails;
+          },
+          done: (iteration) => {
+            this.saving = false;
+            this.$router.replace({
+              name: 'iteration',
+              params: {
+                project: this.activeProjectKey,
+                iteration: iteration.key,
+              },
+            });
+          },
+        },
+      });
     },
   },
 });

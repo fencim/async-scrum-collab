@@ -35,9 +35,7 @@
 
     <q-page-container style="padding-right: 56px">
       <router-view />
-      <q-dialog v-model="showItemBottomSheet" :position="'bottom'">
-        <card-details v-if="selectedItem" :item="selectedItem" />
-      </q-dialog>
+      <DiscussionFormDialog />
       <q-dialog v-model="showItemTopSheet" :position="'top'">
         <discussion-form
           :type="newTaskPreFields.type || 'story'"
@@ -57,9 +55,9 @@ import { useProjectStore } from 'src/stores/projects.store';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { DiscussionItem, IIteration, IStory } from 'src/entities';
-import CardDetails from 'src/components/CardDetails.vue';
 import DiscussionForm from 'src/components/DiscussionForm.vue';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
+import DiscussionFormDialog from 'src/dialogs/discussion/DiscussionFormDialog.vue';
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
 const leftDrawerOpen = ref(false);
@@ -79,16 +77,6 @@ function evalDrawers() {
   rightDrawerOpen.value = !!($route.meta && $route.meta.actions);
   leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
 }
-//dialogs
-const selectedItem = ref<undefined | DiscussionItem>();
-const showItemBottomSheet = ref(false);
-function viewTaskDetails(issue: DiscussionItem) {
-  selectedItem.value = issue;
-  showItemBottomSheet.value = true;
-}
-convoBus.on('viewTask', (e) => {
-  viewTaskDetails(e as DiscussionItem);
-});
 //new discussion
 const newTaskPreFields = ref({
   item: undefined as DiscussionItem | undefined,
