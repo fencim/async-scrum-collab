@@ -9,7 +9,6 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { date } from 'quasar';
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
-const today = computed(() => date.formatDate(new Date(), 'YYYY/MM/DD'));
 defineProps({
   mini: Boolean,
   maxed: Boolean,

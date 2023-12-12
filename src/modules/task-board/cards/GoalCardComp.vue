@@ -1,10 +1,8 @@
 <script lang="ts" setup>
 import BaseCard from 'src/components/BaseCardComponent.vue';
-import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import CommonCardAction from './CommonCardActionComp.vue';
 import { DiscussionItem, IGoal, ISprintBoardColumn } from 'src/entities';
-import { PropType, ref } from 'vue';
-import { getProfiles } from './card-helpers';
+import { PropType } from 'vue';
 import CommonCardFooterComp from './CommonCardFooterComp.vue';
 
 defineEmits<{

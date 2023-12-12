@@ -6,7 +6,6 @@ import {
   DiscussionItem,
   IIteration,
   ISprintBoardColumn,
-  IStory,
   PlanningItem,
 } from 'src/entities';
 import { convoBus } from '../ceremony/convo-bus';

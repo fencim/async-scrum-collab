@@ -13,6 +13,7 @@ import { convoBus } from '../ceremony/convo-bus';
 import { useActiveStore } from 'src/stores/active.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { entityKey } from 'src/entities/base.entity';
+import draggable from 'vuedraggable';
 const route = useRoute();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
@@ -253,6 +254,25 @@ const chartOptions = computed<EChartsOption>(() => {
     ],
   };
 });
+async function moveDue(
+  d: Date,
+  change: {
+    added?: { newIndex: number; element: DiscussionItem };
+    removed: { oldIndex: number; element: DiscussionItem };
+    moved: { newIndex: number; oldIndex: number; element: DiscussionItem };
+  }
+) {
+  if (change.added) {
+    const issue = { ...change.added.element } as DiscussionItem;
+    return updateDueDate(date.formatDate(d, 'YYYY/MM/DD'), issue);
+  }
+}
+function updateDueDate(d: string, task: DiscussionItem) {
+  return useDiscussionStore().saveDiscussion({
+    ...task,
+    dueDate: d,
+  });
+}
 </script>
 <template>
   <div class="row">
@@ -304,40 +324,41 @@ const chartOptions = computed<EChartsOption>(() => {
       v-for="workday in workDays"
       :key="workday.getTime()"
     >
-      <q-chip class="col-12 text-center"
-        >{{ date.formatDate(workday, 'MMM DD') }} ({{
-          plannedPtsOnDay(workday)
-        }})</q-chip
+      <draggable
+        class="col kanban-task-list dragArea list-group"
+        :list="plannedTasks[date.formatDate(workday, 'YYYY/MM/DD')] || []"
+        group="tasks"
+        item-key="key"
+        @change="(e) => moveDue(workday, e)"
       >
-    </div>
-  </div>
-  <div class="row q-px-xl">
-    <div class="col-12 text-title">
-      Planned
-      <q-separator />
-    </div>
-    <div
-      class="col row q-px-xs"
-      v-for="workday in workDays"
-      :key="workday.getTime()"
-    >
-      <q-chip
-        v-for="task in plannedTasks[date.formatDate(workday, 'YYYY/MM/DD')]"
-        :key="task.key"
-        :color="
-          (task.doneDate && date.getDateDiff(task.dueDate!, task.doneDate, 'days') >= 0) ||
-          (!task.doneDate && date.getDateDiff(task.dueDate!, today, 'days') >= 0)
+        <template #header>
+          <q-chip class="text-center full-width"
+            >{{ date.formatDate(workday, 'MMM DD') }} ({{
+              plannedPtsOnDay(workday)
+            }})</q-chip
+          >
+        </template>
+        <template #item="{ element }">
+          <q-chip
+            :color="
+          (element.doneDate && date.getDateDiff(element.dueDate!, element.doneDate, 'days') >= 0) ||
+          (!element.doneDate && date.getDateDiff(element.dueDate!, today, 'days') >= 0)
             ? 'secondary'
             : 'negative'
         "
-        class="col-12"
-        dense
-        clickable
-        @click="convoBus.emit('viewTask', task)"
-        >{{ formatKey(task.key) }}<q-space />{{ task.complexity }}</q-chip
-      >
+            class="full-width"
+            dense
+            clickable
+            @click="convoBus.emit('viewTask', element)"
+            >{{ formatKey(element.key) }}<q-space />{{
+              element.complexity
+            }}</q-chip
+          >
+        </template>
+      </draggable>
     </div>
   </div>
+
   <div class="row q-px-xl">
     <div class="col-12 text-title">
       Actual

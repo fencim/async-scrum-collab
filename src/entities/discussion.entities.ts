@@ -1,5 +1,6 @@
 import { IBaseEntity } from './base.entity';
 import { IIteration } from './iteration.entities';
+import { IMedia } from './media.entities';
 import { IProfile } from './profile.entities';
 import { IBoardColumn } from './project.entities';
 export interface IDiscussion extends IBaseEntity {
@@ -25,6 +26,7 @@ export interface IDiscussion extends IBaseEntity {
   //relations
   parrent?: string | DiscussionItem;
   relatesTo?: (string | DiscussionItem)[];
+  dependents?: (string | DiscussionItem)[];
 }
 
 export interface IGoal extends IDiscussion {
@@ -33,7 +35,7 @@ export interface IGoal extends IDiscussion {
 }
 export interface IObjective extends IDiscussion {
   type: 'objective';
-  goalKey: string;
+  goal: string | IGoal;
   description: string;
   specifics?: string;
   mesures?: string;
@@ -50,6 +52,7 @@ export interface IAcceptanceCriteria {
 }
 export interface IFeature extends IDiscussion {
   type: 'Feature';
+  forObjective?: string | IObjective;
   description: string;
   businessValue: number;
 }
@@ -117,3 +120,15 @@ export interface ISprintBoardColumn extends IBoardColumn {
 }
 
 export interface IProgressFeedback { progress: number; feedback: string }
+
+export interface IDiscusssionMail {
+  from: string | IProfile;
+  recepient: string | IProfile;
+  to: (string | IProfile)[];
+  subject: string;
+  message: string;
+  dateSent: string;
+  attachments: (string | IMedia)[];
+  dateRead?: string;
+  reference?: string | DiscussionItem
+}

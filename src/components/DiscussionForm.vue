@@ -59,7 +59,7 @@
           emit-value
           label="Goal"
           map-options
-          v-model="theDiscussion.goalKey"
+          v-model="theDiscussion.goal"
           :options="discussions.filter((d) => d.type == 'goal')"
           :option-label="describeDiscussion"
           option-value="key"

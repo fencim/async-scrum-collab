@@ -6,7 +6,6 @@
           <q-avatar>
             <img src="/icons/favicon-128x128.png" />
           </q-avatar>
-
           <q-toolbar-title
             ><span class="text-weight-bold">{{
               $route.params.item ? 'Edit' : 'New'
@@ -78,7 +77,7 @@
             emit-value
             label="Goal"
             map-options
-            v-model="theDiscussion.goalKey"
+            v-model="theDiscussion.goal"
             :options="discussions.filter((d) => d.type == 'goal')"
             :option-label="describeDiscussion"
             option-value="key"

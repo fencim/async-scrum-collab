@@ -1,9 +1,7 @@
 <script lang="ts" setup>
 import BaseCard from 'src/components/BaseCardComponent.vue';
-import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { DiscussionItem, ISprintBoardColumn, IStory } from 'src/entities';
 import { PropType } from 'vue';
-import { getProfiles } from './card-helpers';
 import CommonCardAction from './CommonCardActionComp.vue';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 import CommonCardFooterComp from './CommonCardFooterComp.vue';

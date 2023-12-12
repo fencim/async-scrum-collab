@@ -3,7 +3,7 @@
     <q-table grid :rows="projectStore.projects" hide-bottom>
       <template v-slot:item="props">
         <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-          <q-card>
+          <q-card class="cursor-pointer">
             <q-card-section class="text-center">
               <strong>{{ props.row.name }}</strong>
             </q-card-section>
