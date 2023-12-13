@@ -34,13 +34,14 @@
           dense
           icon="edit"
           class="float-right"
-          :to="{
-            name: 'iterationform',
-            params: {
-              project,
-              iteration: iteration.key,
-            },
-          }"
+          @click="
+            TheDialogs.emit({
+              type: 'editIteration',
+              arg: {
+                iteration,
+              },
+            })
+          "
         />
       </div>
     </q-timeline-entry>
@@ -136,6 +137,7 @@ import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { computed, PropType } from 'vue';
 import { getComponent } from '../task-board/card-components';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();

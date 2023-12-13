@@ -37,6 +37,7 @@
       <router-view />
       <DiscussionDetailsDialog />
       <DiscussionFormDialog />
+      <IterationFormDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -48,6 +49,7 @@ import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import DiscussionFormDialog from 'src/dialogs/discussion/DiscussionFormDialog.vue';
 import DiscussionDetailsDialog from 'src/dialogs/discussion/DiscussionDetailsDialog.vue';
+import IterationFormDialog from 'src/dialogs/iteration/IterationFormDialog.vue';
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);
 

@@ -53,7 +53,7 @@ TheDialogs.on({
       :type="newTaskPreFields.type || 'story'"
       :status="newTaskPreFields.status || ''"
       :iteration="newTaskPreFields.iteration"
-      :ref="newTaskPreFields.refItem"
+      :ref-item="newTaskPreFields.refItem"
       :item="newTaskPreFields.item"
     />
   </q-dialog>

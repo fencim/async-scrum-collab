@@ -6,7 +6,7 @@ import { computed, ref } from 'vue';
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
 type FilterOption = {
-  type: 'Iteration' | 'Type';
+  type: 'Iteration' | 'Type' | 'Not Ready';
   value: string;
   display: string;
 };
@@ -20,32 +20,47 @@ const backlog = computed(() => {
         (f.type == 'Iteration' &&
           ((typeof task.iteration == 'object' &&
             task.iteration.key == f.value) ||
-            f.value == task.iteration))
+            f.value == task.iteration)) ||
+        (f.type == 'Not Ready' &&
+          (!task.assignees ||
+            !task.assignees.length ||
+            !task.dueDate ||
+            !task.complexity))
     );
   });
 });
 const filterOptions = computed(() => {
-  return backlog.value.reduce((p, c) => {
-    const iteration = typeof c.iteration == 'object' ? c.iteration : undefined;
-    if (
-      typeof iteration == 'object' &&
-      !p.find((o) => o.type == 'Iteration' && o.value == iteration.key)
-    ) {
-      p.push({
-        type: 'Iteration',
-        value: iteration.key,
-        display: iteration.name,
-      });
-    }
-    if (c.type && !p.find((o) => o.type == 'Type' && o.value == c.type)) {
-      p.push({
-        type: 'Type',
-        value: c.type,
-        display: c.type.replace(/^\w/, (m) => m.toUpperCase()),
-      });
-    }
-    return p;
-  }, [] as FilterOption[]);
+  return backlog.value.reduce(
+    (p, c) => {
+      const iteration =
+        typeof c.iteration == 'object' ? c.iteration : undefined;
+      if (
+        typeof iteration == 'object' &&
+        !p.find((o) => o.type == 'Iteration' && o.value == iteration.key)
+      ) {
+        p.push({
+          type: 'Iteration',
+          value: iteration.key,
+          display: iteration.name,
+        });
+      }
+      if (c.type && !p.find((o) => o.type == 'Type' && o.value == c.type)) {
+        p.push({
+          type: 'Type',
+          value: c.type,
+          display: c.type.replace(/^\w/, (m) => m.toUpperCase()),
+        });
+      }
+      return p;
+    },
+    [
+      {
+        type: 'Not Ready',
+        value: '',
+        display: 'Definition of Ready for Dev',
+      },
+    ] as FilterOption[]
+  );
 });
 </script>
 <template>

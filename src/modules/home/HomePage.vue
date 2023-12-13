@@ -46,9 +46,9 @@
               />
               <q-btn
                 v-if="isAdminOf(props.row)"
-                icon="group"
+                icon="settings"
                 class="rounded"
-                :to="{ name: 'members', params: { project: props.row.key } }"
+                :to="{ name: 'settings', params: { project: props.row.key } }"
               />
             </q-card-actions>
           </q-card>

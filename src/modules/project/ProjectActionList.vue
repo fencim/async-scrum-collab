@@ -1,7 +1,17 @@
 <template>
   <div>
     <q-list padding class="menu-list">
-      <q-item clickable :to="`/${project?.key}/iteration/new`">
+      <q-item
+        clickable
+        @click="
+          TheDialogs.emit({
+            type: 'newIteration',
+            arg: {
+              projectKey: activeProject,
+            },
+          })
+        "
+      >
         <q-item-section avatar>
           <q-icon name="add" />
         </q-item-section>
@@ -101,6 +111,7 @@
 </template>
 
 <script lang="ts">
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { IProject } from 'src/entities';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
@@ -110,6 +121,7 @@ export default defineComponent({
   components: {},
   data() {
     return {
+      TheDialogs,
       activeProject: 'AP',
       project: undefined as IProject | undefined,
     };

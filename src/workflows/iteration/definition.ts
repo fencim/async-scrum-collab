@@ -16,3 +16,7 @@ export type Iteration =
     progress?: (progress: number, details?: string) => void;
     ceremonies?: Schedule[]
   }>
+  | Struct<'updateIteration', {
+    iteration: IIteration,
+    done?: (iteration: IIteration) => void
+  }>;

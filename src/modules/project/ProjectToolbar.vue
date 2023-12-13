@@ -6,7 +6,21 @@
       <div class="text-overline q-px-sm bg-grey-10 rounded-borders">
         {{ project?.description }}
       </div>
-      <recent-active-members :profiles="members" />
+      <recent-active-members v-if="members.length" :profiles="members" />
+      <q-chip
+        v-else
+        color="negative"
+        clickable
+        @click="
+          $router.push({
+            name: 'settings',
+            params: {
+              project: activeProject,
+            },
+          })
+        "
+        >No members working on this project!</q-chip
+      >
     </q-toolbar-title>
     <the-synchronizer />
     <the-present-user />

@@ -12,11 +12,11 @@
           Discussion of {{ activeProject?.name }}</q-toolbar-title
         >
       </q-toolbar>
-      <div v-if="refStory" class="q-pa-sm q-mx-sm shadow-5 rounded-borders">
+      <div v-if="refItem" class="q-pa-sm q-mx-sm shadow-5 rounded-borders">
         <component
           class=""
-          :is="getComponent(refStory)"
-          :task="refStory"
+          :is="getComponent(refItem)"
+          :task="refItem"
           mini
           no-action
         />
@@ -25,7 +25,7 @@
         <q-select
           class="col-12"
           emit-value
-          v-if="!refStory"
+          v-if="!refItem"
           map-options
           label="Type"
           v-model="theDiscussion.type"
@@ -201,7 +201,7 @@ const props = defineProps<{
   iteration?: IIteration;
   status?: string;
   projectKey?: string;
-  refStory?: IStory;
+  refItem?: DiscussionItem;
 }>();
 const acceptanceCriteriaColumns = [
   {
@@ -233,10 +233,10 @@ const theDiscussion = ref<DiscussionItem>(
   props.item ||
     ({
       type: props.type || 'task',
-      projectKey: props.projectKey || props.refStory?.projectKey || '',
-      iteration: props.iteration || props.refStory?.iteration || '',
-      ceremonyKey: props.refStory?.ceremonyKey || '',
-      status: props.status || props.refStory?.status || '',
+      projectKey: props.projectKey || props.refItem?.projectKey || '',
+      iteration: props.iteration || props.refItem?.iteration || '',
+      ceremonyKey: props.refItem?.ceremonyKey || '',
+      status: props.status || props.refItem?.status || '',
       key: '',
       awareness: {},
       description: '',
@@ -244,7 +244,7 @@ const theDiscussion = ref<DiscussionItem>(
 );
 onMounted(async () => {
   const route = useRoute();
-  const discussion = props.item || props.refStory;
+  const discussion = props.item || props.refItem;
   activeProjectKey.value =
     discussion?.projectKey || activeStore.activeProject?.key || '';
   activeProject.value = activeStore.activeProject;
@@ -312,8 +312,8 @@ async function submitDiscussion() {
   theDiscussion.value.iteration =
     theDiscussion.value.iteration || activeIterationKey.value;
   theDiscussion.value.projectKey = activeProjectKey.value;
-  if (props.refStory) {
-    theDiscussion.value.parrent = entityKey(props.refStory);
+  if (props.refItem) {
+    theDiscussion.value.parrent = entityKey(props.refItem);
   }
   await discussionStore.saveDiscussion(theDiscussion.value);
 

@@ -94,7 +94,9 @@ export const useProfilesStore = defineStore('Profiles', {
       this.profiles = [botProfile, ...await profileResource.findAllFrom()];
     },
     async get(key: string) {
-      return this.profiles.find(p => p.key == key) || profileResource.findOne({ key });
+      return this.profiles.find(p => p.key == key)
+        || await profileResource.findOne({ key })
+        || await profileResource.getData(key);
     },
     fromKeys(keys: string[]) {
       return (keys.map(key => {

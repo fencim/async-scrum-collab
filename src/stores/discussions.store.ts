@@ -93,6 +93,9 @@ export const useDiscussionStore = defineStore('discussion', {
     setActiveDiscussion(item?: DiscussionItem) {
       this.activeDiscussion = item;
     },
+    openAssignedTo(profileKey: string) {
+      return this.discussions.filter(d => !d.doneDate && d.assignees?.find(a => entityKey(a) == profileKey))
+    },
     async withKey(key: string) {
       if (key)
         return discussionResource.findOne({ key });

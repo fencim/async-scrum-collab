@@ -6,4 +6,5 @@ export interface IProfile extends IBaseEntity {
   avatar: string;
   email?: string;
   emailVerified?: boolean;
+  activeProject?: string;
 }

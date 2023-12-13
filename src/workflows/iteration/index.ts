@@ -35,3 +35,12 @@ TheWorkflows.on({
     e.done(iteration);
   }
 })
+
+TheWorkflows.on({
+  type: 'updateIteration',
+  async cb(e) {
+    const iteration = e.iteration;
+    await useIterationStore().saveIteration(iteration);
+    e.done && e.done(iteration);
+  },
+})

@@ -49,12 +49,10 @@
     </div>
     <div class="row">
       <q-card class="col q-ma-sm">
-        <q-card-section
-          >Pending ({{ activeStore.pendingMembers.length }})</q-card-section
-        >
+        <q-card-section>Pending ({{ pending.length }})</q-card-section>
         <q-card-section>
           <recent-active-members
-            :profiles="activeStore.pendingMembers"
+            :profiles="pending"
             @click-profile="selectPending"
           />
         </q-card-section>
@@ -115,7 +113,11 @@
     <q-separator />
     <q-chip size="lg" icon="view_column">Taskboard Columns </q-chip>
     <div class="row">
-      <draggable :list="taskboardColumns" @change="saved = false">
+      <draggable
+        :list="taskboardColumns"
+        item-key="key"
+        @change="saved = false"
+      >
         <template #footer
           ><q-btn
             icon="add"
@@ -342,6 +344,7 @@ import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { useActiveStore } from 'src/stores/active.store';
+import { useProfilesStore } from 'src/stores/profiles.store';
 function createNewBoardCol() {
   return {
     key: 'new',
@@ -351,6 +354,7 @@ function createNewBoardCol() {
 }
 const projectStore = useProjectStore();
 const activeStore = useActiveStore();
+const profileStore = useProfilesStore();
 export default defineComponent({
   name: 'ProjectSettingsPage',
   components: { RecentActiveMembers, draggable, IconPicker },
@@ -374,8 +378,14 @@ export default defineComponent({
       editingCol: defaultNewBoardCol,
     };
   },
+  computed: {
+    pending() {
+      return activeStore.pendingMembers;
+    },
+  },
   mounted() {
     this.resetSelected();
+
     this.taskboardColumns =
       activeStore.activeProject?.boardColumns?.map((c) => ({ ...c })) || [];
     if (!this.taskboardColumns?.length) {
