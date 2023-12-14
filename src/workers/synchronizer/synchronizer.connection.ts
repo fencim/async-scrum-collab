@@ -23,7 +23,7 @@ export interface IResourceStatus {
 }
 const synchronizerWorker = new SynchronizerWorker();
 
-function postMessage(event: SynchronizerRequestEventNames, data?: any) {
+function postMessage(event: SynchronizerRequestEventNames, data?: unknown) {
   synchronizerWorker.postMessage({
     event: event,
     data: data,

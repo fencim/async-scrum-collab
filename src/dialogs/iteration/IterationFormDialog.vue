@@ -211,12 +211,7 @@ async function submitIteration() {
     TheWorkflows.emit({
       type: 'createIteration',
       arg: {
-        details: {
-          start: theIteration.value.start!,
-          end: theIteration.value.end!,
-          projectKey: theIteration.value.projectKey!,
-          name: theIteration.value.name!,
-        },
+        details: theIteration.value as IIteration,
         ceremonies: scheduleCeremonies.value ? planSched.value : [],
         progress: (update, details) => {
           progress.value = update;

@@ -176,7 +176,6 @@ import {
   ICeremony,
   IIteration,
   IProject,
-  IStory,
 } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 import { getComponent } from 'src/modules/task-board/card-components';

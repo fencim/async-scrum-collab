@@ -248,7 +248,7 @@ class FirebaseSevice {
       await updateDoc(docRef, { ...this.clone(value) });
     }
   }
-  async patch(modelName: ModelName, id: string, prop: string, value: any) {
+  async patch(modelName: ModelName, id: string, prop: string, value: unknown) {
     const docRef = doc(fbStore, modelName, id);
     if (typeof value !== 'undefined') {
       const data = {

@@ -13,7 +13,7 @@ defineEmits<{
     iterationKey?: string
   ): void;
 }>();
-const props = defineProps({
+defineProps({
   task: {
     required: true,
     type: Object as PropType<IGoal>,
