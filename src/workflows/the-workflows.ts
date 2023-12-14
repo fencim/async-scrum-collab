@@ -3,8 +3,9 @@ import { ToEmit, ToType } from 'src/structs';
 
 import { Auth } from './auth/definition';
 import { Iteration } from './iteration/definition';
+import { Project } from './project/definition';
 
-export type WorkflowStructs = Auth | Iteration;
+export type WorkflowStructs = Auth | Iteration | Project;
 
 type WorkflowEvents = ToEmit<WorkflowStructs, WorkflowStructs>;
 export type WorkflowTypes = ToType<WorkflowStructs, WorkflowStructs>;

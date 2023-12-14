@@ -3,7 +3,7 @@
     <q-card
       :style="$q.screen.gt.sm ? { 'min-width': $q.screen.sizes.md + 'px' } : ''"
     >
-      <q-form @submit="submitNewProject">
+      <q-form @submit="submitProject">
         <q-toolbar>
           <q-avatar>
             <img src="/icons/favicon-128x128.png" />
@@ -21,6 +21,7 @@
         <q-card-section>
           <q-input
             v-model="theProject.key"
+            :readonly="!!formPreFields.project"
             label="Key"
             maxlength="4"
             mask="XXXX"
@@ -93,6 +94,7 @@ import { useProjectStore } from 'src/stores/projects.store';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { TheDialogs } from '../the-dialogs';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();
@@ -120,7 +122,7 @@ onMounted(async () => {
   await profileStore.init();
 });
 
-async function submitNewProject() {
+async function submitProject() {
   try {
     saving.value = true;
     if (
@@ -129,17 +131,44 @@ async function submitNewProject() {
     ) {
       theProject.value.admins = [profileStore.theUser.key];
     }
-    const saved = await projectStore.saveProject(
-      theProject.value as IProject,
-      croppedImg.value || icon.value
-    );
-    if (doneCb.value) {
-      doneCb.value(saved);
+    if (formPreFields.value.project) {
+      TheWorkflows.emit({
+        type: 'updateProject',
+        arg: {
+          project: theProject.value as IProject,
+          icon: croppedImg.value || icon.value,
+          done(project) {
+            if (doneCb.value) {
+              doneCb.value(project);
+            } else {
+              $router.replace({
+                name: 'projectHome',
+                params: {
+                  project: theProject.value?.key,
+                },
+              });
+            }
+          },
+        },
+      });
     } else {
-      $router.replace({
-        name: 'projectHome',
-        params: {
-          project: theProject.value?.key,
+      TheWorkflows.emit({
+        type: 'createProject',
+        arg: {
+          project: theProject.value as IProject,
+          icon: croppedImg.value || icon.value,
+          done(project) {
+            if (doneCb.value) {
+              doneCb.value(project);
+            } else {
+              $router.replace({
+                name: 'projectHome',
+                params: {
+                  project: theProject.value?.key,
+                },
+              });
+            }
+          },
         },
       });
     }
