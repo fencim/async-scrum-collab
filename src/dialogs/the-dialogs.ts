@@ -2,10 +2,12 @@ import { convoBus } from 'src/modules/ceremony/convo-bus';
 import { ToEmit, ToType } from 'src/structs';
 import { Discussions } from './discussion/definition';
 import { Iterations } from './iteration/definition';
+import { Projects } from './project/definition';
 
 export type DialogStructs =
   | Discussions
-  | Iterations;
+  | Iterations
+  | Projects;
 
 type DialogEvents = ToEmit<DialogStructs, DialogStructs>;
 export type WorkflowTypes = ToType<DialogStructs, DialogStructs>;

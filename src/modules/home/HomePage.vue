@@ -42,7 +42,14 @@
                 v-if="isAdminOf(props.row)"
                 icon="edit"
                 class="rounded"
-                :to="'/' + props.row.key + '/edit'"
+                @click="
+                  TheDialogs.emit({
+                    type: 'editProject',
+                    arg: {
+                      project: props.row,
+                    },
+                  })
+                "
               />
               <q-btn
                 v-if="isAdminOf(props.row)"
@@ -59,6 +66,7 @@
 </template>
 
 <script lang="ts">
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { IProject } from 'src/entities';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
@@ -72,6 +80,7 @@ export default defineComponent({
   data() {
     return {
       projectStore,
+      TheDialogs,
     };
   },
   methods: {

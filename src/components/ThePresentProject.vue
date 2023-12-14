@@ -4,10 +4,14 @@
     flat
     round
     size="xl"
-    :to="{
-      name: 'projectHome',
-      params: { project: projectStore.activeProject?.key },
-    }"
+    :to="
+      projectStore.activeProject
+        ? {
+            name: 'projectHome',
+            params: { project: projectStore.activeProject?.key },
+          }
+        : '/'
+    "
     :style="
       projectStore.activeProject
         ? 'border: 2px solid gray; border-radius: 50px'

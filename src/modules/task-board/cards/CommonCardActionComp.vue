@@ -5,7 +5,7 @@ import { DiscussionItem, IProfile, ISprintBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
-import { PropType, defineProps } from 'vue';
+import { PropType } from 'vue';
 const activeStore = useActiveStore();
 const iterationStore = useIterationStore();
 const discussionStore = useDiscussionStore();

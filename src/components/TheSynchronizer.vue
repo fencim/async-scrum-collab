@@ -112,10 +112,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import {
-  ISyncByModule,
-  useSynchronizerStore,
-} from 'src/stores/synchronizer.store';
+import { useSynchronizerStore } from 'src/stores/synchronizer.store';
 import resourceSynchronizer from 'src/workers/synchronizer/resource.synchronizer';
 import { useQuasar } from 'quasar';
 const $q = useQuasar();

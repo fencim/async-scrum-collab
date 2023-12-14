@@ -1,7 +1,15 @@
 <template>
   <div>
     <q-list padding class="menu-list">
-      <q-item clickable to="/project/new">
+      <q-item
+        clickable
+        @click="
+          TheDialogs.emit({
+            type: 'newProject',
+            arg: {},
+          })
+        "
+      >
         <q-item-section avatar>
           <q-icon name="add" />
         </q-item-section>
@@ -11,16 +19,7 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'HomeActionList',
-  components: {},
-  data() {
-    return {};
-  },
-  methods: {},
-});
+<script lang="ts" setup>
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 </script>
 <style></style>
