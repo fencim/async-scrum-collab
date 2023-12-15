@@ -102,8 +102,12 @@ export default defineComponent({
         await profileStore.signInWithGoogle();
         this.$q.notify({
           message: 'Successfully signed',
+          caption: 'Loading...',
+          progress: true,
+          onDismiss: () => {
+            this.$router.replace('/');
+          },
         });
-        this.$router.replace('/');
       } catch (e) {
         this.action = LoginAction.none;
         this.$q.notify({

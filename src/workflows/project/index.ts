@@ -5,7 +5,7 @@ TheWorkflows.on({
   type: 'createProject',
   async cb(e) {
     const projectStore = useProjectStore();
-    const result = await projectStore.saveProject(e.project);
+    const result = await projectStore.saveProject(e.project, e.icon);
     e.done && e.done(result);
   },
 });
@@ -14,7 +14,7 @@ TheWorkflows.on({
   type: 'updateProject',
   async cb(e) {
     const projectStore = useProjectStore();
-    const result = await projectStore.saveProject(e.project);
+    const result = await projectStore.saveProject(e.project, e.icon);
     e.done && e.done(result);
   },
 });

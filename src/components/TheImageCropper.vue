@@ -13,14 +13,17 @@
           </q-avatar>
         </div>
       </section>
-      <VueCropper
-        v-else
-        ref="cropper"
-        :canScale="false"
-        :fixed="true"
-        :src="imgSrc"
-        alt="Source Image"
-      />
+      <div class="row items-center" v-else>
+        <div class="col-6 bordered">
+          <VueCropper
+            ref="cropper"
+            :canScale="false"
+            :fixed="true"
+            :src="imgSrc"
+            alt="Source Image"
+          />
+        </div>
+      </div>
     </q-card-section>
     <q-card-actions class="q-pa-none q-pt-sm" align="center">
       <q-btn color="primary" icon="refresh" flat rounded @click="reset()">
