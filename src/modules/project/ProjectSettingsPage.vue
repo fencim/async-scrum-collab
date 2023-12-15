@@ -132,6 +132,15 @@
         <template #item="{ element, index }">
           <q-chip
             class="non-selectable"
+            :style="{
+              'background-color':
+                element.color ||
+                (element.doneState
+                  ? 'positive'
+                  : index == 0
+                  ? 'accent'
+                  : 'secondary'),
+            }"
             :color="
               element.color ||
               (element.doneState
@@ -344,7 +353,7 @@ import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { useActiveStore } from 'src/stores/active.store';
-import { useProfilesStore } from 'src/stores/profiles.store';
+
 function createNewBoardCol() {
   return {
     key: 'new',
@@ -354,7 +363,6 @@ function createNewBoardCol() {
 }
 const projectStore = useProjectStore();
 const activeStore = useActiveStore();
-const profileStore = useProfilesStore();
 export default defineComponent({
   name: 'ProjectSettingsPage',
   components: { RecentActiveMembers, draggable, IconPicker },

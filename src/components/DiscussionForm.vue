@@ -31,7 +31,7 @@
           v-model="theDiscussion.type"
           :options="[
             { v: 'goal', t: 'Iteration Goal' },
-            { v: 'objective', t: 'Goal Objective' },
+            { v: 'objective', t: 'Iteration Objective' },
             { v: 'story', t: 'Story' },
             { v: 'task', t: 'Task' },
           ]"
@@ -149,9 +149,7 @@
       </q-card-section>
       <q-card-actions :align="'right'">
         <q-btn icon="close" v-close-popup>Cancel</q-btn>
-        <q-btn icon="save" :loading="saving" v-close-popup type="submit"
-          >Save</q-btn
-        >
+        <q-btn icon="save" :loading="saving" type="submit">Save</q-btn>
       </q-card-actions>
     </q-form>
   </q-card>
@@ -202,6 +200,7 @@ const props = defineProps<{
   projectKey?: string;
   refItem?: DiscussionItem;
 }>();
+const $emit = defineEmits(['closeForm']);
 const acceptanceCriteriaColumns = [
   {
     name: 'given',
@@ -241,6 +240,7 @@ const theDiscussion = ref<DiscussionItem>(
       description: '',
     } as DiscussionItem)
 );
+
 onMounted(async () => {
   const route = useRoute();
   const discussion = props.item || props.refItem;
@@ -273,6 +273,12 @@ onMounted(async () => {
       activeIterationKey.value,
     ceremonyKey: theDiscussion.value.ceremonyKey || activeCeremonyKey.value,
   };
+  if (
+    theDiscussion.value.type == 'objective' &&
+    props.refItem?.type == 'goal'
+  ) {
+    theDiscussion.value.goal = props.refItem.key;
+  }
 });
 function addNewAccepatance() {
   if (
@@ -346,8 +352,8 @@ async function submitDiscussion() {
       );
     }
   }
-
   saving.value = false;
+  $emit('closeForm');
 }
 </script>
 <style></style>

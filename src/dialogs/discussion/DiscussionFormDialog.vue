@@ -11,27 +11,27 @@ const newTaskPreFields = ref({
   iteration: undefined as IIteration | undefined,
   refItem: undefined as DiscussionItem | undefined,
 });
-const showItemTopSheet = ref(false);
+const showTopSheet = ref(false);
 function editTask(task: DiscussionItem) {
   newTaskPreFields.value.type = task.type;
   newTaskPreFields.value.status = task.status || newTaskPreFields.value.status;
   newTaskPreFields.value.item = task;
-  showItemTopSheet.value = true;
+  showTopSheet.value = true;
 }
-function newTask(status?: string) {
-  newTaskPreFields.value.type = 'story';
+function newTask(status?: string, type?: DiscussionItem['type']) {
+  newTaskPreFields.value.type = type || 'story';
   newTaskPreFields.value.status = status || newTaskPreFields.value.status;
-  showItemTopSheet.value = true;
+  showTopSheet.value = true;
 }
-function newSubTask(refStory: DiscussionItem) {
-  newTaskPreFields.value.refItem = refStory;
-  newTaskPreFields.value.type = 'task';
-  showItemTopSheet.value = true;
+function newSubTask(refItem: DiscussionItem) {
+  newTaskPreFields.value.refItem = refItem;
+  newTaskPreFields.value.type = refItem.type == 'goal' ? 'objective' : 'task';
+  showTopSheet.value = true;
 }
 TheDialogs.on({
   type: 'newTask',
   cb: (e) => {
-    newTask(e.status);
+    newTask(e.status, e.type);
   },
 });
 TheDialogs.on({
@@ -48,13 +48,14 @@ TheDialogs.on({
 });
 </script>
 <template>
-  <q-dialog v-model="showItemTopSheet" :position="'top'">
+  <q-dialog v-model="showTopSheet" :position="'top'">
     <discussion-form
       :type="newTaskPreFields.type || 'story'"
       :status="newTaskPreFields.status || ''"
       :iteration="newTaskPreFields.iteration"
       :ref-item="newTaskPreFields.refItem"
       :item="newTaskPreFields.item"
+      @close-form="showTopSheet = false"
     />
   </q-dialog>
 </template>

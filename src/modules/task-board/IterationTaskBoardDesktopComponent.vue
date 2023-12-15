@@ -58,6 +58,7 @@ async function changeOnColumn(
           class="col q-ma-sm"
           :icon="column.icon"
           :color="column.color || 'accent'"
+          :style="{ 'background-color': column.color }"
           dense
           @click="
             TheDialogs.emit({

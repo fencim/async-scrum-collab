@@ -3,7 +3,8 @@ import { Struct } from 'src/structs';
 
 export type Discussions =
   | Struct<'newTask', {
-    status: DiscussionItem['status'],
+    status?: DiscussionItem['status'],
+    type?: DiscussionItem['type'],
     done?: (item: DiscussionItem) => void
   }>
   | Struct<'editTask', {

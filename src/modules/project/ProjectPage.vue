@@ -1,11 +1,21 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
-    <iteration-timeline
-      v-for="i in iterations"
-      :key="i.key"
-      :project="activeProject"
-      :iteration="i"
-    />
+    <div v-if="iterations.length">
+      <iteration-timeline
+        v-for="i in iterations"
+        :key="i.key"
+        :project="activeProject"
+        :iteration="i"
+      />
+    </div>
+    <div v-else>
+      <div class="text-h3">Get Started</div>
+      <div class="text-h4">Set Project Taskboard Columns</div>
+      <div class="text-h4">Schedule Iterations</div>
+      <div class="text-h4">Create Iteration Goal</div>
+      <div class="text-h4">Create Iteration Objectives</div>
+      <div class="text-h4">Create Stories</div>
+    </div>
   </q-page>
 </template>
 

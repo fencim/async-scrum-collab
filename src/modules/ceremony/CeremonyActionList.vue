@@ -51,18 +51,45 @@
         dense
         tag="a"
         @click="
-          TheDialogs.emit({
-            type: 'newTask',
-            arg: {
-              status: '',
-            },
-          })
+          goalIsCreated && !objectiveIsCreated
+            ? TheDialogs.emit({
+                type: 'newSubTask',
+                arg: {
+                  ref: goalIsCreated,
+                },
+              })
+            : TheDialogs.emit({
+                type: 'newTask',
+                arg: {
+                  type: !goalIsCreated
+                    ? 'goal'
+                    : !objectiveIsCreated
+                    ? 'objective'
+                    : 'story',
+                },
+              })
         "
       >
         <q-item-section avatar>
           <q-icon name="add" size="sm" />
         </q-item-section>
-        <q-tooltip>New Discussion Item</q-tooltip>
+        <q-tooltip v-if="goalIsCreated && objectiveIsCreated"
+          >New Discussion Item</q-tooltip
+        >
+        <q-tooltip
+          :self="'center left'"
+          class="text-subtitle1"
+          v-model="showCreateDiscussionTooltip"
+          v-else-if="!goalIsCreated"
+          >Create Iteration goals first!</q-tooltip
+        >
+        <q-tooltip
+          :self="'center left'"
+          class="text-subtitle1"
+          v-model="showCreateDiscussionTooltip"
+          v-else
+          >Create at least one iteration objective!</q-tooltip
+        >
       </q-item>
     </q-list>
   </div>
@@ -107,6 +134,7 @@ export default defineComponent({
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
       item: undefined as DiscussionItem | undefined,
+      showCreateDiscussionTooltip: false,
     };
   },
   async mounted() {
@@ -124,6 +152,12 @@ export default defineComponent({
   computed: {
     progress() {
       return ceremonyStore.activeCeremonyProgress;
+    },
+    goalIsCreated() {
+      return discussionStore.discussions.find((d) => d.type == 'goal');
+    },
+    objectiveIsCreated() {
+      return discussionStore.discussions.find((d) => d.type == 'objective');
     },
   },
   methods: {
@@ -172,6 +206,8 @@ export default defineComponent({
       } else if (/^(discussionDetails)$/.test(String(this.$route.name) || '')) {
         this.convoStore.activateLink('view');
       }
+      this.showCreateDiscussionTooltip =
+        !this.goalIsCreated || !this.objectiveIsCreated;
     },
 
     async actOn(action: ActionItem) {
