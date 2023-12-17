@@ -39,6 +39,7 @@
       <DiscussionFormDialog />
       <IterationFormDialog />
       <ProjectFormDialog />
+      <ScrumGuideDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -52,6 +53,8 @@ import DiscussionFormDialog from 'src/dialogs/discussion/DiscussionFormDialog.vu
 import DiscussionDetailsDialog from 'src/dialogs/discussion/DiscussionDetailsDialog.vue';
 import IterationFormDialog from 'src/dialogs/iteration/IterationFormDialog.vue';
 import ProjectFormDialog from 'src/dialogs/project/ProjectFormDialog.vue';
+import ScrumGuideDialog from 'src/dialogs/guide/ScrumGuideDialog.vue';
+
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);
 

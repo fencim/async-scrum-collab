@@ -7,25 +7,27 @@ import { useIterationStore } from 'src/stores/iterations.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
 import { useRoute, useRouter } from 'vue-router';
-import { date } from 'quasar';
-const tab = ref('all');
-const splitSection = ref(30);
+import { useQuasar } from 'quasar';
+import { TheWorkflows } from 'src/workflows/the-workflows';
+import { entityKey } from 'src/entities/base.entity';
+
+const $q = useQuasar();
 const iterationStore = useIterationStore();
 const discussionStore = useDiscussionStore();
 const activeStore = useActiveStore();
 
+const tab = ref('all');
+const splitSection = ref(20);
+
 onMounted(async () => {
-  const project = activeStore.activeProject;
-  if (project) {
-    discussionStore.ofProject(project.key);
-  }
   const route = useRoute();
   if (route.params.iteration && typeof route.params.iteration == 'string') {
     tab.value = route.params.iteration;
   } else if (activeStore.activeProject && iterationStore.iterations.length) {
+    const project = activeStore.activeProject;
     tab.value = iterationStore.iterations[0].key;
     const router = useRouter();
     router.replace({
@@ -37,23 +39,28 @@ onMounted(async () => {
     });
   }
 });
+const boardColumns = computed(() => {
+  return activeStore.activeProject?.boardColumns || [];
+});
+
 async function taskMoved(
   issue: DiscussionItem,
   column?: ISprintBoardColumn,
   iterationKey?: string
 ) {
-  if (column) {
-    issue.status = column.key;
-    if (column.doneState) {
-      issue.doneDate = date.formatDate(new Date(), 'YYYY/MM/DD');
-    }
-  }
-  if (iterationKey) {
-    issue.iteration = iterationKey;
-    tab.value = iterationKey;
-  }
-
-  await discussionStore.saveDiscussion(issue);
+  TheWorkflows.emit({
+    type: 'moveIssue',
+    arg: {
+      issue,
+      column,
+      iterationKey,
+      done: (updated) => {
+        if (updated.iteration && entityKey(updated.iteration)) {
+          tab.value = entityKey(updated.iteration);
+        }
+      },
+    },
+  });
 }
 </script>
 <template>
@@ -103,14 +110,12 @@ async function taskMoved(
             >
               <div
                 class="kanban-board row full-height"
-                v-if="
-                  typeof activeStore.activeProject?.boardColumns == 'object'
-                "
+                v-if="boardColumns.length"
               >
                 <div
                   class="kanban-column col column full-height"
                   v-for="(column, columnIndex) in discussionStore.getTaskBoard(
-                    activeStore.activeProject?.boardColumns,
+                    boardColumns,
                     i.key
                   )"
                   :key="columnIndex"

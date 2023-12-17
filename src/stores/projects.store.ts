@@ -49,7 +49,7 @@ export const useProjectStore = defineStore('projectStore', {
           const iterationStore = useIterationStore();
           await iterationStore.ofProject(project.key);
           const ceremonyStore = useCeremonyStore();
-          await ceremonyStore.ofIteration(project.key);
+          await ceremonyStore.ofProject(project.key);
           project.boardColumns = project.boardColumns || [];
         }
         return project;

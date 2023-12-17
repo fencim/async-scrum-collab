@@ -111,12 +111,27 @@
       </q-card>
     </div>
     <q-separator />
-    <q-chip size="lg" icon="view_column">Taskboard Columns </q-chip>
+    <q-chip size="lg" icon="view_column">Taskboard</q-chip>
     <div class="row">
+      <q-chip
+        size="md"
+        class="col-12"
+        icon="view_week"
+        clickable
+        @click="
+          TheDialogs.emit({
+            type: 'scrumGuide',
+            arg: {
+              keyword: 'User Story Columns',
+            },
+          })
+        "
+        >Status Columns</q-chip
+      >
       <draggable
         :list="taskboardColumns"
         item-key="key"
-        @change="saved = false"
+        @change="columnsSaved = false"
       >
         <template #footer
           ><q-btn
@@ -170,6 +185,27 @@
       </draggable>
     </div>
     <q-separator />
+    <div v-if="activeStore.activeProject" class="row">
+      <q-chip size="md" class="col-12" icon="checklist"
+        >Discussion Ready for Work
+        <q-tooltip>
+          <MarkdownPreview :source="md" />
+        </q-tooltip>
+      </q-chip>
+      <q-slider
+        class="q-px-xl"
+        label-always
+        v-model="issueReadynesss"
+        markers
+        :marker-labels="(val) => (val == 0 ? '0%' : val == 1 ? '100%' : ' ')"
+        :label-value="(issueReadynesss * 100).toFixed(0) + '%'"
+        :step="0.05"
+        switch-label-side
+        :min="0"
+        :max="1"
+      ></q-slider>
+    </div>
+    <q-separator />
     <q-chip size="lg" icon="display_settings"
       >Project Status : {{ activeStore.activeProject?.status }}</q-chip
     >
@@ -204,7 +240,7 @@
       <q-btn
         rounded
         icon="save"
-        :disable="saved"
+        :disable="settingsSaved"
         :loading="saving"
         color="primary"
         @click="saveProject()"
@@ -348,11 +384,14 @@
 <script lang="ts">
 import draggable from 'vuedraggable';
 import IconPicker from 'src/components/IconPickerComponent.vue';
+import MarkdownPreview from '@uivjs/vue-markdown-preview';
 import { IProfile, IBoardColumn } from 'src/entities';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import { useActiveStore } from 'src/stores/active.store';
+import md from 'src/guides/discussion-readiness.guide.md?raw';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 
 function createNewBoardCol() {
   return {
@@ -365,11 +404,17 @@ const projectStore = useProjectStore();
 const activeStore = useActiveStore();
 export default defineComponent({
   name: 'ProjectSettingsPage',
-  components: { RecentActiveMembers, draggable, IconPicker },
+  components: {
+    RecentActiveMembers,
+    draggable,
+    IconPicker,
+    MarkdownPreview,
+  },
   data() {
     const defaultNewBoardCol = createNewBoardCol();
     return {
       activeStore,
+      TheDialogs,
       selectedAdmins: [] as IProfile[],
       selectedPending: [] as IProfile[],
       selectedModerators: [] as IProfile[],
@@ -379,16 +424,22 @@ export default defineComponent({
       confirmClose: false,
       editColumn: false,
       confirmDeleteCol: false,
+      issueReadynesss: 0,
       saving: false,
-      saved: true,
+      columnsSaved: true,
       taskboardColumns: [] as IBoardColumn[],
       newBoardCol: defaultNewBoardCol,
       editingCol: defaultNewBoardCol,
+      md,
     };
   },
   computed: {
     pending() {
       return activeStore.pendingMembers;
+    },
+    settingsSaved() {
+      const ready = activeStore.activeProject?.discussionReadyness || 0;
+      return this.columnsSaved && ready == this.issueReadynesss;
     },
   },
   mounted() {
@@ -415,8 +466,9 @@ export default defineComponent({
           doneState: true,
         },
       ];
-      this.saved = false;
+      this.columnsSaved = false;
     }
+    this.issueReadynesss = activeStore.activeProject?.discussionReadyness || 0;
   },
 
   methods: {
@@ -611,7 +663,7 @@ export default defineComponent({
       this.editColumn = true;
     },
     updateBoardColumnIcon(col: IBoardColumn, icon: string) {
-      this.saved = this.saved && col.icon == icon;
+      this.columnsSaved = this.columnsSaved && col.icon == icon;
       col.icon = icon;
     },
     editBoardColumn(col: IBoardColumn) {
@@ -643,26 +695,33 @@ export default defineComponent({
         }
       }
       this.editColumn = false;
-      this.saved = false;
+      this.columnsSaved = false;
     },
     deleteTaskColumn(col: IBoardColumn) {
       const index = this.taskboardColumns.findIndex((c) => c.key == col.key);
       if (index >= 0) {
         this.taskboardColumns.splice(index, 1);
         this.editColumn = false;
-        this.saved = false;
+        this.columnsSaved = false;
       }
     },
     async saveProject() {
       if (!activeStore.activeProject) return;
       this.saving = true;
-      //save taskboard columns
-      await projectStore.saveProjectColumns(
-        activeStore.activeProject.key,
-        this.taskboardColumns
-      );
+      if (!this.columnsSaved) {
+        //save taskboard columns
+        await projectStore.saveProjectColumns(
+          activeStore.activeProject.key,
+          this.taskboardColumns
+        );
+        this.columnsSaved = true;
+      }
+      if (
+        activeStore.activeProject.discussionReadyness !== this.issueReadynesss
+      ) {
+        //save readiness here
+      }
       this.saving = false;
-      this.saved = true;
     },
   },
 });

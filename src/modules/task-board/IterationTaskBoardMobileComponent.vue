@@ -8,7 +8,6 @@ import {
   ISprintBoardColumn,
   PlanningItem,
 } from 'src/entities';
-import { convoBus } from '../ceremony/convo-bus';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 
 const props = defineProps({

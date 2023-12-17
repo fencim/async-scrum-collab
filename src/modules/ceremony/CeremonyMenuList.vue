@@ -1,20 +1,6 @@
 <template>
   <q-list padding class="menu-list">
     <q-item
-      clickable
-      :to="{
-        name: 'board',
-        params: {
-          project: activeProjectKey,
-        },
-      }"
-    >
-      <q-item-section avatar>
-        <q-icon name="dashboard" />
-      </q-item-section>
-      <q-tooltip>Task board</q-tooltip>
-    </q-item>
-    <q-item
       v-if="activeCeremony"
       clickable
       :active="!activeItemKey"

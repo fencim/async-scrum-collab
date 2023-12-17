@@ -139,7 +139,7 @@ const totalPoints = computed(() => {
 });
 const planned = computed(() => {
   let remainingPts = totalPoints.value;
-  return workDays.map((workday, i) => {
+  return workDays.map((workday) => {
     const tasks = mappedDiscussions.value.filter(
       (d) => d.dueDate && date.getDateDiff(workday, d.dueDate, 'days') == 0
     );
@@ -151,7 +151,7 @@ const planned = computed(() => {
 const ideal = computed(() => {
   let remainingPts = totalPoints.value;
   const idealDailyBurn = totalPoints.value / daysCount;
-  return workDays.map((d, i) => {
+  return workDays.map((d) => {
     const standUpMeeting = dailyScrums.find(
       (c) => date.getDateDiff(d, c.start, 'days') == 0
     );
@@ -167,7 +167,7 @@ const actual = computed(() => {
   let remainingPts = totalPoints.value;
   const now = new Date();
   return workDays
-    .map((workday, i) => {
+    .map((workday) => {
       if (date.getDateDiff(workday, now, 'days') > 0) {
         return undefined;
       }

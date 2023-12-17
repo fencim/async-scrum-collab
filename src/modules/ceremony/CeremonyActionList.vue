@@ -33,6 +33,20 @@
       <q-item
         clickable
         :to="{
+          name: 'board',
+          params: {
+            project: project?.key,
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="dashboard" />
+        </q-item-section>
+        <q-tooltip>Task board</q-tooltip>
+      </q-item>
+      <q-item
+        clickable
+        :to="{
           name: 'burn-down',
           params: {
             project: project?.key || activeProject,

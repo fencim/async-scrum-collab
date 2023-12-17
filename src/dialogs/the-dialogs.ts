@@ -3,11 +3,13 @@ import { ToEmit, ToType } from 'src/structs';
 import { Discussions } from './discussion/definition';
 import { Iterations } from './iteration/definition';
 import { Projects } from './project/definition';
+import { Guide } from './guide/definition';
 
 export type DialogStructs =
   | Discussions
   | Iterations
-  | Projects;
+  | Projects
+  | Guide;
 
 type DialogEvents = ToEmit<DialogStructs, DialogStructs>;
 export type WorkflowTypes = ToType<DialogStructs, DialogStructs>;

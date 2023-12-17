@@ -28,10 +28,9 @@ export const useCeremonyStore = defineStore('ceremony', {
         this.activeDiscussions = [];
       }
     },
-    async ofIteration(project: string, iterationKey?: string) {
+    async ofProject(project: string) {
       ceremonyResource.streamWith({
-        projectKey: project,
-        iterationKey
+        projectKey: project
       }).pipe(map(stream => {
         return stream.sort((a, b) => {
           return date.getDateDiff(a.start, b.start, 'hours');
