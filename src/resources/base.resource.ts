@@ -850,8 +850,22 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         .join('\n');
       await this.saveDoc(identity, existing);
       if (existing.status != 'synced') {
-        typeof cb == 'function' && this.subscribeOn(existing, cb);
-        this.manageDocCallback(existing);
+        if (cb) {
+          this.subscribeOn(existing, cb);
+          this.manageDocCallback(existing);
+        } else {
+          const deffered = new DeferredPromise<IDocStore<T>>();
+          this.subscribeOn(existing, (docStatus) => {
+            if (docStatus.status == 'synced') {
+              deffered.resolve({
+                ...existing,
+                status: 'synced'
+              })
+            }
+          })
+          this.manageDocCallback(existing);
+          return deffered.promise;
+        }
       }
       return existing;
     }

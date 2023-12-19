@@ -168,6 +168,7 @@
 </template>
 
 <script lang="ts" setup>
+import { format, useQuasar } from 'quasar';
 import {
   DiscussionItem,
   IAcceptanceCriteria,
@@ -347,7 +348,9 @@ async function submitDiscussion() {
         'bot',
         {
           type: 'message',
-          message: `${theDiscussion.value.type} progressed from ${(
+          message: `${format.capitalize(
+            theDiscussion.value.type
+          )} progressed from ${(
             (theDiscussion.value.progress || 0) * 100
           ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(
             2
