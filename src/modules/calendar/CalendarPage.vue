@@ -96,15 +96,15 @@ const attributes: { key: number; customData: any; dates: any }[] = [
     >
       <template v-slot:day-content="{ day, attributes }">
         <div class="flex flex-col h-full z-10 overflow-hidden">
-          <span class="day-label text-sm text-gray-900">{{ day.day }}</span>
-          <div class="flex-grow overflow-y-auto overflow-x-auto">
+          <span class="day-label text-sm">{{ day.day }}</span>
+          <div class="row">
             <div
+              class="col-12"
               v-for="attr in attributes"
               :key="attr.key"
-              class="text-xs text-dark leading-tight rounded-sm p-1 mt-0 mb-1"
               :class="attr.customData.class"
             >
-              {{ attr.customData.title }}
+              <q-chip>{{ attr.customData.title }}</q-chip>
             </div>
           </div>
         </div>
@@ -121,12 +121,12 @@ const attributes: { key: number; customData: any; dates: any }[] = [
   display: none;
 }
 
-/deep/ .custom-calendar.vc-container {
-  --day-border: 1px solid #b8c2cc;
-  --day-border-highlight: 1px solid #b8c2cc;
+:deep() .custom-calendar.vc-container {
+  --day-border: 1px solid white !important;
+  --day-border-highlight: 1px solid white;
   --day-width: 90px;
   --day-height: 90px;
-  --weekday-bg: #f8fafc;
+  --weekday-bg: $primary;
   --weekday-border: 1px solid #eaeaea;
 
   border-radius: 0;
@@ -140,7 +140,7 @@ const attributes: { key: number; customData: any; dates: any }[] = [
     padding: 0;
   }
   & .vc-weekday {
-    background-color: var(--weekday-bg);
+    background-color: var(--day-border);
     border-bottom: var(--weekday-border);
     border-top: var(--weekday-border);
     padding: 5px 0;

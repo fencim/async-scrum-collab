@@ -25,7 +25,7 @@
       class="extra"
       v-if="extraProfiles > 0"
       round
-      @click="$emit('clickProfile', 'extra', profiles)"
+      @click.prevent="$emit('clickProfile', 'extra', profiles)"
       style="margin-left: -35px"
     >
       <q-avatar size="32px">

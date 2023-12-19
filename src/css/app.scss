@@ -5,3 +5,11 @@
   font-size: xx-small;
   overflow: hidden;
 }
+
+.body--dark .markdown-body {
+  color: $light-dimmed-background !important;
+}
+
+.body--dark .markdown-body {
+  background: $dark;
+}

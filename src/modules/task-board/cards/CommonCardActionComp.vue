@@ -5,6 +5,7 @@ import { DiscussionItem, IProfile, ISprintBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 import { PropType } from 'vue';
 const activeStore = useActiveStore();
 const iterationStore = useIterationStore();
@@ -28,9 +29,7 @@ function iterationKey(task: DiscussionItem) {
     ? task.iteration.key
     : task.iteration || '';
 }
-function assignTaskTo(task: DiscussionItem, profile: IProfile) {
-  return discussionStore.assignTaskTo(task, profile);
-}
+
 function moveTask(
   task: DiscussionItem,
   column?: ISprintBoardColumn,
@@ -69,7 +68,16 @@ function getIterations() {
       sizes="xs"
       v-close-popup
       :profiles="activeStore.activeMembers"
-      @click-profile="(p) => assignTaskTo(task, p)"
+      @click-profile="
+        (p) =>
+          TheWorkflows.emit({
+            type: 'assignTask',
+            arg: {
+              issue: task,
+              profile: p,
+            },
+          })
+      "
     />
   </q-btn-dropdown>
   <q-btn

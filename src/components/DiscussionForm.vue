@@ -132,7 +132,7 @@
             <q-btn
               icon="add"
               label="Add Acceptance Criteria"
-              @click="dialogAcceptance = true"
+              @click="newAcceptanceCriteria()"
             />
           </template>
         </q-table>
@@ -161,7 +161,7 @@
         <q-input v-model="newAcceptance.then" label="Then" />
       </q-card-section>
       <q-card-actions>
-        <q-btn icon="add" @click="addNewAccepatance">Add</q-btn>
+        <q-btn icon="add" @click="createAccepatance">Add</q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -280,7 +280,11 @@ onMounted(async () => {
     theDiscussion.value.goal = props.refItem.key;
   }
 });
-function addNewAccepatance() {
+function newAcceptanceCriteria() {
+  newAcceptance.value = {} as IAcceptanceCriteria;
+  dialogAcceptance.value = true;
+}
+function createAccepatance() {
   if (
     !newAcceptance?.value?.given ||
     !newAcceptance?.value?.when ||
@@ -343,11 +347,11 @@ async function submitDiscussion() {
         'bot',
         {
           type: 'message',
-          message: `${profileStore.presentUser.name} updated this ${
-            theDiscussion.value.type
-          } and progressed from ${(
+          message: `${theDiscussion.value.type} progressed from ${(
             (theDiscussion.value.progress || 0) * 100
-          ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(2)}%`,
+          ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(
+            2
+          )}% by ${profileStore.presentUser.name}`,
         }
       );
     }

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue';
 import { LineSeriesOption, EChartsOption } from 'echarts';
+import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import VChart from 'vue-echarts';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { date } from 'quasar';
@@ -9,12 +10,12 @@ import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { DiscussionItem, ICeremony, IProfile } from 'src/entities';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { formatKey } from 'src/components/discussion.helper';
-import { convoBus } from '../ceremony/convo-bus';
 import { useActiveStore } from 'src/stores/active.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { entityKey } from 'src/entities/base.entity';
 import draggable from 'vuedraggable';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 const route = useRoute();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
@@ -185,8 +186,9 @@ const actual = computed(() => {
     .filter((d) => typeof d !== 'undefined');
 });
 const plannedTasks = computed(() => {
-  return mappedDiscussions.value.reduce((p, c) => {
-    const dueDate = date.formatDate(c.dueDate!, 'YYYY/MM/DD');
+  return discussions.value.reduce((p, c) => {
+    const dueDate =
+      (c.dueDate && date.formatDate(c.dueDate, 'YYYY/MM/DD')) || 'unmapped';
     const exist = p[dueDate] || [];
     exist.push(c);
     p[dueDate] = exist;
@@ -322,22 +324,31 @@ function updateDueDate(d: string, task: DiscussionItem) {
   <div class="row q-px-xl">
     <div
       class="col row q-px-xs"
-      v-for="workday in workDays"
-      :key="workday.getTime()"
+      v-for="workday in ['unmapped', ...workDays]"
+      :key="typeof workday == 'string' ? workday : workday.getTime()"
     >
       <draggable
         class="col kanban-task-list dragArea list-group"
-        :list="plannedTasks[date.formatDate(workday, 'YYYY/MM/DD')] || []"
+        :list="
+          plannedTasks[
+            typeof workday != 'string'
+              ? date.formatDate(workday, 'YYYY/MM/DD')
+              : 'unmapped'
+          ] || []
+        "
         group="tasks"
         item-key="key"
-        @change="(e) => moveDue(workday, e)"
+        @change="(e) => typeof workday != 'string' && moveDue(workday, e)"
       >
         <template #header>
-          <q-chip class="text-center full-width"
+          <q-chip
+            class="text-center full-width"
+            v-if="typeof workday != 'string'"
             >{{ date.formatDate(workday, 'MMM DD') }} ({{
               plannedPtsOnDay(workday)
-            }})</q-chip
-          >
+            }})
+          </q-chip>
+          <q-chip v-else> Un-mapped</q-chip>
         </template>
         <template #item="{ element }">
           <q-chip
@@ -351,9 +362,39 @@ function updateDueDate(d: string, task: DiscussionItem) {
             dense
             clickable
             @click="TheDialogs.emit({ type: 'viewTask', arg: element })"
-            >{{ formatKey(element.key) }}<q-space />{{
-              element.complexity
-            }}</q-chip
+          >
+            <span>{{ formatKey(element.key) }}</span>
+            <q-space />
+            <recent-active-members
+              sizes="xs"
+              v-if="element.assignedTo"
+              :profiles="[element.assignedTo]"
+            />
+            <q-btn-dropdown
+              v-else
+              round
+              content-class="no-shadow"
+              no-icon-animation
+              dropdown-icon="person"
+              size="xs"
+            >
+              <RecentActiveMembers
+                sizes="xs"
+                v-close-popup
+                :profiles="activeStore.activeMembers"
+                @click-profile="
+                  (p) =>
+                    TheWorkflows.emit({
+                      type: 'assignTask',
+                      arg: {
+                        issue: element,
+                        profile: p,
+                      },
+                    })
+                "
+              />
+            </q-btn-dropdown>
+            {{ element.complexity }}</q-chip
           >
         </template>
       </draggable>

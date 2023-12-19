@@ -40,7 +40,7 @@ const props = defineProps({
     type: Object as PropType<DiscussionItem>,
   },
 });
-let convo: Convo[] = [];
+const convo = ref<Convo[]>([]);
 const task = ref<DiscussionItem>(props.item);
 const tab = ref('progress');
 const splitterModel = ref(20);
@@ -54,7 +54,7 @@ onMounted(async () => {
       .ofDiscussion(activeStore.activeProject?.key, props.item.key)
       .subscribe({
         next: (messages) => {
-          convo = messages;
+          convo.value = messages;
         },
       });
   }
@@ -96,7 +96,7 @@ const membersVoted = computed(() => {
   const activeStore = useActiveStore();
   const voted = [
     ...new Set(
-      (convo.filter((c) => c.type == 'vote') as IVote[])
+      (convo.value.filter((c) => c.type == 'vote') as IVote[])
         .reduce(
           (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
           [] as IVote[]
@@ -137,7 +137,7 @@ const progressReport = computed<IProgressFeedback[]>(() => {
     return discussionStore.checkCompleteness(
       props.item,
       activeStore.activeProject,
-      convo
+      convo.value
     );
   }
   return [];
@@ -180,6 +180,23 @@ function asProgress(progress: IProgressFeedback) {
           task.dueDate || 'ND'
         }}</q-badge>
       </div>
+      <q-btn
+        v-if="task.iteration"
+        :to="{
+          name: 'convo',
+          params: {
+            project: task.projectKey,
+            iteration: entityKey(task.iteration),
+            ceremony: entityKey(task.iteration) + 'plan',
+            item: task.key,
+          },
+        }"
+        v-close-popup
+        round
+        icon="message"
+        size="sm"
+        ><q-tooltip>Convo</q-tooltip></q-btn
+      >
       <q-btn v-close-popup flat round dense icon="close" />
     </q-toolbar>
     <q-card-section horizontal>

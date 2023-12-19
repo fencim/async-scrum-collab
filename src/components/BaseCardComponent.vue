@@ -7,6 +7,7 @@ import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { date } from 'quasar';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
 defineProps({
@@ -71,7 +72,16 @@ const showDetails = ref(false);
         sizes="xs"
         v-close-popup
         :profiles="activeStore.activeMembers"
-        @click-profile="(p) => discussionStore.assignTaskTo(task, p)"
+        @click-profile="
+          (p) =>
+            TheWorkflows.emit({
+              type: 'assignTask',
+              arg: {
+                issue: task,
+                profile: p,
+              },
+            })
+        "
       />
     </q-btn-dropdown>
   </div>

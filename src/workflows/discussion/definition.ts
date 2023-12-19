@@ -1,4 +1,4 @@
-import { DiscussionItem, IBoardColumn } from 'src/entities';
+import { DiscussionItem, IBoardColumn, IProfile } from 'src/entities';
 import { Struct } from 'src/structs';
 
 export type Discussion =
@@ -6,5 +6,10 @@ export type Discussion =
     issue: DiscussionItem,
     column?: IBoardColumn,
     iterationKey?: string,
+    done?: (issue: DiscussionItem) => void
+  }>
+  | Struct<'assignTask', {
+    issue: DiscussionItem,
+    profile: IProfile,
     done?: (issue: DiscussionItem) => void
   }>

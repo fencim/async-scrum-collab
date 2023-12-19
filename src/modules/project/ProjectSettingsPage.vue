@@ -122,7 +122,7 @@
           TheDialogs.emit({
             type: 'scrumGuide',
             arg: {
-              keyword: 'User Story Columns',
+              keyword: 'individuals',
             },
           })
         "

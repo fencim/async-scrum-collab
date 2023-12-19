@@ -37,6 +37,23 @@
         <q-tooltip>Task board</q-tooltip>
       </q-item>
       <q-item
+        v-if="$route.params.iteration"
+        clickable
+        :to="{
+          name: 'ceremony',
+          params: {
+            project: project?.key,
+            iteration: $route.params.iteration,
+            ceremony: $route.params.iteration + 'plan',
+          },
+        }"
+      >
+        <q-item-section avatar>
+          <q-icon name="meeting_room" />
+        </q-item-section>
+        <q-tooltip>Planning Meeting</q-tooltip>
+      </q-item>
+      <q-item
         clickable
         :to="{
           name: 'burn-down',

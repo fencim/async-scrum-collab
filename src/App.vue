@@ -6,7 +6,7 @@
 import { useQuasar } from 'quasar';
 import { defineComponent } from 'vue';
 import { use } from 'echarts/core';
-import 'v-calendar/style.css';
+import 'v-calendar/dist/style.css';
 import '@uivjs/vue-markdown-preview/markdown.css';
 import './workflows';
 import { CanvasRenderer } from 'echarts/renderers';

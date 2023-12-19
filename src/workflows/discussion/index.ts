@@ -67,3 +67,12 @@ TheWorkflows.on({
     e.done && e.done(updated);
   },
 })
+
+TheWorkflows.on({
+  type: 'assignTask',
+  async cb(e) {
+    const discussionStore = useDiscussionStore();
+    const updated = await discussionStore.assignTaskTo(e.issue, e.profile);
+    e.done && e.done(updated);
+  },
+})
