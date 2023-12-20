@@ -10,7 +10,7 @@
             ><span class="text-weight-bold">{{
               $route.params.iteration ? 'Edit' : 'New'
             }}</span>
-            Iteration</q-toolbar-title
+            Sprint</q-toolbar-title
           >
           <q-btn flat round dense icon="close" v-close-popup />
         </q-toolbar>
@@ -33,6 +33,7 @@
             class="full-width"
             v-model="range"
             range
+            :options="futureOnly"
             @update:model-value="planSched = ceremonies"
           />
           <q-toggle
@@ -95,7 +96,12 @@ const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6].map((day) => {
   d.setDate(d.getDate() - d.getDay() + day);
   return date.formatDate(d, 'ddd');
 });
-
+function futureOnly(d: string) {
+  const dateRef = new Date();
+  dateRef.setDate(dateRef.getDate() - dateRef.getDay());
+  const start = date.formatDate(dateRef, 'YYYY/MM/DD');
+  return d >= start;
+}
 const activeProjectKey = ref('');
 const theIteration = ref<Partial<IIteration>>({});
 const scheduleCeremonies = ref(true);

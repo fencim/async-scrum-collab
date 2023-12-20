@@ -21,7 +21,7 @@ TheWorkflows.on({
   async cb(e) {
     const discussionStore = useDiscussionStore();
     const activeStore = useActiveStore();
-    const issueReadyness = activeStore.activeProject?.discussionReadyness || 0;
+    const issueReadyness = activeStore.activeProject?.discussionReadiness || 0;
     const { issue, column, iterationKey } = e;
     const goIssues = issue.type == 'goal' || issue.type == 'objective';
     const movingFromIteration =

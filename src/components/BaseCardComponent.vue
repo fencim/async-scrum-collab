@@ -4,12 +4,10 @@ import { PropType, ref } from 'vue';
 import { formatKey } from './discussion.helper';
 import RecentActiveMembers from './RecentActiveMembers.vue';
 import { useActiveStore } from 'src/stores/active.store';
-import { useDiscussionStore } from 'src/stores/discussions.store';
 import { date } from 'quasar';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 const activeStore = useActiveStore();
-const discussionStore = useDiscussionStore();
 defineProps({
   mini: Boolean,
   maxed: Boolean,

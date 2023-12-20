@@ -9,33 +9,30 @@
       />
     </div>
     <div v-else>
-      <div class="text-h3">Get Started</div>
-      <div class="text-h4">Set Project Taskboard Columns</div>
-      <div class="text-h4">Schedule Iterations</div>
-      <div class="text-h4">Create Iteration Goal</div>
-      <div class="text-h4">Create Iteration Objectives</div>
-      <div class="text-h4">Create Stories</div>
+      <MarkdownPreview :source="gettingStarted" />
     </div>
   </q-page>
 </template>
 
 <script lang="ts">
+import MarkdownPreview from '@uivjs/vue-markdown-preview';
 import { IProject } from 'src/entities';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 import IterationTimeline from './IterationTimeline.vue';
-
+import gettingStarted from 'src/guides/getting-project-started.guide.md?raw';
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
 
 export default defineComponent({
   name: 'ProjectPage',
-  components: { IterationTimeline },
+  components: { IterationTimeline, MarkdownPreview },
   data() {
     return {
       projectStore,
       iterationStore,
+      gettingStarted,
       activeProject: '',
       project: undefined as IProject | undefined,
       activeIteration: '',

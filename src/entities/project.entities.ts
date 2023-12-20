@@ -12,7 +12,7 @@ export interface IProject extends IBaseEntity {
   name: string;
   description?: string;
   status?: 'active' | 'disabled' | 'closed';
-  discussionReadyness?: number;
+  discussionReadiness?: number;
   icon?: string;
   admins: string[];
   members: string[];

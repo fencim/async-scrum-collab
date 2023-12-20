@@ -392,6 +392,7 @@ import { defineComponent } from 'vue';
 import { useActiveStore } from 'src/stores/active.store';
 import md from 'src/guides/discussion-readiness.guide.md?raw';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 
 function createNewBoardCol() {
   return {
@@ -438,7 +439,7 @@ export default defineComponent({
       return activeStore.pendingMembers;
     },
     settingsSaved() {
-      const ready = activeStore.activeProject?.discussionReadyness || 0;
+      const ready = activeStore.activeProject?.discussionReadiness || 0;
       return this.columnsSaved && ready == this.issueReadynesss;
     },
   },
@@ -468,7 +469,7 @@ export default defineComponent({
       ];
       this.columnsSaved = false;
     }
-    this.issueReadynesss = activeStore.activeProject?.discussionReadyness || 0;
+    this.issueReadynesss = activeStore.activeProject?.discussionReadiness || 0;
   },
 
   methods: {
@@ -648,15 +649,35 @@ export default defineComponent({
     },
     async disableProject() {
       if (!activeStore.activeProject) return;
-      await projectStore.setStatus(activeStore.activeProject.key, 'disabled');
+      await projectStore.updateSettings(
+        activeStore.activeProject.key,
+        'status',
+        'disabled'
+      );
     },
     async closeProject() {
       if (!activeStore.activeProject) return;
-      await projectStore.setStatus(activeStore.activeProject.key, 'closed');
+      await projectStore.updateSettings(
+        activeStore.activeProject.key,
+        'status',
+        'closed'
+      );
     },
     async activateProject() {
       if (!activeStore.activeProject) return;
-      await projectStore.setStatus(activeStore.activeProject.key, 'active');
+      TheWorkflows.emit({
+        type: 'updateProjectSettings',
+        arg: {
+          project: activeStore.activeProject,
+          settings: 'status',
+          value: 'active',
+        },
+      });
+      await projectStore.updateSettings(
+        activeStore.activeProject.key,
+        'status',
+        'active'
+      );
     },
     createNewCol() {
       this.editingCol = this.newBoardCol;
@@ -717,11 +738,23 @@ export default defineComponent({
         this.columnsSaved = true;
       }
       if (
-        activeStore.activeProject.discussionReadyness !== this.issueReadynesss
+        activeStore.activeProject.discussionReadiness !== this.issueReadynesss
       ) {
         //save readiness here
+        TheWorkflows.emit({
+          type: 'updateProjectSettings',
+          arg: {
+            project: activeStore.activeProject,
+            settings: 'discussionReadiness',
+            value: this.issueReadynesss,
+            done: (project) => {
+              this.saving = false;
+            },
+          },
+        });
+      } else {
+        this.saving = false;
       }
-      this.saving = false;
     },
   },
 });

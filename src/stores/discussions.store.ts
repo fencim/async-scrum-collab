@@ -42,9 +42,9 @@ export const useDiscussionStore = defineStore('discussion', {
     getTaskBoard(columns: IBoardColumn[], iterationKey: string) {
       const boardTasks = this.productBacklog.tasks.filter(t =>
         (entityKey(t.iteration || '') == iterationKey));
-      return columns.map((c, index) => ({
+      return columns.map((c) => ({
         ...c,
-        tasks: boardTasks.filter(t => (t.status == c.key || (index == 0 && !t.status)))
+        tasks: boardTasks.filter(t => (t.status == c.key /*|| (index == 0 && !t.status)*/))
       })) as ISprintBoardColumn[];
     },
     fromIteration(projectKey: string, iterationKey: string) {

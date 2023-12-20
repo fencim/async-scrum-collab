@@ -183,19 +183,20 @@ export const useProjectStore = defineStore('projectStore', {
       }
       return project;
     },
-    async setStatus(projectKey: string, status: IProject['status']) {
+    async updateSettings<P extends (keyof IProject)>(projectKey: string,
+      setting: P, value: IProject[P]) {
       const project = await this.selectProject(projectKey);
       if (!project) {
         throw 'Project does not exits';
       }
-      const deffered = new DeferredPromise<void>();
-      await projectResource.updateProperty(projectKey, 'status', status, async (info) => {
+      const deffered = new DeferredPromise<IProject | undefined>();
+      await projectResource.updateProperty(projectKey, setting, value, async (info) => {
         if (info.status == 'synced') {
           this.activeProject = await projectResource.getLocalData(info.newKey || info.key || projectKey);
-          deffered.resolve();
+          deffered.resolve(await projectResource.getLocalData(projectKey));
         }
       });
-      await deffered.promise;
+      return deffered.promise;
     },
     async saveProjectColumns(projectKey: string, cols: IBoardColumn[]) {
       const project = await this.selectProject(projectKey);
