@@ -6,6 +6,7 @@ import nacl from 'tweetnacl';
 import naclUtil from 'tweetnacl-util';
 import { switchMap } from 'rxjs/internal/operators/switchMap';
 const dbVersion = undefined;
+
 interface IEncryptedMsg {
   cipherText: string;
   ephemPubKey: string;
@@ -26,7 +27,7 @@ export type IBaseResourceModel =
     id?: string;
     key?: string;
   }
-  | Record<string, any>;
+  | Record<string, unknown>;
 type DocError =
   | 'error'
   | 'createError'
@@ -60,7 +61,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
   constructor(
     public readonly entity: string,
     private keyField?: string,
-    readonly prefix = 'hrs',
+    readonly prefix = 'asc',
     private altKey?: string,
     private shouldEncrypt = typeof process.env.EPRIKEY != 'undefined' &&
       process.env.EPRIKEY != 'false' &&
@@ -802,11 +803,8 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     this.onSubscribe?.call(this, subject, cb);
   }
   async syncDoc(doc: IDocStore<T> | string) {
-    if (typeof doc == 'string') {
-      const targetDoc = await this.getDoc(doc);
-      return targetDoc && this.manageDocCallback(targetDoc, true);
-    }
-    return this.manageDocCallback(doc, true);
+    const targetDoc = await this.getDoc(typeof doc == 'string' ? doc : doc.key);
+    return targetDoc && this.manageDocCallback(targetDoc, true);
   }
   resumeSyncing(syncOn?: DocStatus[], timeout?: number) {
     this.syncingOn = syncOn || true;
@@ -822,14 +820,19 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
       }, timeout);
     }
   }
-  synchingDoc(doc: IDocStore<T> | string) {
-    if (typeof doc == 'object' && doc.status == 'syncing' || typeof doc == 'string') {
+  synchingDoc(doc: IDocStore<T> | string, lapse = 20 * 1000) {
+    if (typeof doc == 'object' && doc.status != 'synced' || typeof doc == 'string') {
       const key = typeof doc == 'object' ? doc.key : doc;
       return new Promise<typeof doc>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          subscription.unsubscribe();
+          reject('synching timeout');
+        }, lapse)
         const subscription = this.streamDocWith({ key }).subscribe({
           next(value) {
             if (value.length == 1 && value[0].status != 'syncing') {
               subscription.unsubscribe();
+              clearTimeout(timeout);
               resolve(value[0]);
             }
           },
@@ -841,9 +844,9 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     }
     return doc;
   }
-  async synchingData(key: string) {
+  async synchingData(key: string, lapse?: number) {
     const doc = await this.getDoc(key);
-    return this.synchingDoc(doc ?? key);
+    return this.synchingDoc(doc ?? key, lapse);
   }
   async save(
     key: string,
@@ -853,7 +856,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     remarks?: string
   ): Promise<IDocStore<T> | undefined> {
     const identity = String(key || this.getKeyOf(value));
-    let existing = identity && (await this.getDoc(identity));
+    let existing = identity && (await this.getDocByIdentity(identity));
     if (createOnlyOrStatus === true && existing) {
       throw new Error('Record already exist');
     }
@@ -867,7 +870,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
             ? 'synced'
             : 'updated';
       existing.modifiedDate =
-        (status != existing.status || existing.modifiedDate) ? new Date() : existing.modifiedDate;
+        (status != existing.status || !existing.modifiedDate) ? new Date() : existing.modifiedDate;
       existing.status = status;
       existing.data = value;
       existing.remarks = [existing.remarks, remarks]
@@ -893,8 +896,8 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
           this.manageDocCallback(existing);
           return deffered.promise;
         }
+        return existing;
       }
-      return existing;
     }
     const doc =
       identity &&
@@ -965,7 +968,6 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     const existing = await this.getDoc(key);
     if (existing) {
       existing.data = value;
-
       await this.saveDoc(String(key), existing);
       await this.setDataStatus(existing.key, 'updated');
       existing.status = 'updated';
