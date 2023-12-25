@@ -178,9 +178,8 @@ export const useDiscussionStore = defineStore('discussion', {
           return (item && `${(item as DiscussionItem).type}`) || ('Unknown item');
       }
     },
-    checkCompleteness(item: DiscussionItem, project: IProject, convo: ConvoList) {
+    checkCompleteness(item: DiscussionItem, members: string[], convo: ConvoList) {
       const factors: { factor: string, progress: number, feedback: string }[] = [];
-      const members = project.members;
       const questions = convo.filter(c => c.type == 'question') as IQuestion[];
       const votes = convo.filter(c =>
         (c.type == 'vote')

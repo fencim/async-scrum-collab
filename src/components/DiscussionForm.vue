@@ -6,11 +6,9 @@
           <img src="/icons/favicon-128x128.png" />
         </q-avatar>
         <q-toolbar-title
-          ><span class="text-weight-bold">{{
-            $route.params.item ? 'Edit' : 'New'
-          }}</span>
-          Discussion of {{ activeProject?.name }}</q-toolbar-title
-        >
+          ><span class="text-weight-bold">{{ item ? 'Edit' : 'New' }}</span>
+          Discussion of {{ activeProject?.name }} {{ type }}
+        </q-toolbar-title>
       </q-toolbar>
       <div v-if="refItem" class="q-pa-sm q-mx-sm shadow-5 rounded-borders">
         <component
@@ -18,133 +16,66 @@
           :is="getComponent(refItem)"
           :task="refItem"
           mini
+          header-only
           no-action
         />
       </div>
-      <q-card-section class="row" v-if="!item">
+      <q-card-section class="row" v-if="!item && !type">
         <q-select
           class="col-12"
           emit-value
-          v-if="!refItem"
           map-options
           label="Type"
           v-model="theDiscussion.type"
           :options="[
-            { v: 'goal', t: 'Iteration Goal' },
-            { v: 'objective', t: 'Iteration Objective' },
-            { v: 'story', t: 'Story' },
-            { v: 'task', t: 'Task' },
+            { v: 'goal', t: 'Sprint Goal' },
+            { v: 'objective', t: 'Sprint Objective' },
+            { v: 'story', t: 'User Story' },
+            { v: 'task', t: 'Technical Task' },
           ]"
           option-value="v"
           option-label="t"
         />
-        <q-badge v-else class="text-capitalize">{{
-          theDiscussion.type
-        }}</q-badge>
       </q-card-section>
       <q-card-section
-        v-if="theDiscussion.type == 'goal' || theDiscussion.type == 'task'"
+        v-if="theDiscussion.type != 'goal' && !refItem"
         class="row"
       >
-        <q-input
+        <q-select
           class="col-12"
-          v-model="theDiscussion.description"
-          type="textarea"
-          label="Description"
+          emit-value
+          label="Parent"
+          map-options
+          v-model="theDiscussion.parent"
+          :options="discussions.filter((d) => d.type != 'task')"
+          :option-label="describeDiscussion"
+          option-value="key"
+        >
+        </q-select>
+      </q-card-section>
+      <q-card-section v-if="theDiscussion.type == 'goal'" class="row">
+        <goal-form-fields
+          :value="theDiscussion"
+          @input="(v) => (theDiscussion = v)"
         />
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'objective'" class="row">
-        <q-select
-          class="col-12"
-          emit-value
-          label="Goal"
-          map-options
-          v-model="theDiscussion.goal"
-          :options="discussions.filter((d) => d.type == 'goal')"
-          :option-label="describeDiscussion"
-          option-value="key"
+        <objective-form-fields
+          :iteration="iteration"
+          :value="theDiscussion"
+          @input="(v) => (theDiscussion = v)"
         />
-        <q-input
-          class="col-12"
-          v-model="theDiscussion.description"
-          type="textarea"
-          :rules="[(v) => (v && v.length > 0) || 'Enter Description']"
-          label="Description"
-        />
-        <q-input
-          class="col-6"
-          v-model="theDiscussion.specifics"
-          label="Specifics"
-        />
-        <q-input
-          class="col-6"
-          v-model="theDiscussion.mesures"
-          label="Measures"
-        />
-        <q-input
-          class="col-6"
-          v-model="theDiscussion.enables"
-          label="Enables"
-        />
-        <q-input
-          class="col-6"
-          filled
-          v-model="theDiscussion.dueDate"
-          mask="date"
-          label="Due"
-          :rules="['date']"
-        >
-          <template v-slot:append>
-            <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy>
-                <q-date v-model="theDiscussion.dueDate">
-                  <div class="row items-center justify-end">
-                    <q-btn v-close-popup label="Close" color="primary" flat />
-                  </div>
-                </q-date>
-              </q-popup-proxy>
-            </q-icon>
-          </template>
-        </q-input>
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'story'" class="row">
-        <q-input
-          class="col-6"
-          v-model="theDiscussion.targetUser"
-          label="As a"
+        <story-form-fields
+          :value="theDiscussion"
+          @input="(v) => (theDiscussion = v)"
         />
-        <q-input
-          class="col-6"
-          v-model="theDiscussion.subject"
-          label="I want to"
-        />
-        <q-input
-          class="col-12"
-          v-model="theDiscussion.purpose"
-          label="So that"
-        />
-        <q-table
-          class="col-12"
-          :rows="theDiscussion.acceptanceCriteria"
-          :columns="acceptanceCriteriaColumns"
-        >
-          <template v-slot:top>
-            <q-btn
-              icon="add"
-              label="Add Acceptance Criteria"
-              @click="newAcceptanceCriteria()"
-            />
-          </template>
-        </q-table>
-        <q-select
-          class="col-12"
-          emit-value
-          label="Tasks"
-          map-options
-          v-model="theDiscussion.tasks"
-          :options="discussions"
-          :option-label="describeDiscussion"
-          option-value="key"
+      </q-card-section>
+      <q-card-section v-else-if="theDiscussion.type == 'task'" class="row">
+        <task-form-fields
+          :value="theDiscussion"
+          @input="(v) => (theDiscussion = v)"
         />
       </q-card-section>
       <q-card-actions :align="'right'">
@@ -153,29 +84,11 @@
       </q-card-actions>
     </q-form>
   </q-card>
-  <q-dialog v-model="dialogAcceptance">
-    <q-card v-if="newAcceptance">
-      <q-card-section>
-        <q-input v-model="newAcceptance.given" label="Given" />
-        <q-input v-model="newAcceptance.when" label="When" />
-        <q-input v-model="newAcceptance.then" label="Then" />
-      </q-card-section>
-      <q-card-actions>
-        <q-btn icon="add" @click="createAccepatance">Add</q-btn>
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 </template>
 
 <script lang="ts" setup>
-import { format, useQuasar } from 'quasar';
-import {
-  DiscussionItem,
-  IAcceptanceCriteria,
-  ICeremony,
-  IIteration,
-  IProject,
-} from 'src/entities';
+import { format } from 'quasar';
+import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 import { getComponent } from 'src/modules/task-board/card-components';
 import { useActiveStore } from 'src/stores/active.store';
@@ -186,6 +99,10 @@ import { useIterationStore } from 'src/stores/iterations.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import GoalFormFields from './discussion/GoalFormFields.vue';
+import ObjectiveFormFields from './discussion/ObjectiveFormFields.vue';
+import StoryFormFields from './discussion/StoryFormFields.vue';
+import TaskFormFields from './discussion/TaskFormFields.vue';
 
 const activeStore = useActiveStore();
 const profileStore = useProfilesStore();
@@ -202,31 +119,13 @@ const props = defineProps<{
   refItem?: DiscussionItem;
 }>();
 const $emit = defineEmits(['closeForm']);
-const acceptanceCriteriaColumns = [
-  {
-    name: 'given',
-    label: 'Given',
-    field: 'given',
-  },
-  {
-    name: 'when',
-    label: 'When',
-    field: 'when',
-  },
-  {
-    name: 'then',
-    label: 'Then',
-    field: 'then',
-  },
-];
+
 const activeProjectKey = ref('AA1');
 const activeProject = ref<IProject | undefined>();
 const activeIterationKey = ref('');
 const activeIteration = ref<IIteration | undefined>();
 const activeCeremonyKey = ref('');
 const activeCeremony = ref<ICeremony | undefined>();
-const dialogAcceptance = ref(false);
-const newAcceptance = ref<IAcceptanceCriteria | undefined>();
 const saving = ref(false);
 const theDiscussion = ref<DiscussionItem>(
   props.item ||
@@ -278,29 +177,10 @@ onMounted(async () => {
     theDiscussion.value.type == 'objective' &&
     props.refItem?.type == 'goal'
   ) {
-    theDiscussion.value.goal = props.refItem.key;
+    theDiscussion.value.parent = props.refItem.key;
   }
 });
-function newAcceptanceCriteria() {
-  newAcceptance.value = {} as IAcceptanceCriteria;
-  dialogAcceptance.value = true;
-}
-function createAccepatance() {
-  if (
-    !newAcceptance?.value?.given ||
-    !newAcceptance?.value?.when ||
-    !newAcceptance?.value?.then
-  ) {
-    return;
-  }
-  const theDiscussion = props.item;
-  if (theDiscussion?.type == 'story') {
-    theDiscussion.acceptanceCriteria = theDiscussion.acceptanceCriteria || [];
-    theDiscussion.acceptanceCriteria.push(newAcceptance.value);
-    newAcceptance.value = {} as IAcceptanceCriteria;
-    dialogAcceptance.value = false;
-  }
-}
+
 function describeDiscussion(item: DiscussionItem) {
   return discussionStore.describeDiscussion(item);
 }
@@ -318,19 +198,15 @@ async function submitDiscussion() {
       counter++;
     } while (discussions.value.find((d) => d.key == key));
     theDiscussion.value.key = key;
-  }
-  theDiscussion.value.iteration =
-    theDiscussion.value.iteration || activeIterationKey.value;
-  theDiscussion.value.projectKey = activeProjectKey.value;
-  if (props.refItem) {
-    theDiscussion.value.parrent = entityKey(props.refItem);
+    theDiscussion.value.iteration =
+      theDiscussion.value.iteration || activeIterationKey.value;
+    theDiscussion.value.projectKey = activeProjectKey.value;
+    if (props.refItem) {
+      theDiscussion.value.parent = entityKey(props.refItem);
+    }
   }
   await discussionStore.saveDiscussion(theDiscussion.value);
 
-  if (activeCeremony.value) {
-    activeCeremony.value.discussions.push(theDiscussion.value.key);
-    await ceremonyStore.saveCeremony(activeCeremony.value);
-  }
   if (
     activeProject.value &&
     profileStore.presentUser &&
@@ -338,7 +214,7 @@ async function submitDiscussion() {
   ) {
     const report = discussionStore.checkCompleteness(
       theDiscussion.value,
-      activeProject.value,
+      activeProject.value.members,
       convoStore.convo
     );
     if (theDiscussion.value.progress != report[0].progress) {

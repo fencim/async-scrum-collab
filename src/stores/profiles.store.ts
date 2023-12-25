@@ -124,6 +124,7 @@ export const useProfilesStore = defineStore('Profiles', {
       const cred = await firebaseService.signInWithGoolgeAccount();
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
+      this.theUser && await profileResource.synchingData(this.theUser.key);
       if (this.theUser) {
         logsResource.setData('', {
           type: 'auth-login',

@@ -60,30 +60,7 @@
         <q-tooltip>Burn Down</q-tooltip>
       </q-item>
       <q-separator />
-      <q-item
-        clickable
-        dense
-        tag="a"
-        @click="
-          goalIsCreated && !objectiveIsCreated
-            ? TheDialogs.emit({
-                type: 'newSubTask',
-                arg: {
-                  ref: goalIsCreated,
-                },
-              })
-            : TheDialogs.emit({
-                type: 'newTask',
-                arg: {
-                  type: !goalIsCreated
-                    ? 'goal'
-                    : !objectiveIsCreated
-                    ? 'objective'
-                    : 'story',
-                },
-              })
-        "
-      >
+      <q-item clickable dense tag="a" @click="newDiscussion">
         <q-item-section avatar>
           <q-icon name="add" size="sm" />
         </q-item-section>
@@ -204,6 +181,9 @@ export default defineComponent({
       this.item =
         (this.activeItem && (await discussionStore.withKey(this.activeItem))) ||
         undefined;
+      if (this.item && !this.iteration) {
+        this.iteration = this.item.iteration as IIteration;
+      }
       if (this.item?.type == 'scrum') {
         this.convoStore.setLinkVisibility(
           /(attachment|question|record|agree|view|disagree)/i,
@@ -261,6 +241,34 @@ export default defineComponent({
       );
       this.dialogAgree = false;
       convoBus.emit('refresh');
+    },
+    async newDiscussion() {
+      const goalCreated = this.goalIsCreated;
+      if (
+        this.item &&
+        (['objective', 'goal', 'story'] as DiscussionItem['type'][]).includes(
+          this.item.type
+        )
+      ) {
+        TheDialogs.emit({
+          type: 'newSubTask',
+          arg: {
+            ref: this.item,
+          },
+        });
+      } else {
+        TheDialogs.emit({
+          type: 'newTask',
+          arg: {
+            type: !goalCreated
+              ? 'goal'
+              : !this.objectiveIsCreated
+              ? 'objective'
+              : 'story',
+            iteration: this.iteration,
+          },
+        });
+      }
     },
   },
 });

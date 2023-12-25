@@ -13,3 +13,13 @@ export type Discussion =
     profile: IProfile,
     done?: (issue: DiscussionItem) => void
   }>
+  | Struct<'createDiscussion', {
+    item: DiscussionItem,
+    refItem?: DiscussionItem,
+    projectKey: string;
+    iterationKey: string;
+    done?: (item: DiscussionItem) => void
+  }>
+  | Struct<'computeReadiness', {
+    item: DiscussionItem
+  }>

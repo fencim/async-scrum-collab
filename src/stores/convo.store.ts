@@ -88,7 +88,7 @@ export const useConvoStore = defineStore('convo', {
       const discItem = discussionStore.discussions.find(d => d.key == discussion && d.projectKey == projectKey);
       const presentUser = useProfilesStore().presentUser;
       if (discItem && project && presentUser) {
-        const report = discussionStore.checkCompleteness(discItem, project, convo);
+        const report = discussionStore.checkCompleteness(discItem, project.members, convo);
         if (report[0].progress != discItem.progress) {
           discItem.progress = report[0].progress;
           await discussionStore.saveDiscussion(discItem);

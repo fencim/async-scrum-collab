@@ -461,7 +461,7 @@ export default defineComponent({
       if (this.discussion && this.project) {
         const report = discussionStore.checkCompleteness(
           this.discussion,
-          this.project,
+          this.project.members,
           this.convoStore.convo
         );
         if (this.discussion.progress != report[0].progress) {

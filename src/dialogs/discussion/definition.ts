@@ -1,10 +1,11 @@
-import { DiscussionItem } from 'src/entities';
+import { DiscussionItem, IIteration } from 'src/entities';
 import { Struct } from 'src/structs';
 
 export type Discussions =
   | Struct<'newTask', {
     status?: DiscussionItem['status'],
     type?: DiscussionItem['type'],
+    iteration?: IIteration,
     done?: (item: DiscussionItem) => void
   }>
   | Struct<'editTask', {

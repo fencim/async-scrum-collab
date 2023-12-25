@@ -24,7 +24,7 @@
         </q-input>
         <q-card-actions vertical>
           <q-btn
-            :loading="action == 1"
+            :loading="action == LoginAction.userAndPassword"
             :disable="action != 0"
             type="submit"
             icon="login"
@@ -32,8 +32,8 @@
           />
           <div class="text-center">Or</div>
           <q-btn
-            :loading="action == 2"
-            :disable="action != 0"
+            :loading="action == LoginAction.goolgle"
+            :disable="action != LoginAction.none"
             @click="withGoogle"
             label="Login with Gooogle"
             padding="10px"
@@ -46,8 +46,8 @@
           </q-btn>
           <div class="text-center">Or</div>
           <q-btn
-            :loading="action == 3"
-            :disable="action != 0"
+            :loading="action == LoginAction.signUp"
+            :disable="action != LoginAction.none"
             icon="how_to_reg"
             :to="{ name: 'register' }"
             label="Signup"
@@ -58,10 +58,13 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
+import { FirebaseError } from 'firebase/app';
+import { useQuasar } from 'quasar';
 import { useProfilesStore } from 'src/stores/profiles.store';
-import { defineComponent } from 'vue';
-const profileStore = useProfilesStore();
+import { TheWorkflows } from 'src/workflows/the-workflows';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 enum LoginAction {
   none,
@@ -69,55 +72,58 @@ enum LoginAction {
   goolgle,
   signUp,
 }
-export default defineComponent({
-  name: 'LoginPage',
-  components: {},
-  data() {
-    return {
-      email: '',
-      password: '',
-      action: LoginAction.none,
-    };
-  },
-  methods: {
-    async signIn() {
-      try {
-        this.action = LoginAction.userAndPassword;
-        await profileStore.signIn(this.email, this.password);
-        this.$q.notify({
-          message: 'Successfully signed',
-        });
-        this.$router.replace('/');
-      } catch (e) {
-        this.$q.notify({
-          message: String((e as { code: string }).code || e),
-          position: 'top',
-          color: 'negative',
-        });
-      }
-    },
-    async withGoogle() {
-      try {
-        this.action = LoginAction.goolgle;
-        await profileStore.signInWithGoogle();
-        this.$q.notify({
+const email = ref('');
+const password = ref('');
+const action = ref(LoginAction.none);
+
+async function signIn() {
+  const profileStore = useProfilesStore();
+  const $q = useQuasar();
+  const $router = useRouter();
+  try {
+    action.value = LoginAction.userAndPassword;
+    await profileStore.signIn(email.value, password.value);
+    $q.notify({
+      message: 'Successfully signed',
+    });
+    $router.replace('/');
+  } catch (e) {
+    $q.notify({
+      message: String((e as { code: string }).code || e),
+      position: 'top',
+      color: 'negative',
+    });
+  }
+}
+const $q = useQuasar();
+const $router = useRouter();
+async function withGoogle() {
+  action.value = LoginAction.goolgle;
+  TheWorkflows.emit({
+    type: 'loginWithGoogle',
+    arg: {
+      done() {
+        $q.notify({
           message: 'Successfully signed',
           caption: 'Loading...',
           progress: true,
           onDismiss: () => {
-            this.$router.replace('/');
+            $router.replace('/');
           },
         });
-      } catch (e) {
-        this.action = LoginAction.none;
-        this.$q.notify({
-          message: String((e as { code: string }).code || e),
-          position: 'top',
-          color: 'negative',
-        });
-      }
+      },
+      error(e) {
+        action.value = LoginAction.none;
+        if (e instanceof FirebaseError) {
+          $q.notify({
+            message: String(e.code),
+            position: 'top',
+            color: 'negative',
+          });
+        }
+      },
     },
-  },
-});
+  });
+}
 </script>
 <style></style>

@@ -18,13 +18,14 @@ export interface IDiscussion extends IBaseEntity {
   assignees?: (string | IProfile)[];
   order?: number;
   //planning
+  convoCount?: number;
   progress?: number;
   dueDate?: string;
   priority?: number;
   unread?: number;
   info?: string;
   //relations
-  parrent?: string | DiscussionItem;
+  parent?: string | DiscussionItem;
   relatesTo?: (string | DiscussionItem)[];
   dependents?: (string | DiscussionItem)[];
 }
@@ -35,7 +36,6 @@ export interface IGoal extends IDiscussion {
 }
 export interface IObjective extends IDiscussion {
   type: 'objective';
-  goal: string | IGoal;
   description: string;
   specifics?: string;
   mesures?: string;
@@ -52,7 +52,6 @@ export interface IAcceptanceCriteria {
 }
 export interface IFeature extends IDiscussion {
   type: 'Feature';
-  forObjective?: string | IObjective;
   description: string;
   businessValue: number;
 }

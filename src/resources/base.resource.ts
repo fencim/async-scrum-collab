@@ -822,6 +822,29 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
       }, timeout);
     }
   }
+  synchingDoc(doc: IDocStore<T> | string) {
+    if (typeof doc == 'object' && doc.status == 'syncing' || typeof doc == 'string') {
+      const key = typeof doc == 'object' ? doc.key : doc;
+      return new Promise<typeof doc>((resolve, reject) => {
+        const subscription = this.streamDocWith({ key }).subscribe({
+          next(value) {
+            if (value.length == 1 && value[0].status != 'syncing') {
+              subscription.unsubscribe();
+              resolve(value[0]);
+            }
+          },
+          error(er) {
+            reject(er);
+          }
+        })
+      })
+    }
+    return doc;
+  }
+  async synchingData(key: string) {
+    const doc = await this.getDoc(key);
+    return this.synchingDoc(doc ?? key);
+  }
   async save(
     key: string,
     value: T,
@@ -830,10 +853,12 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     remarks?: string
   ): Promise<IDocStore<T> | undefined> {
     const identity = String(key || this.getKeyOf(value));
-    const existing = identity && (await this.getDoc(identity));
+    let existing = identity && (await this.getDoc(identity));
     if (createOnlyOrStatus === true && existing) {
       throw new Error('Record already exist');
     }
+    const synched = existing && await this.synchingDoc(existing);
+    if (typeof synched == 'object') existing = synched;
     if (existing && existing.status == 'synced') {
       const status =
         typeof createOnlyOrStatus == 'string'
@@ -842,7 +867,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
             ? 'synced'
             : 'updated';
       existing.modifiedDate =
-        status != existing.status ? new Date() : existing.modifiedDate;
+        (status != existing.status || existing.modifiedDate) ? new Date() : existing.modifiedDate;
       existing.status = status;
       existing.data = value;
       existing.remarks = [existing.remarks, remarks]
@@ -855,12 +880,14 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
           this.manageDocCallback(existing);
         } else {
           const deffered = new DeferredPromise<IDocStore<T>>();
-          this.subscribeOn(existing, (docStatus) => {
+          this.subscribeOn(existing, async (docStatus) => {
             if (docStatus.status == 'synced') {
-              deffered.resolve({
-                ...existing,
-                status: 'synced'
-              })
+              const updated = await this.getDoc(docStatus.newKey || docStatus.key || '');
+              if (updated) {
+                deffered.resolve(updated);
+              } else {
+                deffered.reject('Failed to Write');
+              }
             }
           })
           this.manageDocCallback(existing);

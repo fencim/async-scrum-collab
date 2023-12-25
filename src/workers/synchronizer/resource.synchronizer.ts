@@ -211,7 +211,7 @@ class ResourceSynchronizer {
     let lastSynced: Date | undefined;
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const allDocs = (await res.resource.findAllDoc()).filter(d => d.modifiedDate);
+    const allDocs = (await res.resource.findAllDoc()).filter(d => d.modifiedDate && d.status != 'syncing');
     const synchingDocs = [...allDocs];
     const forSyncing = synchingDocs.filter((d) => d.status != 'synced');
     postProgress();
@@ -221,6 +221,8 @@ class ResourceSynchronizer {
       const key = doc.key;
       try {
         await res.resource.syncDoc(doc);
+      } catch (e) {
+        console.error(e);
       } finally {
         const updatedDoc = await res.resource.getDoc(doc.key);
         if (updatedDoc?.lastSynced && (!lastSynced || updatedDoc?.lastSynced > lastSynced)) {

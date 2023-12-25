@@ -136,7 +136,7 @@ const progressReport = computed<IProgressFeedback[]>(() => {
   if (activeStore.activeProject) {
     return discussionStore.checkCompleteness(
       props.item,
-      activeStore.activeProject,
+      activeStore.activeProject.members,
       convo.value
     );
   }
