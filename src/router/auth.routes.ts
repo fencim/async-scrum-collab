@@ -8,14 +8,14 @@ export default [{
   path: 'login',
   name: 'login',
   meta: { anonymous: true },
-  component: () => Promise.resolve(loginPage)
+  component: () => (loginPage)
 }, {
   path: 'register',
   name: 'register',
   meta: { anonymous: true },
-  component: () => Promise.resolve(registerPage)
+  component: () => (registerPage)
 }, {
   path: 'logout',
   name: 'logout',
-  component: () => Promise.resolve(logoutPage)
+  component: () => (logoutPage)
 }] as RouteRecordRaw[];

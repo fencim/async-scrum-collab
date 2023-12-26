@@ -1,15 +1,14 @@
 <script lang="ts" setup>
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
-import { DiscussionItem, IProfile, ISprintBoardColumn } from 'src/entities';
+import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
-import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 import { PropType } from 'vue';
+
 const activeStore = useActiveStore();
 const iterationStore = useIterationStore();
-const discussionStore = useDiscussionStore();
 const emits = defineEmits<{
   (
     e: 'taskMoved',

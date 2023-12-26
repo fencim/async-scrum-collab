@@ -4,7 +4,7 @@ import {
   ConvoList,
   DiscussionItem,
   ICeremony, IDiscussion,
-  IProject, IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
+  IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
   PlanningItem, IProfile,
   RetroItem, IBoardColumn
 } from 'src/entities';

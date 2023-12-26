@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable';
-import { PropType, defineEmits, ref } from 'vue';
+import { PropType, ref } from 'vue';
 import { getComponent } from './card-components';
 import {
   DiscussionItem,

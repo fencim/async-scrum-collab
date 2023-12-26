@@ -747,7 +747,7 @@ export default defineComponent({
             project: activeStore.activeProject,
             settings: 'discussionReadiness',
             value: this.issueReadynesss,
-            done: (project) => {
+            done: () => {
               this.saving = false;
             },
           },
