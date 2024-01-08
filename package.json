@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "start": "quasar dev",
-    "build": "quasar build"
+    "build": "quasar build -m pwa"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
