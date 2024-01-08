@@ -57,7 +57,7 @@ const fbStorage = getStorage(app);
 
 const googleProvider = new GoogleAuthProvider();
 
-if (/development/i.test(process.env.NODE_ENV) && false) {
+if (/development/i.test(process.env.NODE_ENV)) {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(fbStore, 'localhost', 8081);
   connectDatabaseEmulator(fbDb, 'localhost', 9000);
