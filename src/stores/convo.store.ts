@@ -7,6 +7,7 @@ import { convoResource } from 'src/resources';
 import { useDiscussionStore } from './discussions.store';
 import { useProfilesStore } from './profiles.store';
 import { useProjectStore } from './projects.store';
+import { DeferredPromise } from 'src/resources/localbase';
 
 interface IConvoState {
   convo: ConvoList;
@@ -15,6 +16,7 @@ interface IConvoState {
   streams: { [topic: string]: Observable<ConvoList> }
   actions: ActionItem[];
   activeAction?: ActionItem;
+  lastestConvo?: Convo;
 }
 export const useConvoStore = defineStore('convo', {
   state: () => ({
@@ -26,14 +28,36 @@ export const useConvoStore = defineStore('convo', {
   getters: {
   },
   actions: {
-    ofDiscussion(projectKey: string, discussion: string) {
-      const topic = `${projectKey}:${discussion}`;
+    ofDiscussion(discussion: string) {
+      const topic = `${discussion}`;
       this.convo = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const stream = convoResource.streamWith({
-        projectKey, discussion,
-        //'date >=': today.toISOString()
+        discussion,
+      });
+      this.streams[topic] = stream;
+      stream.subscribe({
+        next: async (convo) => {
+          const profileStore = useProfilesStore();
+          const list = [...convo].sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));
+          const mapped = await (Promise.all(list.map(async (m) => {
+            m.from = await profileStore.get(m.from as string) || m.from;
+            return m;
+          })));
+          //this.computeCompleteness(discussion, mapped);
+        }
+      })
+      this.currentSub = stream.subscribe();
+      return stream;
+    },
+    ofIteration(iteration: string) {
+      const topic = `iteration:${iteration}`;
+      this.convo = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const stream = convoResource.streamWith({
+        iteration,
       });
       this.streams[topic] = stream;
       stream.subscribe({
@@ -44,48 +68,57 @@ export const useConvoStore = defineStore('convo', {
             m.from = await profileStore.get(m.from as string) || m.from;
             return m;
           })));
-          this.computeCompleteness(projectKey, discussion, this.convo);
-        },
-        error(err) {
-          console.error(err);
-        },
+          //this.computeCompleteness(discussion, this.convo);
+        }
       })
       this.currentSub = stream.subscribe();
       return stream;
     },
-    async sendMessage(projectKey: string, discussion: string, from: string, convo: Partial<Convo>) {
+    async sendMessage(projectKey: string, iteration: string, discussion: string, from: string, convo: Partial<Convo>) {
       const msg = {
         ...convo,
         projectKey,
+        iteration,
         discussion,
         date: date.formatDate(new Date()),
         from,
       } as Convo;
 
-      const record = await convoResource.setData('', msg);
+      const record = await convoResource.setData('', msg, true);
       if (record) {
         this.convo.push(record)
       }
     },
-    async saveConvo(msg: Convo) {
-      if (msg && msg.key) {
-        await convoResource.setData(msg.key, {
-          ...msg,
-          from: typeof msg.from == 'object' ? msg.from.key : msg.from
-        });
+    async updateMessage<P extends (keyof Convo)>(key: string,
+      prop: P, value: Convo[P]) {
+      const convo = await convoResource.getData(key);
+      if (!convo) {
+        throw 'Convo does not exits';
       }
+      const deffered = new DeferredPromise<Convo | undefined>();
+      await convoResource.updateProperty(key, prop, value, async (info) => {
+        if (info.status == 'synced') {
+          const updated = await convoResource.getLocalData(info.newKey || info.key || key);
+          deffered.resolve(updated);
+        } else if (/error/i.test(info.status)) {
+          const doc = await convoResource.getDoc(info.newKey || info.key || key);
+          deffered.reject(doc?.remarks || 'Failed to update convo');
+        }
+      });
+      return deffered.promise;
     },
+
     async getConvoStatus(key: string) {
       return convoResource.getDocStatus(key);
     },
     getConvo(key: string) {
       return this.convo.find(c => c.key == key);
     },
-    async computeCompleteness(projectKey: string, discussion: string, convo: ConvoList) {
+    async computeCompleteness(discussion: string, convo: ConvoList) {
       const projectStore = useProjectStore();
       const discussionStore = useDiscussionStore();
-      const project = projectStore.projects.find(p => p.key == projectKey);
       const discItem = discussionStore.discussions.find(d => d.key == discussion && d.projectKey == projectKey);
+      const project = projectStore.projects.find(p => p.key == discItem?.projectKey);
       const presentUser = useProfilesStore().presentUser;
       if (discItem && project && presentUser) {
         const report = discussionStore.checkCompleteness(discItem, project.members, convo);

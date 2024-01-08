@@ -255,10 +255,10 @@ export default defineComponent({
 
       this.activeItem =
         (this.$route.params.item && String(this.$route.params.item)) || '';
-      convoStore.ofDiscussion(
-        this.activeProject,
-        this.activeItem || this.activeCeremony
-      );
+      // convoStore.ofDiscussion(
+      //   this.activeProject,
+      //   this.activeItem || this.activeCeremony
+      // );
 
       this.discussion = await discussionStore.withKey(this.activeItem);
       if (this.$route.params.action == 'question') {
@@ -269,13 +269,14 @@ export default defineComponent({
         this.confirmDisagree();
       }
       this.assesItem();
-      convoStore.ofDiscussion(this.activeProject, this.activeItem);
+      //convoStore.ofDiscussion(this.activeProject, this.activeItem);
     },
-
+    //TODO: As Workflow
     async sendMessage() {
       if (this.askingQuestion) {
         convoStore.sendMessage(
           this.activeProject,
+          this.activeIteration,
           this.activeItem || this.activeCeremony,
           profileStore.presentUser?.key || '',
           {
@@ -287,6 +288,7 @@ export default defineComponent({
       } else if (this.replyTo) {
         convoStore.sendMessage(
           this.activeProject,
+          this.activeIteration,
           this.activeItem || this.activeCeremony,
           profileStore.presentUser?.key || '',
           { type: 'response', message: this.message, ref: this.replyTo.key }
@@ -295,6 +297,7 @@ export default defineComponent({
       } else if (this.confirmDisagreement && this.message.trim()) {
         convoStore.sendMessage(
           this.activeProject,
+          this.activeIteration,
           this.activeItem || this.activeCeremony,
           profileStore.presentUser?.key || '',
           {
@@ -311,6 +314,7 @@ export default defineComponent({
       } else {
         convoStore.sendMessage(
           this.activeProject,
+          this.activeIteration,
           this.activeItem || this.activeCeremony,
           profileStore.presentUser?.key || '',
           { type: 'message', message: this.message }
@@ -333,23 +337,6 @@ export default defineComponent({
       };
       scrollTo();
     },
-    stampTime(dateTime: string) {
-      const now = new Date();
-      const diffDays = date.getDateDiff(now, dateTime, 'days');
-      const diffHours = date.getDateDiff(now, dateTime, 'hours');
-      const diffMins = date.getDateDiff(now, dateTime, 'minutes');
-      const diffSeconds = date.getDateDiff(now, dateTime, 'seconds');
-      if (diffDays > 0) {
-        return `${diffDays} days ago`;
-      } else if (diffHours > 0) {
-        return `${diffHours} hours ago`;
-      } else if (diffMins > 0) {
-        return `${diffMins} minutes ago`;
-      } else {
-        return `${diffSeconds} seconds ago`;
-      }
-      return dateTime;
-    },
     getStatus(m: Convo) {
       switch (m.status) {
         case 'sent':
@@ -366,6 +353,7 @@ export default defineComponent({
       this.confirmDisagreement = !this.confirmDisagreement;
       convoBus.emit('onDisagree', this.confirmDisagreement);
     },
+    //TODO: Dialog
     confirmVote() {
       if (this.discussion) {
         this.dialogVote = true;
@@ -375,10 +363,12 @@ export default defineComponent({
         }
       }
     },
+    //TODO: As Workflow
     async vote(vote: string) {
       if (this.discussion) {
         await convoStore.sendMessage(
           this.activeProject,
+          this.activeIteration,
           this.activeItem || this.activeCeremony,
           profileStore.presentUser?.key || '',
           {
@@ -418,6 +408,7 @@ export default defineComponent({
           const winningVote = uniqueVotes[majorityVoteIndex];
           await convoStore.sendMessage(
             this.activeProject,
+            this.activeIteration,
             this.activeItem || this.activeCeremony,
             'bot',
             {
@@ -438,6 +429,7 @@ export default defineComponent({
             uniqueVotes[Math.max(0, Math.round(uniqueVotes.length / 2) - 1)];
           await convoStore.sendMessage(
             this.activeProject,
+            this.activeIteration,
             this.activeItem || this.activeCeremony,
             'bot',
             {
@@ -457,6 +449,7 @@ export default defineComponent({
       }
       this.dialogVote = false;
     },
+    //TODO: As Workflow
     async assesItem() {
       if (this.discussion && this.project) {
         const report = discussionStore.checkCompleteness(
@@ -472,11 +465,12 @@ export default defineComponent({
         return report;
       }
     },
+    //TODO: As Workflow
     async resolveQuestionOf(msg: IResponse, resolution: 'agree' | 'disagree') {
       if (profileStore.presentUser) {
         msg.feedback = { ...msg.feedback } || {};
-        msg.feedback[profileStore.presentUser?.key] = resolution;
-        await convoStore.saveConvo({ ...msg });
+        msg.feedback[profileStore.presentUser.key] = resolution;
+        await convoStore.updateConvo({ ...msg });
         const messages = this.messages;
         let qMsg = messages.find((m) => m.key == msg.ref);
         while (qMsg && qMsg.type != 'question' && resolution == 'agree') {
@@ -489,7 +483,7 @@ export default defineComponent({
         }
         if (qMsg && qMsg.type == 'question' && resolution == 'agree') {
           qMsg.resolved = true;
-          await convoStore.saveConvo({ ...qMsg });
+          await convoStore.updateConvo({ ...qMsg });
         }
       }
     },

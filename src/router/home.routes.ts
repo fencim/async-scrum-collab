@@ -7,9 +7,9 @@ export default [
     name: 'home',
     meta: { actions: true },
     path: '', components: {
-      default: () => Page,
-      header: () => ToolBar,
-      actions: () => ActionList,
+      default: () => Promise.resolve(Page),
+      header: () => Promise.resolve(ToolBar),
+      actions: () => Promise.resolve(ActionList)
     }
   }
 ] as RouteRecordRaw[];

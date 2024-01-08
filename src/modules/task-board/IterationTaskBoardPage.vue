@@ -13,6 +13,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 import { entityKey } from 'src/entities/base.entity';
+import { TaskActionError } from 'src/workflows/discussion/definition';
 
 const $q = useQuasar();
 const iterationStore = useIterationStore();
@@ -57,6 +58,41 @@ async function taskMoved(
       done: (updated) => {
         if (updated.iteration && entityKey(updated.iteration)) {
           tab.value = entityKey(updated.iteration);
+        }
+      },
+      error(error) {
+        switch (error) {
+          case TaskActionError.notMoveable:
+            $q.notify({
+              icon: 'error',
+              message:
+                'Cannot move iteration goal of objective from other iteration',
+              color: 'negative',
+            });
+            break;
+          case TaskActionError.alreadyClosed:
+            $q.notify({
+              icon: 'error',
+              message: 'Cannot move done issue from other iteration',
+              caption: 'Re-open it before moving it',
+              color: 'negative',
+            });
+            break;
+          case TaskActionError.notReady:
+            $q.notify({
+              icon: 'error',
+              message:
+                'Cannot grab issue until readiness reached' +
+                ` ${(
+                  (activeStore.activeProject?.discussionReadiness || 0) * 100
+                ).toFixed()}%`,
+
+              caption: 'Disscuss the issue with the team',
+              color: 'negative',
+            });
+            break;
+          default:
+            break;
         }
       },
     },

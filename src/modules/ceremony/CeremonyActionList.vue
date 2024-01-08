@@ -232,6 +232,7 @@ export default defineComponent({
       }
       await convoStore.sendMessage(
         this.activeProject,
+        this.activeIteration,
         this.activeItem || this.activeCeremony,
         profileStore.presentUser?.key || '',
         {
@@ -254,6 +255,17 @@ export default defineComponent({
           type: 'newSubTask',
           arg: {
             ref: this.item,
+            done: (item) => {
+              this.$router.replace({
+                name: 'convo',
+                params: {
+                  project: this.activeProject,
+                  iteration: this.activeIteration,
+                  ceremony: this.activeCeremony,
+                  item: item.key,
+                },
+              });
+            },
           },
         });
       } else {
@@ -266,6 +278,17 @@ export default defineComponent({
               ? 'objective'
               : 'story',
             iteration: this.iteration,
+            done: (item) => {
+              this.$router.replace({
+                name: 'convo',
+                params: {
+                  project: this.activeProject,
+                  iteration: this.activeIteration,
+                  ceremony: this.activeCeremony,
+                  item: item.key,
+                },
+              });
+            },
           },
         });
       }

@@ -1,12 +1,17 @@
 import { DiscussionItem, IBoardColumn, IProfile } from 'src/entities';
 import { Struct } from 'src/structs';
-
+export enum TaskActionError {
+  notReady,
+  alreadyClosed,
+  notMoveable
+}
 export type Discussion =
   | Struct<'moveIssue', {
     issue: DiscussionItem,
     column?: IBoardColumn,
     iterationKey?: string,
     done?: (issue: DiscussionItem) => void
+    error?: (error: TaskActionError) => void;
   }>
   | Struct<'assignTask', {
     issue: DiscussionItem,
@@ -20,6 +25,7 @@ export type Discussion =
     iterationKey: string;
     done?: (item: DiscussionItem) => void
   }>
-  | Struct<'computeReadiness', {
-    item: DiscussionItem
+  | Struct<'assessDiscussion', {
+    item: DiscussionItem,
+    done?: (item: DiscussionItem) => void
   }>

@@ -1,6 +1,6 @@
 import { Convo, ConvoList } from 'src/entities';
 import { firebaseService } from '../services/firebase.service';
-import { BaseResource } from './base.resource';
+import { BaseResource, CbResponse } from './base.resource';
 import { Entity, Filters } from './localbase/state-db.controller';
 import { Observable } from 'rxjs';
 
@@ -13,7 +13,7 @@ class ConvoResource extends BaseResource<Convo> {
   }
   protected getKeyOf(v: Convo): string {
     const initials = v.type[0].toUpperCase();
-    return initials + this.hashName(v.date + v.type);
+    return v.discussion + initials + this.hashName(v.date + v.type);
   }
   protected async getCb(key: string): Promise<boolean | void | Convo> {
     return await firebaseService.get('convos', key) as Convo
@@ -37,8 +37,14 @@ class ConvoResource extends BaseResource<Convo> {
     await firebaseService.update('convos', data.key, data);
     return true;
   }
-  protected patchCb(): Promise<boolean | void | Convo> {
-    throw new Error('Method not implemented.');
+  protected async patchCb(data: Convo, property: string): Promise<CbResponse<Convo>> {
+    const key = this.getKeyOf(data);
+    const result = await firebaseService.patch(
+      'convos',
+      key, property,
+      data[property as keyof Convo]
+    );
+    return result;
   }
   constructor() {
     super('convo', 'key')

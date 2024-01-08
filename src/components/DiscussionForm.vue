@@ -205,7 +205,7 @@ async function submitDiscussion() {
       theDiscussion.value.parent = entityKey(props.refItem);
     }
   }
-  await discussionStore.saveDiscussion(theDiscussion.value);
+  const record = await discussionStore.saveDiscussion(theDiscussion.value);
 
   if (
     activeProject.value &&
@@ -220,6 +220,7 @@ async function submitDiscussion() {
     if (theDiscussion.value.progress != report[0].progress) {
       convoStore.sendMessage(
         activeProjectKey.value,
+        activeIterationKey.value,
         theDiscussion.value.key,
         'bot',
         {
@@ -236,7 +237,7 @@ async function submitDiscussion() {
     }
   }
   saving.value = false;
-  $emit('closeForm');
+  $emit('closeForm', record);
 }
 </script>
 <style></style>

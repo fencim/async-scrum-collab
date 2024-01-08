@@ -4,6 +4,7 @@ import { entityKey } from 'src/entities/base.entity';
 import { IBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { TaskActionError } from './definition';
 
 function isColumnBeforeDone(column: IBoardColumn) {
   const activeStore = useActiveStore();
@@ -27,27 +28,14 @@ TheWorkflows.on({
       issue.iteration &&
       iterationKey !== entityKey(issue.iteration);
     if (goIssues && movingFromIteration) {
-      $q.notify({
-        icon: 'error',
-        message: 'Cannot move iteration goal of objective from other iteration',
-        color: 'negative',
-      });
+      e.error && e.error(TaskActionError.notMoveable);
       return;
     } else if (!!issue.doneDate && movingFromIteration) {
-      $q.notify({
-        icon: 'error',
-        message: 'Cannot move done issue from other iteration',
-        caption: 'Re-open it before moving it',
-        color: 'negative',
-      });
+      e.error && e.error(TaskActionError.alreadyClosed);
       return;
     } else if (column && iterationKey && issueReadyness && issue.progress && issue.progress < issueReadyness) {
-      $q.notify({
-        icon: 'error',
-        message: 'Cannot grab issue until readyness reached ' + Number(issueReadyness * 10).toFixed(0) + '%',
-        caption: 'Disscuss the issue with the team',
-        color: 'negative',
-      });
+      e.error && e.error(TaskActionError.notReady);
+      return;
     }
     if (column) {
       issue.status = column.key;

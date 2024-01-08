@@ -57,7 +57,7 @@ const fbStorage = getStorage(app);
 
 const googleProvider = new GoogleAuthProvider();
 
-if (/development/i.test(process.env.NODE_ENV)) {
+if (/development/i.test(process.env.NODE_ENV) && false) {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(fbStore, 'localhost', 8081);
   connectDatabaseEmulator(fbDb, 'localhost', 9000);
@@ -111,7 +111,7 @@ class FirebaseSevice {
     } else if (value & AccessStatus.authorized) {
       this.accessStatus = this.accessStatus | AccessStatus.authorized
     }
-    this.accessObs?.next(value | this.accessStatus);
+    this.accessObs?.next(this.accessStatus);
   }
   subscribe(cb: (online: AccessStatus) => void) {
     this.accessObs?.subscribe(cb);

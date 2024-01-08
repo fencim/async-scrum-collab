@@ -41,22 +41,30 @@ function newSubTask(refItem: DiscussionItem) {
   newTaskPreFields.value.iteration = refItem.iteration as IIteration;
   showTopSheet.value = true;
 }
+const doneCb = ref<(item: DiscussionItem) => void>();
+function onClose(item: DiscussionItem) {
+  doneCb.value && doneCb.value(item);
+  showTopSheet.value = false;
+}
 TheDialogs.on({
   type: 'newTask',
   cb: (e) => {
     newTask(e.status, e.type, e.iteration);
+    doneCb.value = e.done;
   },
 });
 TheDialogs.on({
   type: 'editTask',
   cb: (e) => {
     editTask(e.item);
+    doneCb.value = e.done;
   },
 });
 TheDialogs.on({
   type: 'newSubTask',
   cb: (e) => {
     newSubTask(e.ref);
+    doneCb.value = e.done;
   },
 });
 </script>
@@ -68,7 +76,7 @@ TheDialogs.on({
       :iteration="newTaskPreFields.iteration"
       :ref-item="newTaskPreFields.refItem"
       :item="newTaskPreFields.item"
-      @close-form="showTopSheet = false"
+      @close-form="(d) => onClose(d)"
     />
   </q-dialog>
 </template>

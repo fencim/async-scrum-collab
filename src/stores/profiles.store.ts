@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { IProfile } from 'src/entities';
 import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
-import { firebaseService } from 'src/services/firebase.service';
+import { AccessStatus, firebaseService } from 'src/services/firebase.service';
 import { logsResource } from 'src/resources/logs.resource';
 import { sessionResource } from 'src/resources/session.resource';
 import { synchronizerConnection } from 'src/workers/synchronizer/synchronizer.connection';
@@ -30,6 +30,8 @@ export const useProfilesStore = defineStore('Profiles', {
       if (!this.getUser()) {
         await firebaseService.autheticate();
         this.getUser();
+      } else if (!(firebaseService.accessStatus & AccessStatus.authorized)) {
+        firebaseService.setAccessStatus(AccessStatus.authorized);
       }
     },
     async signout() {
@@ -91,7 +93,8 @@ export const useProfilesStore = defineStore('Profiles', {
       return this.theUser;
     },
     async init() {
-      this.profiles = [botProfile, ...await profileResource.findAllFrom()];
+      const all = (await profileResource.findAll()).contents;
+      this.profiles = [botProfile, ...(all || [])];
     },
     async get(key: string) {
       return this.profiles.find(p => p.key == key)

@@ -39,7 +39,7 @@
           <q-toggle
             v-if="!iterationPreFields.iteration"
             v-model="scheduleCeremonies"
-            label="Schedule Iteration Ceremonies"
+            label="Schedule Scrum Ceremonies"
           />
         </q-card-section>
         <q-card-section

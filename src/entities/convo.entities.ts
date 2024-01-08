@@ -9,6 +9,7 @@ export interface IMessage extends IBaseEntity {
   key: string;
   discussion: string;
   projectKey: string;
+  iteration: string;
   date: string;
   message: string;
   from: string | IProfile;

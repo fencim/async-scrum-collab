@@ -48,8 +48,13 @@ export default route(async function (/* { store, ssrContext } */) {
   });
 
   Router.beforeEach(async (to, from, next) => {
-    if (!profileStore.getUser()) await profileStore.authenticate();
-    if (profileStore.getUser() || (to.meta && to.meta.anonymous)) {
+    await profileStore.authenticate();
+    const user = profileStore.getUser();
+    if (user && to.meta.anonymous) {
+      next({
+        name: 'home'
+      })
+    } else if (user || (to.meta && to.meta.anonymous)) {
       let activeProject: IProject | undefined;
       if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
         activeProject = await projectStore.selectProject(to.params['project'] as string);

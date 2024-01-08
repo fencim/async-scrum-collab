@@ -5,27 +5,34 @@ import ErrorNotFound from 'pages/ErrorNotFound.vue';
 import authRoutes from './auth.routes';
 import homeRoutes from './home.routes';
 import projectRoutes from './project.routes';
+import { IRouteMeta } from './route.meta';
+declare module 'vue-router' {
+  interface RouteMeta extends IRouteMeta {
+    description?: string;
+    keywords?: string[];
+  }
+}
 const routes: RouteRecordRaw[] = [
   {
     path: '/auth',
-    component: () => (plainLayout),
+    component: () => Promise.resolve(plainLayout),
     children: [...authRoutes]
   },
   {
     path: '/',
-    component: () => (mainLayout),
+    component: () => Promise.resolve(mainLayout),
     children: [...homeRoutes],
   },
   {
     path: '/:project',
-    component: () => (mainLayout),
+    component: () => Promise.resolve(mainLayout),
     children: [...projectRoutes],
   },
   // Always leave this as last one,
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => ErrorNotFound,
+    component: () => Promise.resolve(ErrorNotFound),
   },
 ];
 
