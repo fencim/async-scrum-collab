@@ -17,7 +17,6 @@ function isColumnBeforeDone(column: IBoardColumn) {
 TheWorkflows.on({
   type: 'moveIssue',
   async cb(e) {
-    const $q = useQuasar();
     const discussionStore = useDiscussionStore();
     const activeStore = useActiveStore();
     const issueReadyness = activeStore.activeProject?.discussionReadiness || 0;
@@ -43,7 +42,7 @@ TheWorkflows.on({
         issue.doneDate = date.formatDate(new Date(), 'YYYY/MM/DD');
       } else if (issue.doneDate && isColumnBeforeDone(column)) {
         //issue is reopened
-        issue.doneDate = undefined;
+        issue.doneDate = '';
       }
     }
     if (iterationKey) {

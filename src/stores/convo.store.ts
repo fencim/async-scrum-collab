@@ -10,9 +10,8 @@ import { useProjectStore } from './projects.store';
 import { DeferredPromise } from 'src/resources/localbase';
 
 interface IConvoState {
-  convo: ConvoList;
-  currentSub?: Subscription;
-  currentTopic: string;
+  convo: Record<string, ConvoList>;
+  subs: Record<string, Subscription>;
   streams: { [topic: string]: Observable<ConvoList> }
   actions: ActionItem[];
   activeAction?: ActionItem;
@@ -20,40 +19,18 @@ interface IConvoState {
 }
 export const useConvoStore = defineStore('convo', {
   state: () => ({
-    convo: [],
-    currentTopic: '',
+    convo: {},
+    subs: {},
     streams: {},
     actions: ticketActionList
   } as IConvoState),
   getters: {
   },
   actions: {
-    ofDiscussion(discussion: string) {
-      const topic = `${discussion}`;
-      this.convo = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const stream = convoResource.streamWith({
-        discussion,
-      });
-      this.streams[topic] = stream;
-      stream.subscribe({
-        next: async (convo) => {
-          const profileStore = useProfilesStore();
-          const list = [...convo].sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));
-          const mapped = await (Promise.all(list.map(async (m) => {
-            m.from = await profileStore.get(m.from as string) || m.from;
-            return m;
-          })));
-          //this.computeCompleteness(discussion, mapped);
-        }
-      })
-      this.currentSub = stream.subscribe();
-      return stream;
-    },
     ofIteration(iteration: string) {
       const topic = `iteration:${iteration}`;
-      this.convo = [];
+      if (this.streams[topic]) return this.streams[topic];
+      this.convo[iteration] = [];
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const stream = convoResource.streamWith({
@@ -64,15 +41,28 @@ export const useConvoStore = defineStore('convo', {
         next: async (convo) => {
           const profileStore = useProfilesStore();
           const list = [...convo].sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));
-          this.convo = await (Promise.all(list.map(async (m) => {
+          const mapped = await (Promise.all(list.map(async (m) => {
             m.from = await profileStore.get(m.from as string) || m.from;
             return m;
           })));
-          //this.computeCompleteness(discussion, this.convo);
+          this.convo[iteration] = mapped;
         }
       })
-      this.currentSub = stream.subscribe();
+      this.subs[iteration] = stream.subscribe();
       return stream;
+    },
+    async ofDiscussion(iteration: string, discussion: string) {
+      if (this.convo[iteration]) {
+        return this.convo[iteration].filter(convo => convo.discussion == discussion);
+      }
+      const deffered = new DeferredPromise<ConvoList>();
+      this.ofIteration(iteration).subscribe({
+        next(list) {
+          deffered.resolve(list.filter(convo => convo.discussion == discussion))
+        },
+        error: deffered.reject
+      })
+      return deffered.promise;
     },
     async sendMessage(projectKey: string, iteration: string, discussion: string, from: string, convo: Partial<Convo>) {
       const msg = {
@@ -85,18 +75,19 @@ export const useConvoStore = defineStore('convo', {
       } as Convo;
 
       const record = await convoResource.setData('', msg, true);
-      if (record) {
-        this.convo.push(record)
+      if (record && this.convo[iteration]) {
+        this.convo[iteration].push(record)
       }
+      return msg;
     },
-    async updateMessage<P extends (keyof Convo)>(key: string,
-      prop: P, value: Convo[P]) {
+    async updateMessage<C extends Convo>(key: string,
+      prop: keyof C, value: C[keyof C]) {
       const convo = await convoResource.getData(key);
       if (!convo) {
         throw 'Convo does not exits';
       }
       const deffered = new DeferredPromise<Convo | undefined>();
-      await convoResource.updateProperty(key, prop, value, async (info) => {
+      await convoResource.updateProperty(key, prop as keyof Convo, value, async (info) => {
         if (info.status == 'synced') {
           const updated = await convoResource.getLocalData(info.newKey || info.key || key);
           deffered.resolve(updated);
@@ -111,8 +102,8 @@ export const useConvoStore = defineStore('convo', {
     async getConvoStatus(key: string) {
       return convoResource.getDocStatus(key);
     },
-    getConvo(key: string) {
-      return this.convo.find(c => c.key == key);
+    getConvo(key: string, iterationKey: string) {
+      return this.convo[iterationKey].find(c => c.key == key) as Convo;
     },
     async computeCompleteness(discussion: string, convo: ConvoList) {
       const projectStore = useProjectStore();

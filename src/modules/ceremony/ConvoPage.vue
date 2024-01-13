@@ -48,7 +48,7 @@
             activeItem +
             '/convo#'
           "
-          :ref-msg="convoStore.getConvo(m.ref)"
+          :ref-msg="convoStore.getConvo(m.ref, activeIteration)"
         />
       </div>
       <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
@@ -99,43 +99,10 @@
         <q-btn type="submit" icon="send" flat round />
       </q-toolbar>
     </q-form>
-    <q-dialog v-model="dialogVote">
-      <q-card class="q-pa-sm text-center">
-        <q-card-section class="text-right">
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-        <q-card-section>
-          <q-card
-            @click="vote(c)"
-            class="pocker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer"
-            v-for="c in ['1', '2', '3', '5', '8', '13', '21']"
-            :key="c"
-            v-ripple.early
-          >
-            <div class="top-left text-left">
-              {{ c }}<br />
-              <div style="color: black">♥</div>
-            </div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div class="heart">♥</div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div class="bottom-right text-left">
-              {{ c }}<br />
-              <div style="color: black">♥</div>
-            </div>
-          </q-card>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
   </q-page>
 </template>
 
-<script lang="ts">
-import { date } from 'quasar';
+<script lang="ts" setup>
 import ChatMessage from 'src/components/chat/ChatMessage.vue';
 import ChatVoteMessage from 'src/components/chat/ChatVoteMessage.vue';
 import ChatQuestionMessage from 'src/components/chat/ChatQuestionMessage.vue';
@@ -148,7 +115,6 @@ import {
   Convo,
   DiscussionItem,
   IResponse,
-  IVote,
 } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/cermonies.store';
 import { useConvoStore } from 'src/stores/convo.store';
@@ -156,8 +122,19 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { defineComponent, nextTick } from 'vue';
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  onUpdated,
+  ref,
+} from 'vue';
 import { convoBus } from './convo-bus';
+import { TheWorkflows } from 'src/workflows/the-workflows';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
 
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
@@ -165,344 +142,217 @@ const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
 const convoStore = useConvoStore();
+const $route = useRoute();
+const $q = useQuasar();
 
-export default defineComponent({
-  name: 'ConvoPage',
-  components: {
-    ChatMessage,
-    ChatVoteMessage,
-    ChatQuestionMessage,
-    ChatResponseMessage,
-    ChatMessageForm,
-  },
-  data() {
-    return {
-      convoStore,
-      profileStore,
-      activeProject: 'AP',
-      activeIteration: 'AI',
-      activeCeremony: 'AC',
-      activeItem: '0',
-      message: '',
-      project: undefined as IProject | undefined,
-      iteration: undefined as IIteration | undefined,
-      ceremony: undefined as ICeremony | undefined,
-      discussion: undefined as DiscussionItem | undefined,
-      replyTo: undefined as Convo | undefined,
-      timer: 0 as NodeJS.Timeout | 0,
-      askingQuestion: false,
-      confirmDisagreement: false,
-      dialogVote: false,
-      revealVotes: undefined as number | undefined,
-    };
-  },
-  async mounted() {
-    await this.init();
-    convoBus.on('question', this.askQuestion);
-    convoBus.on('vote', this.confirmVote);
-    convoBus.on('disagree', this.confirmDisagree);
-    convoBus.on('refresh', this.init);
+const activeProject = ref('AP');
+const activeIteration = ref('AI');
+const activeCeremony = ref('AC');
+const activeItem = ref('0');
+const message = ref('');
+const project = ref<IProject>();
+const iteration = ref<IIteration>();
+const ceremony = ref<ICeremony>();
+const discussion = ref<DiscussionItem>();
+const replyTo = ref<Convo>();
+const timer = ref<NodeJS.Timeout | number>(0);
+const askingQuestion = ref(false);
+const confirmDisagreement = ref(false);
+const revealVotes = ref();
 
-    this.scrollToBottom();
-  },
-  unmounted() {
-    this.timer && clearInterval(this.timer);
-    convoBus.off('question', this.askQuestion);
-    convoBus.off('vote', this.confirmVote);
-    convoBus.off('disagree', this.confirmVote);
-    convoBus.off('refresh', this.init);
-    convoBus.emit('onQuestion', false);
-    convoBus.emit('onDisagree', false);
-  },
-
-  async updated() {
-    this.init();
-    await nextTick();
-    this.scrollToBottom();
-  },
-  computed: {
-    messages() {
-      if (discussionStore.activeDiscussion) {
-        const active = discussionStore.activeDiscussion;
-        return convoStore.convo.filter((m) => m.discussion == active.key);
-      }
-      return convoStore.convo;
-    },
-  },
-  methods: {
-    asFromAvatar(msg: Convo | undefined) {
-      return typeof msg?.from == 'object' ? msg?.from.avatar : '';
-    },
-    async init() {
-      this.activeProject =
-        (this.$route.params.project && String(this.$route.params.project)) ||
-        '';
-      this.project = projectStore.activeProject;
-
-      this.activeIteration =
-        (this.$route.params.iteration &&
-          String(this.$route.params.iteration)) ||
-        '';
-      this.iteration = iterationStore.activeIteration;
-      this.activeCeremony =
-        (this.$route.params.ceremony && String(this.$route.params.ceremony)) ||
-        '';
-      this.ceremony = await ceremonyStore.withKey(
-        this.activeProject,
-        this.activeIteration,
-        this.activeCeremony
-      );
-
-      this.activeItem =
-        (this.$route.params.item && String(this.$route.params.item)) || '';
-      // convoStore.ofDiscussion(
-      //   this.activeProject,
-      //   this.activeItem || this.activeCeremony
-      // );
-
-      this.discussion = await discussionStore.withKey(this.activeItem);
-      if (this.$route.params.action == 'question') {
-        this.askQuestion();
-      } else if (this.$route.params.action == 'vote') {
-        this.confirmVote();
-      } else if (this.$route.params.action == 'disagree') {
-        this.confirmDisagree();
-      }
-      this.assesItem();
-      //convoStore.ofDiscussion(this.activeProject, this.activeItem);
-    },
-    //TODO: As Workflow
-    async sendMessage() {
-      if (this.askingQuestion) {
-        convoStore.sendMessage(
-          this.activeProject,
-          this.activeIteration,
-          this.activeItem || this.activeCeremony,
-          profileStore.presentUser?.key || '',
-          {
-            type: 'question',
-            message: this.message,
-          }
-        );
-        this.askQuestion(); //toggle question
-      } else if (this.replyTo) {
-        convoStore.sendMessage(
-          this.activeProject,
-          this.activeIteration,
-          this.activeItem || this.activeCeremony,
-          profileStore.presentUser?.key || '',
-          { type: 'response', message: this.message, ref: this.replyTo.key }
-        );
-        this.replyTo = undefined;
-      } else if (this.confirmDisagreement && this.message.trim()) {
-        convoStore.sendMessage(
-          this.activeProject,
-          this.activeIteration,
-          this.activeItem || this.activeCeremony,
-          profileStore.presentUser?.key || '',
-          {
-            type: 'question',
-            message: 'I disagree because ' + this.message,
-          }
-        );
-        if (this.discussion && profileStore.presentUser && this.project) {
-          this.discussion.awareness = this.discussion.awareness || {};
-          this.discussion.awareness[profileStore.presentUser.key] = 'disagree';
-          await this.assesItem();
-        }
-        this.confirmDisagree(); //toggle
-      } else {
-        convoStore.sendMessage(
-          this.activeProject,
-          this.activeIteration,
-          this.activeItem || this.activeCeremony,
-          profileStore.presentUser?.key || '',
-          { type: 'message', message: this.message }
-        );
-      }
-      this.message = '';
-      convoBus.emit('progressed');
-    },
-    scrollToBottom() {
-      const scrollTo = () => {
-        const elem = document.querySelector(
-          this.$route.hash || '#input-message'
-        );
-        if (!elem) setTimeout(scrollTo, 100);
-        elem?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'end',
-          inline: 'end',
-        });
-      };
-      scrollTo();
-    },
-    getStatus(m: Convo) {
-      switch (m.status) {
-        case 'sent':
-          return 'check_circle';
-        default:
-          return 'pending';
-      }
-    },
-    askQuestion() {
-      this.askingQuestion = !this.askingQuestion;
-      convoBus.emit('onQuestion', this.askingQuestion);
-    },
-    confirmDisagree() {
-      this.confirmDisagreement = !this.confirmDisagreement;
-      convoBus.emit('onDisagree', this.confirmDisagreement);
-    },
-    //TODO: Dialog
-    confirmVote() {
-      if (this.discussion) {
-        this.dialogVote = true;
-      } else {
-        if (this.convoStore.convo.find((c) => c.type == 'poll')) {
-          this.dialogVote = true;
-        }
-      }
-    },
-    //TODO: As Workflow
-    async vote(vote: string) {
-      if (this.discussion) {
-        await convoStore.sendMessage(
-          this.activeProject,
-          this.activeIteration,
-          this.activeItem || this.activeCeremony,
-          profileStore.presentUser?.key || '',
-          {
-            type: 'vote',
-            vote: vote,
-            ref: 'ticket:' + this.activeItem,
-            message: 'I voted for this ticket',
-          }
-        );
-      }
-      const report = await this.assesItem();
-      const voteReport = report && report.find((r) => r.factor == 'votes');
-      if (voteReport && voteReport.progress >= 1) {
-        const voteCasts = this.convoStore.convo.filter(
-          (v) => v.type == 'vote'
-        ) as IVote[];
-
-        const votes = voteCasts
-          .reduce(
-            (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
-            [] as IVote[]
-          )
-          .map((v) => v.vote)
-          .sort()
-          .reverse();
-        const uniqueVotes = [...new Set(votes)];
-        const voteCounts = uniqueVotes.reduce(
-          (p, c) => p.concat([votes.filter((v) => v == c).length]),
-          [] as number[]
-        );
-        const majorityVoteIndex = voteCounts.reduce(
-          (p, c, index, self) =>
-            c > 1 && (p < 0 || self[p] < c) ? index : self[p] == c ? -1 : p,
-          -1
-        );
-        if (majorityVoteIndex >= 0) {
-          const winningVote = uniqueVotes[majorityVoteIndex];
-          await convoStore.sendMessage(
-            this.activeProject,
-            this.activeIteration,
-            this.activeItem || this.activeCeremony,
-            'bot',
-            {
-              type: 'message',
-              message:
-                'All votes are collected (' +
-                uniqueVotes.map((v, i) => v + ':' + voteCounts[i]).join(', ') +
-                ') with majority of ' +
-                winningVote,
-            }
-          );
-          if (this.discussion) {
-            this.discussion.complexity = Number(winningVote);
-            await discussionStore.saveDiscussion(this.discussion);
-          }
-        } else if (uniqueVotes.length > 0) {
-          const winningVote =
-            uniqueVotes[Math.max(0, Math.round(uniqueVotes.length / 2) - 1)];
-          await convoStore.sendMessage(
-            this.activeProject,
-            this.activeIteration,
-            this.activeItem || this.activeCeremony,
-            'bot',
-            {
-              type: 'message',
-              message:
-                'All votes are collected (' +
-                uniqueVotes.map((v, i) => v + ':' + voteCounts[i]).join(', ') +
-                ') with median of ' +
-                winningVote,
-            }
-          );
-          if (this.discussion) {
-            this.discussion.complexity = Number(winningVote);
-            await discussionStore.saveDiscussion(this.discussion);
-          }
-        }
-      }
-      this.dialogVote = false;
-    },
-    //TODO: As Workflow
-    async assesItem() {
-      if (this.discussion && this.project) {
-        const report = discussionStore.checkCompleteness(
-          this.discussion,
-          this.project.members,
-          this.convoStore.convo
-        );
-        if (this.discussion.progress != report[0].progress) {
-          this.discussion.progress = report[0].progress;
-          await discussionStore.saveDiscussion(this.discussion);
-        }
-        this.revealVotes = this.discussion.complexity;
-        return report;
-      }
-    },
-    //TODO: As Workflow
-    async resolveQuestionOf(msg: IResponse, resolution: 'agree' | 'disagree') {
-      if (profileStore.presentUser) {
-        msg.feedback = { ...msg.feedback } || {};
-        msg.feedback[profileStore.presentUser.key] = resolution;
-        await convoStore.updateConvo({ ...msg });
-        const messages = this.messages;
-        let qMsg = messages.find((m) => m.key == msg.ref);
-        while (qMsg && qMsg.type != 'question' && resolution == 'agree') {
-          if (qMsg.type == 'response' && qMsg.ref) {
-            const ref = qMsg.ref;
-            qMsg = messages.find((m) => m.key == ref);
-          } else {
-            qMsg = undefined;
-          }
-        }
-        if (qMsg && qMsg.type == 'question' && resolution == 'agree') {
-          qMsg.resolved = true;
-          await convoStore.updateConvo({ ...qMsg });
-        }
-      }
-    },
-  },
+onMounted(async () => {
+  await init();
+  convoBus.on('question', askQuestion);
+  convoBus.on('disagree', confirmDisagree);
+  convoBus.on('refresh', init);
+  scrollToBottom();
 });
+onUnmounted(() => {
+  timer.value && clearInterval(timer.value);
+  convoBus.off('question', askQuestion);
+  convoBus.off('refresh', init);
+  convoBus.emit('onQuestion', false);
+  convoBus.emit('onDisagree', false);
+});
+onUpdated(async () => {
+  await init();
+  await nextTick();
+  scrollToBottom();
+});
+const messages = computed(() => {
+  const convo = convoStore.convo[activeIteration.value ?? ''] || [];
+  if (discussionStore.activeDiscussion) {
+    const active = discussionStore.activeDiscussion;
+    return convo.filter((m) => m.discussion == active.key);
+  }
+  return convo.filter((m) => m.discussion == activeCeremony.value);
+});
+function asFromAvatar(msg: Convo | undefined) {
+  return typeof msg?.from == 'object' ? msg?.from.avatar : '';
+}
+async function init() {
+  activeProject.value =
+    ($route.params.project && String($route.params.project)) || '';
+  project.value = projectStore.activeProject;
+
+  activeIteration.value =
+    ($route.params.iteration && String($route.params.iteration)) || '';
+  iteration.value = iterationStore.activeIteration;
+  activeCeremony.value =
+    ($route.params.ceremony && String($route.params.ceremony)) || '';
+  ceremony.value = await ceremonyStore.withKey(
+    activeProject.value,
+    activeIteration.value,
+    activeCeremony.value
+  );
+
+  activeItem.value = ($route.params.item && String($route.params.item)) || '';
+  // convoStore.ofDiscussion(
+  //   this.activeProject,
+  //   this.activeItem || this.activeCeremony
+  // );
+
+  discussion.value = await discussionStore.withKey(activeItem.value);
+  if ($route.params.action == 'question') {
+    askQuestion();
+  } else if ($route.params.action == 'vote') {
+    vote();
+  } else if ($route.params.action == 'disagree') {
+    confirmDisagree();
+  }
+  assesItem();
+}
+async function sendMessage() {
+  if (askingQuestion.value && discussion.value) {
+    TheWorkflows.emit({
+      type: 'askQuestion',
+      arg: {
+        item: discussion.value,
+        message: message.value,
+        done: () => {
+          askQuestion(); //toggle question
+        },
+      },
+    });
+  } else if (replyTo.value && discussion.value) {
+    TheWorkflows.emit({
+      type: 'replyToMessge',
+      arg: {
+        item: discussion.value,
+        message: message.value,
+        ref: replyTo.value,
+        done: () => {
+          replyTo.value = undefined;
+        },
+      },
+    });
+  } else if (confirmDisagreement.value && message.value.trim()) {
+    convoStore.sendMessage(
+      activeProject.value,
+      activeIteration.value,
+      activeItem.value || activeCeremony.value,
+      profileStore.presentUser?.key || '',
+      {
+        type: 'question',
+        message: 'I disagree because ' + message.value,
+      }
+    );
+    if (discussion.value && profileStore.presentUser && project.value) {
+      discussion.value.awareness = discussion.value.awareness || {};
+      discussion.value.awareness[profileStore.presentUser.key] = 'disagree';
+      await assesItem();
+    }
+    confirmDisagree(); //toggle
+  } else {
+    convoStore.sendMessage(
+      activeProject.value,
+      activeIteration.value,
+      activeItem.value || activeCeremony.value,
+      profileStore.presentUser?.key || '',
+      { type: 'message', message: message.value }
+    );
+  }
+  message.value = '';
+  convoBus.emit('progressed');
+}
+function vote() {
+  if (discussion.value) {
+    TheDialogs.emit({
+      type: 'voteForItemComplexity',
+      arg: {
+        item: discussion.value,
+      },
+    });
+  }
+}
+function scrollToBottom() {
+  const scrollTo = () => {
+    const elem = document.querySelector($route.hash || '#input-message');
+    if (!elem) setTimeout(scrollTo, 100);
+    elem?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+      inline: 'end',
+    });
+  };
+  scrollTo();
+}
+function getStatus(m: Convo) {
+  switch (m.status) {
+    case 'sent':
+      return 'check_circle';
+    default:
+      return 'pending';
+  }
+}
+function askQuestion() {
+  askingQuestion.value = !askingQuestion.value;
+  convoBus.emit('onQuestion', askingQuestion);
+}
+function confirmDisagree() {
+  confirmDisagreement.value = !confirmDisagreement.value;
+  convoBus.emit('onDisagree', confirmDisagreement);
+}
+async function assesItem() {
+  if (discussion.value && project.value) {
+    TheWorkflows.emit({
+      type: 'assessDiscussion',
+      arg: {
+        item: discussion.value,
+        error: (e) => {
+          $q.notify({
+            message: String(e),
+            color: 'negative',
+            icon: 'error',
+          });
+        },
+      },
+    });
+  }
+}
+async function resolveQuestionOf(
+  msg: IResponse,
+  resolution: 'agree' | 'disagree'
+) {
+  if (!discussion.value) return;
+  TheWorkflows.emit({
+    type: 'resolveQuestionOf',
+    arg: {
+      item: discussion.value,
+      message: msg,
+      resolution,
+      done: () => {
+        //
+      },
+      error: (e) => {
+        $q.notify({
+          message: String(e),
+          color: 'negative',
+          icon: 'error',
+        });
+      },
+    },
+  });
+}
 </script>
-<style lang="sass" scoped>
-.pocker-card
-  display: inline-block
-  margin: 5px
-  min-width: 100px
-.heart
-  text-align: center
-  align-self: center
-  font-size: 2em
-  color: black
-.top-left
-  padding: 0.1em
-.bottom-right
-  align-self: end
-  transform: rotate(180deg)
-</style>
+<style lang="sass" scoped></style>

@@ -6,7 +6,7 @@ import {
   ICeremony, IDiscussion,
   IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
   PlanningItem, IProfile,
-  RetroItem, IBoardColumn
+  RetroItem, IBoardColumn, DiscussionReport
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './cermonies.store';
@@ -179,7 +179,7 @@ export const useDiscussionStore = defineStore('discussion', {
       }
     },
     checkCompleteness(item: DiscussionItem, members: string[], convo: ConvoList) {
-      const factors: { factor: string, progress: number, feedback: string }[] = [];
+      const factors: DiscussionReport[] = [];
       const questions = convo.filter(c => c.type == 'question') as IQuestion[];
       const votes = convo.filter(c =>
         (c.type == 'vote')

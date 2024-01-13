@@ -10,7 +10,7 @@
 
 
 const { configure } = require('quasar/wrappers');
-
+const { version } = require('./package.json');
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -60,6 +60,8 @@ module.exports = configure(function (/* ctx */) {
         node: 'node16'
       },
       env: {
+        BUILD_DATE: (new Date()).toString(),
+        USE_LIVE: typeof process.env.USE_LIVE == 'undefined' ? '' : process.env.USE_LIVE,
         EPUBKEY:
           typeof process.env.EPUBKEY == 'undefined'
             ? 'false'
@@ -166,6 +168,9 @@ module.exports = configure(function (/* ctx */) {
       // extendGenerateSWOptions (cfg) {}
       // extendInjectManifestOptions (cfg) {},
       // extendManifestJson (json) {}
+      extendManifestJson(json) {
+        json.id = `${json.name}-${version}`;
+      },
       // extendPWACustomSWConf (esbuildConf) {}
     },
 

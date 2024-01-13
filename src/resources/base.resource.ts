@@ -737,12 +737,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     }
     return result;
   }
-  /**
-   * Get records paginated
-   * @param filters
-   * @param page
-   * @returns
-   */
+
   async findAll(
     filters?: Filters,
     page?: Pagination<T>
@@ -826,9 +821,13 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     }
   }
   synchingDoc(doc: IDocStore<T> | string, lapse = 20 * 1000) {
-    if (typeof doc == 'object' && (doc.status != 'synced' && !/error/i.test(doc.status)) || typeof doc == 'string') {
+    if (typeof doc == 'object' && doc.status != 'synced' || typeof doc == 'string') {
       const key = typeof doc == 'object' ? doc.key : doc;
       return new Promise<typeof doc>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          subscription.unsubscribe();
+          reject('synching timeout');
+        }, lapse)
         const subscription = this.streamDocWith({ key }).subscribe({
           next(value) {
             if (value.length == 1 && value[0].status != 'syncing') {
@@ -841,10 +840,6 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
             reject(er);
           }
         })
-        const timeout = setTimeout(() => {
-          subscription.unsubscribe();
-          reject('synching timeout');
-        }, lapse)
       })
     }
     return doc;
@@ -865,22 +860,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     if (createOnlyOrStatus === true && existing) {
       throw new Error('Record already exist');
     }
-    const synched = existing && await this.synchingDoc(existing);
-    const defaultCb = async (targetDoc: IDocStore<T>) => {
-      const deffered = new DeferredPromise<IDocStore<T>>();
-      this.subscribeOn(targetDoc, async (docStatus) => {
-        if (docStatus.status == 'synced') {
-          const updated = await this.getDoc(docStatus.newKey || docStatus.key || '');
-          if (updated) {
-            deffered.resolve(updated);
-          } else {
-            deffered.reject('Failed to Write');
-          }
-        }
-      })
-      this.manageDocCallback(targetDoc);
-      return deffered.promise;
-    }
+    const synched = existing;// && existing.status == 'syncing' && await this.synchingDoc(existing);
     if (typeof synched == 'object') existing = synched;
     if (existing && existing.status == 'synced') {
       const status =
@@ -897,17 +877,29 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         .filter((f) => f)
         .join('\n');
       await this.saveDoc(identity, existing);
-
       if (existing.status != 'synced') {
         if (cb) {
           this.subscribeOn(existing, cb);
           this.manageDocCallback(existing);
         } else {
-          return defaultCb(existing);
+          const deffered = new DeferredPromise<IDocStore<T>>();
+          this.subscribeOn(existing, async (docStatus) => {
+            if (docStatus.status == 'synced') {
+              const updated = await this.getDoc(docStatus.newKey || docStatus.key || '');
+              if (updated) {
+                deffered.resolve(updated);
+              } else {
+                deffered.reject('Failed to Write');
+              }
+            }
+          })
+          this.manageDocCallback(existing);
+          return deffered.promise;
         }
-        return existing;
       }
+      return existing;
     }
+    value.key = value.key || identity;
     const doc =
       identity &&
       (await this.saveDoc(identity, {

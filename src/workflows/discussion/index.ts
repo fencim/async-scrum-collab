@@ -1,3 +1,9 @@
 import './create-discussion.workflow';
 import './move-issue.workflow';
 import './assign-task.workflow';
+import './assess-discussion.workflow';
+import './vote-for-complexity.workflow';
+import './resolve-question-of.workflow';
+import './confirm-disagreement.workflow';
+import './ask-question.workflow';
+import './reply-to-message.workflow';

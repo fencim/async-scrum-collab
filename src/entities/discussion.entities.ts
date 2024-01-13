@@ -131,3 +131,5 @@ export interface IDiscusssionMail {
   dateRead?: string;
   reference?: string | DiscussionItem
 }
+
+export type DiscussionReport = { factor: string, progress: number, feedback: string };

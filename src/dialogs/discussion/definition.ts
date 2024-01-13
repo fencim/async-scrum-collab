@@ -17,3 +17,8 @@ export type Discussions =
     done?: (item: DiscussionItem) => void
   }>
   | Struct<'viewTask', DiscussionItem>
+  | Struct<'voteForItemComplexity', {
+    item: DiscussionItem,
+    done?: () => void
+    error?: (error: unknown) => void;
+  }>
