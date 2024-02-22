@@ -49,7 +49,7 @@ export type Discussion =
     done?: (message: IQuestion) => void
     error?: (error: unknown) => void;
   }>
-  | Struct<'replyToMessge', {
+  | Struct<'replyToMessage', {
     item: DiscussionItem,
     message: string,
     ref: Convo,

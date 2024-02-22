@@ -1,4 +1,4 @@
-import { date, useQuasar } from 'quasar';
+import { date } from 'quasar';
 import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
 import { IBoardColumn } from 'src/entities';
@@ -19,7 +19,7 @@ TheWorkflows.on({
   async cb(e) {
     const discussionStore = useDiscussionStore();
     const activeStore = useActiveStore();
-    const issueReadyness = activeStore.activeProject?.discussionReadiness || 0;
+    const issueReadiness = activeStore.activeProject?.discussionReadiness || 0;
     const { issue, column, iterationKey } = e;
     const goIssues = issue.type == 'goal' || issue.type == 'objective';
     const movingFromIteration =
@@ -32,7 +32,7 @@ TheWorkflows.on({
     } else if (!!issue.doneDate && movingFromIteration) {
       e.error && e.error(TaskActionError.alreadyClosed);
       return;
-    } else if (column && iterationKey && issueReadyness && issue.progress && issue.progress < issueReadyness) {
+    } else if (column && iterationKey && issueReadiness && issue.progress && issue.progress < issueReadiness) {
       e.error && e.error(TaskActionError.notReady);
       return;
     }

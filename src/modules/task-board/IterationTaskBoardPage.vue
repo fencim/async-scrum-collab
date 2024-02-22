@@ -134,7 +134,7 @@ async function taskMoved(
     <q-splitter v-model="splitSection" v-if="!$q.screen.lt.md">
       <template #before>
         <div class="text-h6 q-px-sm">Product Backlog</div>
-        <product-backlog />
+        <product-backlog @task-moved="taskMoved" />
       </template>
       <template #after>
         <div class="row" :style="'min-height: ' + $q.screen.sizes.sm + 'px'">
@@ -171,7 +171,7 @@ async function taskMoved(
     <div v-else>
       <q-tab-panels v-model="tab" class="col">
         <q-tab-panel name="all">
-          <product-backlog />
+          <product-backlog @task-moved="taskMoved" />
         </q-tab-panel>
         <q-tab-panel
           v-for="i in iterationStore.iterations"

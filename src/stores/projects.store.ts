@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { IProfile, IProject, IBoardColumn } from 'src/entities';
 import { projectResource } from 'src/resources';
 import { firebaseService } from 'src/services/firebase.service';
-import { useCeremonyStore } from './cermonies.store';
+import { useCeremonyStore } from './ceremonies.store';
 import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useActiveStore } from './active.store';

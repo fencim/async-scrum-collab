@@ -6,14 +6,15 @@ import {
   ICeremony, IDiscussion,
   IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
   PlanningItem, IProfile,
-  RetroItem, IBoardColumn, DiscussionReport
+  RetroItem, IBoardColumn, DiscussionReport, IRoadBlock
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
-import { useCeremonyStore } from './cermonies.store';
+import { useCeremonyStore } from './ceremonies.store';
 import { useProfilesStore } from './profiles.store';
 import { useProjectStore } from './projects.store';
 import { useIterationStore } from './iterations.store';
 import { entityKey } from 'src/entities/base.entity';
+import { PlanningTypes } from '../entities';
 
 interface IDiscussionState {
   discussions: DiscussionItem[];
@@ -67,10 +68,9 @@ export const useDiscussionStore = defineStore('discussion', {
           const iterationStore = useIterationStore();
           return from(Promise.all(list.map(async (m) => {
             if (m.type == 'scrum') {
-              m.reporter = await profileStore.get(m.reporter as string) || m.reporter;
               m.todoTasks = this.fromList(m.todoTasks as string[], list);
               m.tasksDid = this.fromList(m.tasksDid as string[], list);
-              m.roadblocks = this.fromList(m.roadblocks as string[], list);
+              m.roadblocks = this.fromList(m.roadblocks as string[], list) as IRoadBlock[];
               m.info = this.describeDiscussion(m);
             }
             if (Array.isArray(m.assignees) && typeof m.assignees[0] == 'string') {
@@ -191,16 +191,16 @@ export const useDiscussionStore = defineStore('discussion', {
         {} as { [v: string]: string });
 
       const awareness = Object.values(item.awareness || {});
-      const agreement = awareness.filter(agreeement => agreeement == 'agree');
+      const agreement = awareness.filter(agreement => agreement == 'agree');
 
       factors.push(this.completenessOfItem(item));
       const awarenessProgress = Object.keys(item.awareness || {})
         .filter(a => members.find(m => a == m)).length;
       factors.push(this.logFactor(awarenessProgress, members.length, 'awareness'));
-      if (/(story|goal|objective|task)/.test(item.type)) {
+      if (PlanningTypes.includes(item.type)) {
         factors.push(this.logFactor(Object.values(vCast).length, members.length, 'votes'));
+        factors.push(this.logFactor(agreement.length, members.length, 'agreement'));
       }
-      factors.push(this.logFactor(agreement.length, members.length, 'agreement'));
 
       const qProgress = questions.map((q) => {
         const totals = convo.reduce((p, c) => {
@@ -248,11 +248,13 @@ export const useDiscussionStore = defineStore('discussion', {
     completenessOfItem(item: DiscussionItem) {
       let progress = 0;
       const feedbacks = [] as string[];
-      if (!item.dueDate) {
-        progress += 1;
-        feedbacks.push('Estimated Due Date is not set');
-      } else {
-        feedbacks.push('Estimated Due Date is set')
+      if (PlanningTypes.includes(item.type)) {
+        if (!item.dueDate) {
+          feedbacks.push('Estimated Due Date is not set');
+        } else {
+          progress += 1;
+          feedbacks.push('Estimated Due Date is set')
+        }
       }
       switch (item.type) {
         case 'goal': case 'task':
@@ -274,7 +276,7 @@ export const useDiscussionStore = defineStore('discussion', {
           } else {
             feedbacks.push('Specifics is not well defined')
           }
-          if (item.mesures && item.mesures.length > 10) {
+          if (item.measures && item.measures.length > 10) {
             progress += 1;
             feedbacks.push('Measures is set')
           } else {
@@ -322,11 +324,11 @@ export const useDiscussionStore = defineStore('discussion', {
             feedback: feedbacks.join('\n')
           };
         case 'scrum':
-          if (item.reporter) {
+          if (item.assignedTo) {
             progress += 1;
-            feedbacks.push('Reporter is defined')
+            feedbacks.push('Reporter/Assignee is defined')
           } else {
-            feedbacks.push('Reporter is not defined')
+            feedbacks.push('Reporter/Assignee is not defined')
           }
           const reported = item.todoTasks.length + item.tasksDid.length;
           if (reported > 0) {
@@ -352,20 +354,20 @@ export const useDiscussionStore = defineStore('discussion', {
       const items = this.discussions.filter(d => d.iteration == ceremony.iterationKey);
       const project = useProjectStore().activeProject;
       if (ceremony.type == 'scrum' && project) {
-        const noItems = project.members.filter(m => !(items.find(i => i.key.includes(m))));
-        await Promise.all(noItems.map(async (m) => {
-          return this.saveDiscussion({
-            type: 'scrum',
-            key: m + ceremony.key,
-            awareness: {},
-            ceremonyKey: ceremony.key,
-            projectKey: ceremony.projectKey,
-            reporter: m,
-            roadblocks: [],
-            tasksDid: [],
-            todoTasks: []
-          })
-        }))
+        //const noItems = project.members.filter(m => !(items.find(i => i.key.includes(m))));
+        // await Promise.all(noItems.map(async (m) => {
+        //   return this.saveDiscussion({
+        //     type: 'scrum',
+        //     key: m + ceremony.key,
+        //     awareness: {},
+        //     ceremonyKey: ceremony.key,
+        //     projectKey: ceremony.projectKey,
+        //     reporter: m,
+        //     roadblocks: [],
+        //     tasksDid: [],
+        //     todoTasks: []
+        //   })
+        // }))
       } else if (ceremony.type == 'retro') {
         const base: IDiscussion = {
           key: ceremony.key,
@@ -373,7 +375,7 @@ export const useDiscussionStore = defineStore('discussion', {
           ceremonyKey: ceremony.key,
           projectKey: ceremony.projectKey,
         }
-        const retoItems: RetroItem[] = [{
+        const retroItems: RetroItem[] = [{
           type: 'went-well',
           ...base,
           key: 'wr' + ceremony.key,
@@ -391,7 +393,7 @@ export const useDiscussionStore = defineStore('discussion', {
           comments: []
         } as IToImprove,
         ].filter(i => !(items.find(d => d.type == i.type && d.ceremonyKey == i.ceremonyKey)));
-        await Promise.all(retoItems.map((i) => {
+        await Promise.all(retroItems.map((i) => {
           return this.saveDiscussion(i)
         }))
 

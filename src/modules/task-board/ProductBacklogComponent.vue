@@ -3,6 +3,7 @@ import draggable from 'vuedraggable';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { getComponent } from './card-components';
 import { computed, ref } from 'vue';
+import { DiscussionItem, ISprintBoardColumn } from 'src/entities';
 const discussionStore = useDiscussionStore();
 const keywords = ref<null | FilterOption[]>(null);
 type FilterOption = {
@@ -10,7 +11,14 @@ type FilterOption = {
   value: string;
   display: string;
 };
-
+const emit = defineEmits<{
+  (
+    e: 'taskMoved',
+    issue: DiscussionItem,
+    column?: ISprintBoardColumn,
+    iterationKey?: string
+  ): void;
+}>();
 const backlog = computed(() => {
   return (discussionStore.productBacklog.tasks || []).filter((task) => {
     if (!keywords.value || keywords.value.length == 0) return true;
@@ -62,6 +70,13 @@ const filterOptions = computed(() => {
     ] as FilterOption[]
   );
 });
+function taskMoved(
+  issue: DiscussionItem,
+  column?: ISprintBoardColumn,
+  iterationKey?: string
+) {
+  emit('taskMoved', issue, column, iterationKey);
+}
 </script>
 <template>
   <draggable
@@ -115,6 +130,9 @@ const filterOptions = computed(() => {
           :is="getComponent(element)"
           :task="element"
           :header-only="$q.screen.lt.md"
+          @task-moved="
+            (issue:DiscussionItem, col?:ISprintBoardColumn, iteration?:string) =>
+            taskMoved(issue, col, iteration)"
           mini
         />
       </q-card>

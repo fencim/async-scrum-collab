@@ -1,7 +1,7 @@
 import { useIterationStore } from 'src/stores/iterations.store';
 import { TheWorkflows } from '../the-workflows';
 import { IIteration } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { date } from 'quasar';
 
 TheWorkflows.on({

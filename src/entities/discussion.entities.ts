@@ -38,11 +38,12 @@ export interface IObjective extends IDiscussion {
   type: 'objective';
   description: string;
   specifics?: string;
-  mesures?: string;
+  measures?: string;
   enables?: string;
 }
 export interface TechnicalTask extends IDiscussion {
   type: 'task';
+  kind: 'technical' | 'defect';
   description: string;
 }
 export interface IAcceptanceCriteria {
@@ -73,10 +74,9 @@ export interface IRoadBlock extends IDiscussion {
 
 export interface IScrumReport extends IDiscussion {
   type: 'scrum';
-  reporter: string | IProfile;
   tasksDid: (string | DiscussionItem)[];
   todoTasks: (string | DiscussionItem)[];
-  roadblocks: (string | DiscussionItem)[];
+  roadblocks: (string | IRoadBlock)[];
 }
 
 export interface ISprintReport extends IDiscussion {
@@ -113,16 +113,16 @@ export type DailyScrumItem = IScrumReport | IRoadBlock;
 export type ReviewItem = ISprintReport | ISprintDemo;
 export type RetroItem = IWentWell | IWentWrong | IToImprove | IActionItem;
 export type DiscussionItem = PlanningItem | DailyScrumItem | ReviewItem | RetroItem;
-
+export const PlanningTypes = ['goal', 'objective', 'story', 'task'] as PlanningItem['type'][];
 export interface ISprintBoardColumn extends IBoardColumn {
   tasks: PlanningItem[];
 }
 
 export interface IProgressFeedback { progress: number; feedback: string }
 
-export interface IDiscusssionMail {
+export interface IDiscussionMail {
   from: string | IProfile;
-  recepient: string | IProfile;
+  recipient: string | IProfile;
   to: (string | IProfile)[];
   subject: string;
   message: string;

@@ -3,13 +3,18 @@ import { DiscussionItem, IIteration } from 'src/entities';
 import { ref } from 'vue';
 import { TheDialogs } from '../the-dialogs';
 import DiscussionForm from 'src/components/DiscussionForm.vue';
-
+import { useProfilesStore } from 'src/stores/profiles.store';
+import { useRoute } from 'vue-router';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+const $route = useRoute();
+const discussionStore = useDiscussionStore();
 const newTaskPreFields = ref({
   item: undefined as DiscussionItem | undefined,
   type: 'story' as DiscussionItem['type'],
   status: '',
   iteration: undefined as IIteration | undefined,
   refItem: undefined as DiscussionItem | undefined,
+  assignedTo: undefined as string | undefined,
 });
 const showTopSheet = ref(false);
 function editTask(task: DiscussionItem) {
@@ -19,7 +24,7 @@ function editTask(task: DiscussionItem) {
   newTaskPreFields.value.iteration = task.iteration as IIteration;
   showTopSheet.value = true;
 }
-function newTask(
+async function newTask(
   status?: string,
   type?: DiscussionItem['type'],
   iteration?: IIteration
@@ -28,6 +33,18 @@ function newTask(
   newTaskPreFields.value.status = status || newTaskPreFields.value.status;
   newTaskPreFields.value.iteration = iteration;
   newTaskPreFields.value.refItem = undefined;
+  if (type == 'scrum') {
+    const assignedTo = useProfilesStore().theUser?.key;
+    newTaskPreFields.value.assignedTo = assignedTo;
+    const ceremonyKey = $route.params.ceremony as string;
+    const existing = discussionStore.discussions.find(
+      (d) => d.assignedTo == assignedTo && d.ceremonyKey == ceremonyKey
+    );
+    if (existing) {
+      errorCb.value && errorCb.value(new Error('Discussion already exists'));
+      return;
+    }
+  }
   showTopSheet.value = true;
 }
 function newSubTask(refItem: DiscussionItem) {
@@ -42,15 +59,17 @@ function newSubTask(refItem: DiscussionItem) {
   showTopSheet.value = true;
 }
 const doneCb = ref<(item: DiscussionItem) => void>();
+const errorCb = ref<ErrorCallback>();
 function onClose(item: DiscussionItem) {
   doneCb.value && doneCb.value(item);
   showTopSheet.value = false;
 }
 TheDialogs.on({
   type: 'newTask',
-  cb: (e) => {
-    newTask(e.status, e.type, e.iteration);
+  cb: async (e) => {
+    await newTask(e.status, e.type, e.iteration);
     doneCb.value = e.done;
+    errorCb.value = e.error;
   },
 });
 TheDialogs.on({
@@ -58,6 +77,7 @@ TheDialogs.on({
   cb: (e) => {
     editTask(e.item);
     doneCb.value = e.done;
+    errorCb.value = e.error;
   },
 });
 TheDialogs.on({
@@ -65,6 +85,7 @@ TheDialogs.on({
   cb: (e) => {
     newSubTask(e.ref);
     doneCb.value = e.done;
+    errorCb.value = e.error;
   },
 });
 </script>
@@ -76,6 +97,7 @@ TheDialogs.on({
       :iteration="newTaskPreFields.iteration"
       :ref-item="newTaskPreFields.refItem"
       :item="newTaskPreFields.item"
+      :assigned-to="newTaskPreFields.assignedTo"
       @close-form="(d) => onClose(d)"
     />
   </q-dialog>

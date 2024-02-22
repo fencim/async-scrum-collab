@@ -1,6 +1,7 @@
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
+import { useProfilesStore } from 'src/stores/profiles.store';
 
 TheWorkflows.on({
   type: 'createDiscussion',
@@ -21,6 +22,26 @@ TheWorkflows.on({
       item.parent = entityKey(refItem);
     }
     const result = await discussionStore.saveDiscussion(item);
-    done && done(result)
+    const theUser = useProfilesStore().theUser;
+    if (result?.type == 'scrum' && theUser) {
+      TheWorkflows.emit({
+        type: 'assignTask',
+        arg: {
+          issue: result,
+          profile: theUser,
+          done
+        }
+      })
+    } else {
+      TheWorkflows.emit({
+        type: 'assessDiscussion',
+        arg: {
+          item: result,
+          done() {
+            done && done(result);
+          },
+        }
+      })
+    }
   },
 })

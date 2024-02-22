@@ -89,7 +89,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import EssentialLink from 'src/components/EssentialLink.vue';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
 import { useProjectStore } from 'src/stores/projects.store';
 import { useIterationStore } from 'src/stores/iterations.store';
@@ -206,8 +206,17 @@ export default defineComponent({
 
     async actOn(action: ActionItem) {
       if (action.key == 'view') {
-        const discusssion = await discussionStore.withKey(this.activeItem);
-        discusssion && TheDialogs.emit({ type: 'viewTask', arg: discusssion });
+        const discussion = await discussionStore.withKey(this.activeItem);
+        discussion && TheDialogs.emit({ type: 'viewTask', arg: discussion });
+      } else if (action.key == 'vote') {
+        const discussion = await discussionStore.withKey(this.activeItem);
+        discussion &&
+          TheDialogs.emit({
+            type: 'voteForItemComplexity',
+            arg: {
+              item: discussion,
+            },
+          });
       } else if (action.key == 'convo') {
         await this.$router.replace({
           name: 'convo',
@@ -243,7 +252,7 @@ export default defineComponent({
       this.dialogAgree = false;
       convoBus.emit('refresh');
     },
-    async newDiscussion() {
+    async newPlanningDiscussion() {
       const goalCreated = this.goalIsCreated;
       if (
         this.item &&
@@ -289,8 +298,49 @@ export default defineComponent({
                 },
               });
             },
+            error: (err) => {
+              this.$q.notify({
+                color: 'negative',
+                icon: 'error',
+                message: String(err),
+              });
+            },
           },
         });
+      }
+    },
+    newScrumDiscussion() {
+      TheDialogs.emit({
+        type: 'newTask',
+        arg: {
+          type: 'scrum',
+          iteration: this.iteration,
+          done: (item) => {
+            this.$router.replace({
+              name: 'convo',
+              params: {
+                project: this.activeProject,
+                iteration: this.activeIteration,
+                ceremony: this.activeCeremony,
+                item: item.key,
+              },
+            });
+          },
+          error: (err) => {
+            this.$q.notify({
+              color: 'negative',
+              icon: 'error',
+              message: String(err),
+            });
+          },
+        },
+      });
+    },
+    async newDiscussion() {
+      if (this.ceremony?.type == 'planning') {
+        this.newPlanningDiscussion();
+      } else if (this.ceremony?.type == 'scrum') {
+        this.newScrumDiscussion();
       }
     },
   },

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { IOnlineUser } from 'src/entities/online-user.entity';
 import { onlineUsersResource } from 'src/resources/online-users.resource';
-import { useCeremonyStore } from './cermonies.store';
+import { useCeremonyStore } from './ceremonies.store';
 import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useProfilesStore } from './profiles.store';

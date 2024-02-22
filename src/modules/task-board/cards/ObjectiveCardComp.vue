@@ -43,7 +43,7 @@ defineProps({
     </template>
     <template #details>
       <div>
-        {{ task.specifics }}, {{ task.enables }}, {{ task.mesures }},
+        {{ task.specifics }}, {{ task.enables }}, {{ task.measures }},
         {{ task.dueDate }}
       </div>
     </template>

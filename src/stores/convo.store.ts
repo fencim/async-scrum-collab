@@ -15,7 +15,7 @@ interface IConvoState {
   streams: { [topic: string]: Observable<ConvoList> }
   actions: ActionItem[];
   activeAction?: ActionItem;
-  lastestConvo?: Convo;
+  latestConvo?: Convo;
 }
 export const useConvoStore = defineStore('convo', {
   state: () => ({
@@ -108,7 +108,7 @@ export const useConvoStore = defineStore('convo', {
     async computeCompleteness(discussion: string, convo: ConvoList) {
       const projectStore = useProjectStore();
       const discussionStore = useDiscussionStore();
-      const discItem = discussionStore.discussions.find(d => d.key == discussion && d.projectKey == projectKey);
+      const discItem = discussionStore.discussions.find(d => d.key == discussion);
       const project = projectStore.projects.find(p => p.key == discItem?.projectKey);
       const presentUser = useProfilesStore().presentUser;
       if (discItem && project && presentUser) {

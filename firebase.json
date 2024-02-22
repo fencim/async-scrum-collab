@@ -1,11 +1,7 @@
 {
   "hosting": {
     "public": "dist/pwa",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",
@@ -22,7 +18,10 @@
       "port": 9099
     },
     "firestore": {
-      "port": 8081
+      "port": 8080
+    },
+    "database": {
+      "port": 9001
     },
     "hosting": {
       "port": 5000

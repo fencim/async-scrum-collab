@@ -214,6 +214,8 @@ async function submitIteration() {
   saving.value = true;
   const editing = iterationPreFields.value.iteration;
   if (!editing) {
+    theIteration.value.start = date.formatDate(range.value.from, 'YYYY/MM/DD');
+    theIteration.value.end = date.formatDate(range.value.to, 'YYYY/MM/DD');
     TheWorkflows.emit({
       type: 'createIteration',
       arg: {

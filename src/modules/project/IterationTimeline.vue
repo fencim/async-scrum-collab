@@ -133,7 +133,7 @@ import {
   ICeremony,
   PlanningItem,
 } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { computed, PropType } from 'vue';
 import { getComponent } from '../task-board/card-components';

@@ -32,7 +32,7 @@ export default defineComponent({
   methods: {
     async logout() {
       this.loading = true;
-      await profileStore.signout();
+      await profileStore.signOut();
       this.signOut = true;
       this.loading = false;
       this.confirm = false;

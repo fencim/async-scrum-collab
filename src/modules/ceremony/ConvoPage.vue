@@ -116,7 +116,7 @@ import {
   DiscussionItem,
   IResponse,
 } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useConvoStore } from 'src/stores/convo.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
@@ -181,11 +181,15 @@ onUpdated(async () => {
 });
 const messages = computed(() => {
   const convo = convoStore.convo[activeIteration.value ?? ''] || [];
-  if (discussionStore.activeDiscussion) {
-    const active = discussionStore.activeDiscussion;
-    return convo.filter((m) => m.discussion == active.key);
+  if (discussion.value) {
+    return convo.filter((m) => m.discussion == discussion.value?.key);
   }
-  return convo.filter((m) => m.discussion == activeCeremony.value);
+  if (ceremony.value?.type == 'planning') {
+    return convo.filter((m) => m.discussion == `${iteration.value?.key}plan`);
+  } else if (ceremony.value?.type == 'scrum') {
+    return convo.filter((m) => m.discussion == `${ceremony.value?.key || ''}`);
+  }
+  return convo;
 });
 function asFromAvatar(msg: Convo | undefined) {
   return typeof msg?.from == 'object' ? msg?.from.avatar : '';
@@ -236,7 +240,7 @@ async function sendMessage() {
     });
   } else if (replyTo.value && discussion.value) {
     TheWorkflows.emit({
-      type: 'replyToMessge',
+      type: 'replyToMessage',
       arg: {
         item: discussion.value,
         message: message.value,
@@ -297,14 +301,7 @@ function scrollToBottom() {
   };
   scrollTo();
 }
-function getStatus(m: Convo) {
-  switch (m.status) {
-    case 'sent':
-      return 'check_circle';
-    default:
-      return 'pending';
-  }
-}
+
 function askQuestion() {
   askingQuestion.value = !askingQuestion.value;
   convoBus.emit('onQuestion', askingQuestion);
@@ -355,4 +352,3 @@ async function resolveQuestionOf(
   });
 }
 </script>
-<style lang="sass" scoped></style>

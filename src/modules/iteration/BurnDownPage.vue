@@ -6,7 +6,7 @@ import VChart from 'vue-echarts';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { date } from 'quasar';
 import { useRoute } from 'vue-router';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { DiscussionItem, ICeremony, IProfile } from 'src/entities';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { formatKey } from 'src/components/discussion.helper';
@@ -92,7 +92,7 @@ const filterOptions = computed(() => {
   }, [] as FilterOption[]);
 });
 const mappedDiscussions = computed(() => {
-  return discussions.value.filter((d) => d.dueDate && d.assignedTo);
+  return discussions.value.filter((d) => d.dueDate /* && d.assignedTo */);
 });
 const loading = ref(false);
 const startDate = iteration && date.formatDate(iteration.start, 'YYYY/MM/DD');
@@ -360,10 +360,12 @@ function updateDueDate(d: string, task: DiscussionItem) {
         "
             class="full-width"
             dense
-            clickable
-            @click="TheDialogs.emit({ type: 'viewTask', arg: element })"
           >
-            <span>{{ formatKey(element.key) }}</span>
+            <span
+              @click="TheDialogs.emit({ type: 'viewTask', arg: element })"
+              class="cursor-pointer"
+              >{{ formatKey(element.key) }}</span
+            >
             <q-space />
             <recent-active-members
               sizes="xs"

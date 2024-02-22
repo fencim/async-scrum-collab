@@ -28,16 +28,16 @@ export const useProfilesStore = defineStore('Profiles', {
   actions: {
     async authenticate() {
       if (!this.getUser()) {
-        await firebaseService.autheticate();
+        await firebaseService.authenticate();
         this.getUser();
       } else if (!(firebaseService.accessStatus & AccessStatus.authorized)) {
         firebaseService.setAccessStatus(AccessStatus.authorized);
       }
     },
-    async signout() {
+    async signOut() {
       const cleanUp = async () => {
         this.theUser = undefined;
-        await firebaseService.signout();
+        await firebaseService.signOut();
         await convoResource.deleteAll();
         await discussionResource.deleteAll();
         await iterationResource.deleteAll();
@@ -92,6 +92,43 @@ export const useProfilesStore = defineStore('Profiles', {
       }
       return this.theUser;
     },
+    async getUserAsync() {
+      if (this.theUser) return this.theUser;
+      await firebaseService.validateAuth();
+      const user = firebaseService.auth();
+      const userLogged =
+        (user && {
+          key: user?.uid || user?.email || '',
+          avatar: user?.photoURL || '',
+          email: user?.email || 'none',
+          emailVerified: user?.emailVerified,
+          name: user?.displayName || user?.email || 'none',
+        }) ||
+        undefined;
+      if (userLogged?.key) {
+        const old = await profileResource.getData(userLogged.key);
+        if (old) {
+          this.theUser =
+            (await profileResource.setData(userLogged.key, {
+              ...old,
+              ...userLogged,
+              avatar: old.avatar
+            })) || this.theUser;
+        } else if (userLogged) {
+          this.theUser =
+            (await profileResource.setData(userLogged.key, {
+              ...userLogged,
+            })) || this.theUser;
+        }
+      }
+      if (this.theUser?.avatar && this.theUser.avatar.length > 1 && /^http/.test(this.theUser.avatar)) {
+        this.theUser.avatar = await mediaResource.cacheHttpUrl(this.theUser.avatar) || this.theUser.avatar;
+      }
+      return this.theUser;
+    },
+    clearUser() {
+      this.theUser = undefined;
+    },
     async init() {
       const all = (await profileResource.findAll()).contents;
       this.profiles = [botProfile, ...(all || [])];
@@ -124,17 +161,7 @@ export const useProfilesStore = defineStore('Profiles', {
     },
     async signInWithGoogle() {
       this.theUser = undefined;
-      const cred = await firebaseService.signInWithGoolgeAccount();
-      await sessionResource.setData('currentUser', cred.user.toJSON() as object);
-      this.theUser = this.getUser();
-      this.theUser && await profileResource.synchingData(this.theUser.key);
-      if (this.theUser) {
-        logsResource.setData('', {
-          type: 'auth-login',
-          username: this.theUser.email || this.theUser.key,
-        })
-      }
-      return cred;
+      return await firebaseService.signInWithGoogleAccount();
     },
     async signInAnonymously() {
       const cred = await firebaseService.signInAnonymously();
@@ -149,7 +176,7 @@ export const useProfilesStore = defineStore('Profiles', {
       return cred;
     },
     async signIn(email: string, password: string) {
-      const cred = await firebaseService.signInWithEmailandPass(email, password);
+      const cred = await firebaseService.signInWithEmailAndPass(email, password);
       await sessionResource.setData('currentUser', cred.user.toJSON() as object);
       this.theUser = this.getUser();
       if (this.theUser) {

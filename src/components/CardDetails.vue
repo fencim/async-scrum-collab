@@ -46,17 +46,13 @@ const tab = ref('progress');
 const splitterModel = ref(20);
 onMounted(async () => {
   const discussionStore = useDiscussionStore();
-  const activeStore = useActiveStore();
   const convoStore = useConvoStore();
   task.value = (await discussionStore.getUpdated(props.item.key)) || task.value;
-  if (activeStore.activeProject?.key) {
-    convoStore
-      .ofDiscussion(activeStore.activeProject?.key, props.item.key)
-      .subscribe({
-        next: (messages) => {
-          convo.value = messages;
-        },
-      });
+  if (props.item.iteration) {
+    convo.value = await convoStore.ofDiscussion(
+      entityKey(props.item.iteration),
+      props.item.key
+    );
   }
 });
 
@@ -222,7 +218,7 @@ function asProgress(progress: IProgressFeedback) {
         <strong>Description:</strong> {{ task.description }}
       </div>
       <div class="col-6"><strong>Specifics:</strong> {{ task.specifics }}</div>
-      <div class="col-6"><strong>Measures:</strong> {{ task.mesures }}</div>
+      <div class="col-6"><strong>Measures:</strong> {{ task.measures }}</div>
       <div class="col-6"><strong>Enables:</strong> {{ task.enables }}</div>
       <div class="col-6">
         <strong>Due:</strong>

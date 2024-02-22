@@ -98,7 +98,7 @@
 <script lang="ts">
 import { date } from 'quasar';
 import { DiscussionItem, ICeremony } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { defineComponent } from 'vue';

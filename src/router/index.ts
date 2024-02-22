@@ -1,6 +1,6 @@
 import { route } from 'quasar/wrappers';
 import { useActiveStore } from 'src/stores/active.store';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useOnlineUsersStore } from 'src/stores/online-users.store';
@@ -12,10 +12,11 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
-import createPina from 'src/stores';
+import createPinia from 'src/stores';
 import { IProject } from 'src/entities';
+import { useConvoStore } from 'src/stores/convo.store';
 
-createPina({});
+createPinia({});
 /*
  * If not building with SSR mode, you can
  * directly export the Router instantiation;
@@ -49,7 +50,7 @@ export default route(async function (/* { store, ssrContext } */) {
 
   Router.beforeEach(async (to, from, next) => {
     await profileStore.authenticate();
-    const user = profileStore.getUser();
+    const user = await profileStore.getUserAsync();
     if (user && to.meta.anonymous) {
       next({
         name: 'home'
@@ -67,6 +68,7 @@ export default route(async function (/* { store, ssrContext } */) {
       if (projectStore.activeProject && to.params && to.params['iteration']
         && (!iterationStore.activeIteration || iterationStore.activeIteration.key != to.params['iteration'])) {
         await iterationStore.selectIteration(projectStore.activeProject.key, to.params['iteration'] as string);
+        useConvoStore().ofIteration(to.params['iteration'] as string).subscribe()
       }
       else if (!to.params['iteration']) {
         await iterationStore.selectIteration('', '');

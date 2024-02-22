@@ -35,8 +35,6 @@ import {
   getAggregateFromServer,
   sum,
   AggregateSpec,
-  AggregateField,
-  AggregateFieldType,
   average,
   limit
 } from 'firebase/firestore';
@@ -95,7 +93,7 @@ const collections = getCollections(fbStore);
 type Colls = typeof collections;
 type ModelName = keyof Colls;
 
-class FirebaseSevice {
+class FirebaseService {
   constructor() {
     this.accessObs = new Subject();
     const connRef = refDb(fbDb, '.info/connected');
@@ -142,7 +140,7 @@ class FirebaseSevice {
         }
       });
   }
-  autheticate() {
+  authenticate() {
     return new Promise<User | null>((resolve) => {
       auth.onAuthStateChanged((user) => {
         if (user) {
@@ -158,12 +156,12 @@ class FirebaseSevice {
   }
   async validateAuth() {
     if (!(this.accessStatus & AccessStatus.authorized || !auth.currentUser)) {
-      await this.autheticate();
+      await this.authenticate();
     } else {
       await this.checkTokenRefresh();
     }
   }
-  async signout() {
+  async signOut() {
     this.setAccessStatus(AccessStatus.unAuthorized);
     return signOut(auth);
   }
@@ -175,10 +173,10 @@ class FirebaseSevice {
   signInAnonymously(): Promise<UserCredential> {
     return signInAnonymously(auth);
   }
-  async signInWithEmailandPass(email: string, password: string) {
+  async signInWithEmailAndPass(email: string, password: string) {
     return signInWithEmailAndPassword(auth, email, password);
   }
-  async signInWithGoolgeAccount() {
+  async signInWithGoogleAccount() {
     const res = await signInWithPopup(auth, googleProvider);
     this.setAccessStatus(AccessStatus.authorized);
     return res;
@@ -190,7 +188,7 @@ class FirebaseSevice {
     return cred;
   }
   async resendEmailVerification() {
-    const cred = await this.autheticate();
+    const cred = await this.authenticate();
     if (cred) {
       await sendEmailVerification(cred);
     }
@@ -365,4 +363,4 @@ class FirebaseSevice {
   }
 }
 
-export const firebaseService = new FirebaseSevice();
+export const firebaseService = new FirebaseService();

@@ -36,15 +36,22 @@
       v-for="i in discussionItems"
       :key="i?.key"
       active-class="bg-grey-9"
-      :active="i?.key == activeItemKey"
-      :to="`/${activeProjectKey}/${activeIterationKey}/${activeCeremonyKey}/${i?.key}/convo`"
+      :to="{
+        name: 'convo',
+        params: {
+          project: activeProjectKey,
+          iteration: activeIterationKey,
+          ceremony: activeCeremonyKey,
+          item: i?.key,
+        },
+      }"
     >
       <discussion-menu
         :item="i"
         :description="i.info || ''"
         :reporter="
-          i.type == 'scrum' && typeof i.reporter == 'object'
-            ? i.reporter
+          i.type == 'scrum' && typeof i.assignedTo == 'object'
+            ? i.assignedTo
             : undefined
         "
       />
@@ -54,15 +61,14 @@
 
 <script lang="ts" setup>
 import { ICeremony, IProject } from 'src/entities';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { computed, defineComponent, onMounted, ref } from 'vue';
-import { convoBus } from './convo-bus';
+import { computed, onMounted, ref } from 'vue';
 import DiscussionMenu from 'src/components/discussion/DiscussionMenu.vue';
 import { useProfilesStore } from 'src/stores/profiles.store';
-import { P } from 'app/dist/pwa/assets/index.869f5878';
 import { useRoute } from 'vue-router';
+import { entityKey } from 'src/entities/base.entity';
 
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
@@ -80,6 +86,7 @@ const activeCeremony = ref<ICeremony>();
 onMounted(async () => {
   await init();
 });
+
 async function init() {
   activeProjectKey.value =
     ($route.params.project && String($route.params.project)) || '';
@@ -94,16 +101,24 @@ async function init() {
   );
 }
 const discussionItems = computed(() => {
-  const list = discussionStore.discussions.filter(
-    (d) => d.iteration == activeIterationKey.value
-  );
+  const list = discussionStore.discussions.filter((d) => {
+    if (activeCeremony.value?.type == 'planning') {
+      return (
+        (d.ceremonyKey == activeCeremony.value.key || !d.ceremonyKey) &&
+        d.iteration &&
+        entityKey(d.iteration) == activeIterationKey.value
+      );
+    } else {
+      return d.ceremonyKey == activeCeremony.value?.key;
+    }
+  });
   const theUser = profileStore.theUser;
   if (activeCeremony.value?.type == 'scrum' && theUser) {
     return list.sort((a) => {
       if (
         a.type == 'scrum' &&
-        (a.reporter == theUser.key ||
-          (typeof a.reporter == 'object' && a.reporter.key == theUser.key))
+        a.assignedTo &&
+        entityKey(a.assignedTo) == theUser.key
       ) {
         return -1;
       }

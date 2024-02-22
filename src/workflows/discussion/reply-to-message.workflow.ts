@@ -4,7 +4,7 @@ import { entityKey } from 'src/entities/base.entity';
 import { useProfilesStore } from 'src/stores/profiles.store';
 
 TheWorkflows.on({
-  type: 'replyToMessge',
+  type: 'replyToMessage',
   async cb(e) {
     const { item, message, ref, done, error } = e;
     const convoStore = useConvoStore();

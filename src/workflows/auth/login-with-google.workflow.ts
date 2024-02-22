@@ -7,6 +7,7 @@ TheWorkflows.on({
     const profileStore = useProfilesStore();
     try {
       await profileStore.signInWithGoogle();
+      profileStore.getUserAsync();
       e.done && e.done();
     } catch (error) {
       e.error && e.error(e as Error);

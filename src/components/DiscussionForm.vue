@@ -38,7 +38,7 @@
         />
       </q-card-section>
       <q-card-section
-        v-if="theDiscussion.type != 'goal' && !refItem"
+        v-if="PlanningTypes.includes(theDiscussion.type as PlanningItem['type']) && !refItem"
         class="row"
       >
         <q-select
@@ -78,6 +78,12 @@
           @input="(v) => (theDiscussion = v)"
         />
       </q-card-section>
+      <q-card-section v-else-if="theDiscussion.type == 'scrum'" class="row">
+        <scrum-form-fields
+          :value="theDiscussion"
+          @input="(v) => (theDiscussion = v)"
+        />
+      </q-card-section>
       <q-card-actions :align="'right'">
         <q-btn icon="close" v-close-popup>Cancel</q-btn>
         <q-btn icon="save" :loading="saving" type="submit">Save</q-btn>
@@ -87,13 +93,18 @@
 </template>
 
 <script lang="ts" setup>
-import { format } from 'quasar';
-import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
+import {
+  DiscussionItem,
+  ICeremony,
+  IIteration,
+  IProject,
+  PlanningItem,
+  PlanningTypes,
+} from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 import { getComponent } from 'src/modules/task-board/card-components';
 import { useActiveStore } from 'src/stores/active.store';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
-import { useConvoStore } from 'src/stores/convo.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
@@ -103,13 +114,14 @@ import GoalFormFields from './discussion/GoalFormFields.vue';
 import ObjectiveFormFields from './discussion/ObjectiveFormFields.vue';
 import StoryFormFields from './discussion/StoryFormFields.vue';
 import TaskFormFields from './discussion/TaskFormFields.vue';
+import ScrumFormFields from './discussion/ScrumFormFields.vue';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 
 const activeStore = useActiveStore();
 const profileStore = useProfilesStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
-const convoStore = useConvoStore();
 const props = defineProps<{
   item?: DiscussionItem;
   type?: DiscussionItem['type'];
@@ -117,6 +129,7 @@ const props = defineProps<{
   status?: string;
   projectKey?: string;
   refItem?: DiscussionItem;
+  assignedTo?: string;
 }>();
 const $emit = defineEmits(['closeForm']);
 
@@ -133,13 +146,17 @@ const theDiscussion = ref<DiscussionItem>(
       type: props.type || 'task',
       projectKey: props.projectKey || props.refItem?.projectKey || '',
       iteration: props.iteration || props.refItem?.iteration || '',
-      ceremonyKey: props.refItem?.ceremonyKey || '',
+      ceremonyKey: props.refItem?.ceremonyKey || activeCeremonyKey.value || '',
       status: props.status || props.refItem?.status || '',
+      assignedTo: props.assignedTo,
       key: '',
       awareness: {},
       description: '',
     } as DiscussionItem)
 );
+if (profileStore.theUser && theDiscussion.value.type == 'scrum') {
+  theDiscussion.value.awareness[profileStore.theUser.key] = 'agree';
+}
 
 onMounted(async () => {
   const route = useRoute();
@@ -201,43 +218,25 @@ async function submitDiscussion() {
     theDiscussion.value.iteration =
       theDiscussion.value.iteration || activeIterationKey.value;
     theDiscussion.value.projectKey = activeProjectKey.value;
+    theDiscussion.value.ceremonyKey =
+      theDiscussion.value.ceremonyKey || activeCeremonyKey.value;
     if (props.refItem) {
       theDiscussion.value.parent = entityKey(props.refItem);
     }
   }
-  const record = await discussionStore.saveDiscussion(theDiscussion.value);
 
-  if (
-    activeProject.value &&
-    profileStore.presentUser &&
-    convoStore.convo.length
-  ) {
-    const report = discussionStore.checkCompleteness(
-      theDiscussion.value,
-      activeProject.value.members,
-      convoStore.convo
-    );
-    if (theDiscussion.value.progress != report[0].progress) {
-      convoStore.sendMessage(
-        activeProjectKey.value,
-        activeIterationKey.value,
-        theDiscussion.value.key,
-        'bot',
-        {
-          type: 'message',
-          message: `${format.capitalize(
-            theDiscussion.value.type
-          )} progressed from ${(
-            (theDiscussion.value.progress || 0) * 100
-          ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(
-            2
-          )}% by ${profileStore.presentUser.name}`,
-        }
-      );
-    }
-  }
-  saving.value = false;
-  $emit('closeForm', record);
+  TheWorkflows.emit({
+    type: 'createDiscussion',
+    arg: {
+      item: theDiscussion.value,
+      iterationKey: activeIterationKey.value,
+      projectKey: activeProjectKey.value,
+      done(item) {
+        saving.value = false;
+        $emit('closeForm', item);
+      },
+    },
+  });
 }
 </script>
 <style></style>

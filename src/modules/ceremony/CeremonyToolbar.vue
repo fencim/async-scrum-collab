@@ -53,7 +53,7 @@ import HourGlass from 'src/components/HourGlass.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { useCeremonyStore } from 'src/stores/cermonies.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { ICeremony, IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
 import { useActiveStore } from 'src/stores/active.store';

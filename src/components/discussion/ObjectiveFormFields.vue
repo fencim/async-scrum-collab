@@ -34,7 +34,7 @@ onUpdated(() => {
     label="Description"
   />
   <q-input class="col-6" v-model="theDiscussion.specifics" label="Specifics" />
-  <q-input class="col-6" v-model="theDiscussion.mesures" label="Measures" />
+  <q-input class="col-6" v-model="theDiscussion.measures" label="Measures" />
   <q-input class="col-6" v-model="theDiscussion.enables" label="Enables" />
   <q-input
     class="col-6"

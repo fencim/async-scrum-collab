@@ -6,15 +6,18 @@ export type Discussions =
     status?: DiscussionItem['status'],
     type?: DiscussionItem['type'],
     iteration?: IIteration,
-    done?: (item: DiscussionItem) => void
+    done?: (item: DiscussionItem) => void,
+    error?: ErrorCallback;
   }>
   | Struct<'editTask', {
     item: DiscussionItem,
-    done?: (item: DiscussionItem) => void
+    done?: (item: DiscussionItem) => void,
+    error?: ErrorCallback;
   }>
   | Struct<'newSubTask', {
     ref: DiscussionItem,
-    done?: (item: DiscussionItem) => void
+    done?: (item: DiscussionItem) => void,
+    error?: ErrorCallback;
   }>
   | Struct<'viewTask', DiscussionItem>
   | Struct<'voteForItemComplexity', {

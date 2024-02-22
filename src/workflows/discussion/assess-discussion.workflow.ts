@@ -3,6 +3,8 @@ import { TheWorkflows } from '../the-workflows';
 import { useConvoStore } from 'src/stores/convo.store';
 import { useActiveStore } from 'src/stores/active.store';
 import { entityKey } from 'src/entities/base.entity';
+import { format } from 'quasar';
+import { useProfilesStore } from 'src/stores/profiles.store';
 
 TheWorkflows.on({
   type: 'assessDiscussion',
@@ -25,15 +27,32 @@ TheWorkflows.on({
           convo
         );
         if (discussion.progress != report[0].progress) {
+          const oldProgress = discussion.progress;
           discussion.progress = report[0].progress;
           await discussionStore.saveDiscussion(discussion);
+          convoStore.sendMessage(
+            discussion.projectKey,
+            entityKey(discussion.iteration),
+            discussion.key,
+            'bot',
+            {
+              type: 'message',
+              message: `${format.capitalize(
+                discussion.type
+              )} progressed from ${(
+                (oldProgress || 0) * 100
+              ).toFixed(2)}% to ${(100 * (report[0].progress || 0)).toFixed(
+                2
+              )}% by ${useProfilesStore().theUser?.name || 'a user'}`,
+            }
+          );
         }
         e.done && e.done(report);
       } catch (error) {
         e.error && e.error(error);
       }
     } else if (e.error) {
-      e.error('Dicusssion is not part of an iteration');
+      e.error('Discussion is not part of an iteration');
     }
   },
 })
