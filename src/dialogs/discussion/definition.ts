@@ -25,3 +25,13 @@ export type Discussions =
     done?: () => void
     error?: (error: unknown) => void;
   }>
+  | Struct<'agreeOnItemReadiness', {
+    item: DiscussionItem,
+    done?: (item: DiscussionItem) => void
+    error?: ErrorCallback;
+  }>
+  | Struct<'disagreeOnItemReadiness', {
+    item: DiscussionItem,
+    done?: (item: DiscussionItem) => void
+    error?: ErrorCallback;
+  }>

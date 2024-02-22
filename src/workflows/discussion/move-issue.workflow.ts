@@ -1,7 +1,7 @@
 import { date } from 'quasar';
 import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
-import { IBoardColumn } from 'src/entities';
+import { DiscussionItem, IBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TaskActionError } from './definition';
@@ -48,7 +48,12 @@ TheWorkflows.on({
     if (iterationKey) {
       issue.iteration = iterationKey;
     }
-    const updated = await discussionStore.saveDiscussion(issue);
+    const updated = await TheWorkflows.emitPromised<DiscussionItem>({
+      type: 'updateDiscussionFields',
+      arg: {
+        payload: issue
+      }
+    });
     e.done && e.done(updated);
   },
 })

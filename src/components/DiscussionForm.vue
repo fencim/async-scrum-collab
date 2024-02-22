@@ -223,20 +223,30 @@ async function submitDiscussion() {
     if (props.refItem) {
       theDiscussion.value.parent = entityKey(props.refItem);
     }
-  }
-
-  TheWorkflows.emit({
-    type: 'createDiscussion',
-    arg: {
-      item: theDiscussion.value,
-      iterationKey: activeIterationKey.value,
-      projectKey: activeProjectKey.value,
-      done(item) {
-        saving.value = false;
-        $emit('closeForm', item);
+    TheWorkflows.emit({
+      type: 'createDiscussion',
+      arg: {
+        item: theDiscussion.value,
+        iterationKey: activeIterationKey.value,
+        projectKey: activeProjectKey.value,
+        done(item) {
+          saving.value = false;
+          $emit('closeForm', item);
+        },
       },
-    },
-  });
+    });
+  } else {
+    TheWorkflows.emit({
+      type: 'updateDiscussionFields',
+      arg: {
+        payload: theDiscussion.value,
+        done(discussion) {
+          saving.value = false;
+          $emit('closeForm', discussion);
+        },
+      },
+    });
+  }
 }
 </script>
 <style></style>

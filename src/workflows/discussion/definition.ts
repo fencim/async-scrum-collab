@@ -28,7 +28,7 @@ export type Discussion =
   | Struct<'assessDiscussion', {
     item: DiscussionItem,
     done?: (report?: DiscussionReport[]) => void
-    error?: (error: unknown) => void;
+    error?: ErrorCallback;
   }>
   | Struct<'voteForComplexity', {
     item: DiscussionItem,
@@ -62,5 +62,10 @@ export type Discussion =
     resolution: 'agree' | 'disagree'
     done?: (message: IResponse) => void
     error?: (error: unknown) => void;
+  }>
+  | Struct<'updateDiscussionFields', {
+    payload: DiscussionItem,
+    done?: (discussion: DiscussionItem) => void;
+    error?: ErrorCallback;
   }>
 

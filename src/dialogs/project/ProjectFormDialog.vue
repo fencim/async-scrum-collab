@@ -1,7 +1,7 @@
 <template>
   <q-dialog v-model="showTopSheet" :position="'top'">
     <q-card
-      :style="$q.screen.gt.sm ? { 'min-width': $q.screen.sizes.md + 'px' } : ''"
+      :style="$q.screen.gt.xs ? { 'min-width': $q.screen.sizes.sm + 'px' } : ''"
     >
       <q-form @submit="submitProject">
         <q-toolbar>

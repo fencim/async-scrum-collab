@@ -38,7 +38,7 @@ class CeremonyResource extends BaseResource<ICeremony> {
     throw new Error('Method not implemented.');
   }
   constructor() {
-    super('ceremony')
+    super('ceremonies')
   }
 }
 export const ceremonyResource = new CeremonyResource();

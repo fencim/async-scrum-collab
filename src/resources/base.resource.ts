@@ -93,7 +93,10 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     data: T,
     property: string
   ): Promise<CbResponse<T>>;
-  protected abstract streamCb(filters?: Filters): void | Observable<T[]>;
+  protected abstract streamCb(filters?: Filters, options?: {
+    limits?: number, orderBy?: string;
+    order?: 'asc' | 'desc'
+  }): void | Observable<T[]>;
 
   private async manageDocCallback(doc: IDocStore<T>, sync = false) {
     if (
@@ -1115,24 +1118,28 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     );
   }
   streamDocWith(
-    filters?: Filters<Entity> | undefined
+    filters?: Filters<Entity> | undefined,
+    options?: {
+      limits?: number, orderBy?: string;
+      order?: 'asc' | 'desc'
+    }
   ): Observable<IDocStore<T>[]> {
     const filterStr = this.filterToStr(filters);
     let activeStream = this.streamMap.get(filterStr);
-    if (activeStream) {
+    if (activeStream && !options) {
       return activeStream;
     }
-    const onlineObservable = this.streamCb(filters);
+    const onlineObservable = this.streamCb(filters, options);
     let offlineDocs: IDocStore<T>[] | undefined;
-    const offline = new Observable<IDocStore<T>[]>((subcriber) => {
+    const offline = new Observable<IDocStore<T>[]>((subscriber) => {
       this.findAllDoc(filters).then((response) => {
         offlineDocs = response;
         if (offlineDocs) {
-          subcriber.next(offlineDocs);
+          subscriber.next(offlineDocs);
         } else {
-          subcriber.next([]);
+          subscriber.next([]);
         }
-        subcriber.complete();
+        subscriber.complete();
       });
     });
     if (!(onlineObservable instanceof Observable)) {
@@ -1155,21 +1162,17 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
         })
       );
     activeStream = merge(offline, online);
-    // activeStream.subscribe({
-    //   next(value) {
-    //     console.log(value);
-    //   },
-    //   error: () => {
-    //     this.streamMap.delete(filterStr);
-    //   },
-    // });
     this.streamMap.set(filterStr, activeStream);
     return activeStream;
   }
   streamWith(
-    filters?: Filters<Entity> | undefined
+    filters?: Filters<Entity> | undefined,
+    options?: {
+      limits?: number, orderBy?: string;
+      order?: 'asc' | 'desc'
+    }
   ): Observable<T[]> {
-    return this.streamDocWith(filters)
+    return this.streamDocWith(filters, options)
       .pipe(map(docs => docs.map(d => d.data)));
   }
 }

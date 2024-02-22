@@ -1,6 +1,5 @@
-import { FirebaseOptions } from 'firebase/app';
 
-export const firebaseConfig: FirebaseOptions = {
+const firebaseConfig = {
   apiKey: 'AIzaSyARflXs8OzyMDl6gUaMBmgFFI0E8M8Nso0',
   authDomain: 'async-scrum-collab.firebaseapp.com',
   databaseURL: 'https://async-scrum-collab-default-rtdb.asia-southeast1.firebasedatabase.app',
@@ -11,4 +10,8 @@ export const firebaseConfig: FirebaseOptions = {
   measurementId: 'G-PQ20DRCMS1'
 };
 
-export const firebaseConfigDev = firebaseConfig;
+const firebaseConfigDev = firebaseConfig;
+module.exports = {
+  firebaseConfig,
+  firebaseConfigDev
+}

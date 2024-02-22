@@ -271,9 +271,14 @@ async function moveDue(
   }
 }
 function updateDueDate(d: string, task: DiscussionItem) {
-  return useDiscussionStore().saveDiscussion({
-    ...task,
-    dueDate: d,
+  return TheWorkflows.emitPromised({
+    type: 'updateDiscussionFields',
+    arg: {
+      payload: {
+        ...task,
+        dueDate: d,
+      },
+    },
   });
 }
 </script>

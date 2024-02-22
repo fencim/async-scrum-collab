@@ -33,7 +33,7 @@ class ProfileResource extends BaseResource<IProfile> {
     throw new Error('Method not implemented.');
   }
   constructor() {
-    super('profile')
+    super('profiles')
   }
 }
 export const profileResource = new ProfileResource();

@@ -7,7 +7,7 @@ import { sessionResource } from 'src/resources/session.resource';
 import { synchronizerConnection } from 'src/workers/synchronizer/synchronizer.connection';
 import { UserCredential } from 'firebase/auth';
 
-const botProfile = { avatar: 'icons/bot2.png', key: 'bot', name: 'Auto Bot' };
+const botProfile = { avatar: '/icons/bot2.png', key: 'bot', name: 'Auto Bot' };
 interface IProfileState {
   profiles: IProfile[];
   theUser?: IProfile;

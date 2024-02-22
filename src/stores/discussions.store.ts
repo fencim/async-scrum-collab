@@ -15,6 +15,7 @@ import { useProjectStore } from './projects.store';
 import { useIterationStore } from './iterations.store';
 import { entityKey } from 'src/entities/base.entity';
 import { PlanningTypes } from '../entities';
+import { DeferredPromise } from 'src/resources/localbase';
 
 interface IDiscussionState {
   discussions: DiscussionItem[];
@@ -31,8 +32,7 @@ export const useDiscussionStore = defineStore('discussion', {
         key: 'product-backlog',
         name: 'Product Backlog',
         tasks: this.discussions
-          .filter(d => (['goal', 'objective', 'story', 'task'] as PlanningItem['type'][])
-            .includes(d.type as PlanningItem['type'])) as PlanningItem[]
+          .filter(d => (['story', 'task'] as PlanningItem['type'][]).includes(d.type as PlanningItem['type'])) as PlanningItem[]
       };
     },
   },
@@ -89,6 +89,22 @@ export const useDiscussionStore = defineStore('discussion', {
             this.discussions = stream;
           },
         });
+    },
+    async updateDiscussion<T extends keyof DiscussionItem>(
+      key: string,
+      props: T[],
+      source: Partial<DiscussionItem>
+    ) {
+      const deferred = new DeferredPromise<DiscussionItem | undefined>();
+      discussionResource.updatePropertiesFrom(key, source, props, async (update) => {
+        if (update.status == 'synced') {
+          deferred.resolve(await discussionResource.getLocalData(update.newKey || update.key || ''));
+        } else if (/error/i.test(update.status)) {
+          const doc = await discussionResource.getDoc(update.newKey || update.key || '');
+          deferred.reject(doc?.remarks || 'Failed to update Discussion');
+        }
+      });
+      return deferred.promise;
     },
     setActiveDiscussion(item?: DiscussionItem) {
       this.activeDiscussion = item;
@@ -197,7 +213,7 @@ export const useDiscussionStore = defineStore('discussion', {
       const awarenessProgress = Object.keys(item.awareness || {})
         .filter(a => members.find(m => a == m)).length;
       factors.push(this.logFactor(awarenessProgress, members.length, 'awareness'));
-      if (PlanningTypes.includes(item.type)) {
+      if (PlanningTypes.includes(item.type as PlanningItem['type'])) {
         factors.push(this.logFactor(Object.values(vCast).length, members.length, 'votes'));
         factors.push(this.logFactor(agreement.length, members.length, 'agreement'));
       }

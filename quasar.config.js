@@ -11,8 +11,11 @@
 
 const { configure } = require('quasar/wrappers');
 const { version } = require('./package.json');
+const { firebaseConfig, firebaseConfigDev } = require('./src/services/firebase-config')
 
 module.exports = configure(function (/* ctx */) {
+  const dbConfig = (process.env.USE_LIVE !== 'live') ?
+    firebaseConfigDev : firebaseConfig;
   return {
     eslint: {
       // fix: true,
@@ -70,6 +73,8 @@ module.exports = configure(function (/* ctx */) {
           typeof process.env.EPRIKEY == 'undefined'
             ? 'false'
             : process.env.EPRIKEY,
+        DB_CONFIG: JSON.stringify(dbConfig),
+        APP_VERSION: version
       },
       vueRouterMode: 'history', // available values: 'hash', 'history'
       // vueRouterBase,

@@ -21,6 +21,7 @@ const emit = defineEmits<{
 }>();
 const backlog = computed(() => {
   return (discussionStore.productBacklog.tasks || []).filter((task) => {
+    if (task.status) return false;
     if (!keywords.value || keywords.value.length == 0) return true;
     return keywords.value.find(
       (f) =>

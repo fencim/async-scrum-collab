@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { FirebaseOptions, initializeApp } from 'firebase/app';
 import {
   getAuth,
   connectAuthEmulator,
@@ -36,7 +36,13 @@ import {
   sum,
   AggregateSpec,
   average,
-  limit
+  limit,
+  QueryConstraint,
+  orderBy,
+  count,
+  FieldPath,
+  startAfter,
+  startAt
 } from 'firebase/firestore';
 import {
   connectStorageEmulator,
@@ -53,7 +59,6 @@ import {
   onValue,
 } from 'firebase/database';
 
-import { firebaseConfig, firebaseConfigDev } from './firebase-config';
 import { WhereFilterOp } from './firebase-operators';
 import { Observable, Subject, retry } from 'rxjs';
 import { Models } from './firebase.models';
@@ -66,10 +71,12 @@ export enum AccessStatus {
   unAuthorized = 8,
   expired = 16,
 }
-
+const dbConfig = JSON.parse(
+  typeof process.env.DB_CONFIG == 'string' ? process.env.DB_CONFIG : '{}'
+) as FirebaseOptions;
 // Initialize Firebase
 const app = initializeApp({
-  ...((/(dev|local)/i.test(location.href) ? firebaseConfigDev : firebaseConfig)),
+  ...dbConfig,
 });
 
 // Initialize Firebase Authentication and get a reference to the service
@@ -92,7 +99,18 @@ const collections = getCollections(fbStore);
 
 type Colls = typeof collections;
 type ModelName = keyof Colls;
-
+export type QueryOptions = {
+  limits?: number;
+  previous?: unknown;
+  next?: unknown;
+  firstItem?: unknown;
+  lastVisible?: unknown;
+  prevFirstVisible?: unknown;
+  firstVisible?: unknown;
+  size?: number;
+  orderBy?: string;
+  order?: 'asc' | 'desc'
+}
 class FirebaseService {
   constructor() {
     this.accessObs = new Subject();
@@ -231,11 +249,12 @@ class FirebaseService {
   }
   streamWith<T>(
     modelName: ModelName,
-    filter: { [field: string]: string } = {}
+    filter: { [field: string]: string } = {}, options?: QueryOptions
   ) {
     const { queryRef, collectionRef } = this.getQueryFromFilter(
       modelName,
-      filter
+      filter,
+      options
     );
     return new Observable<T[]>((subscriber) => {
       onSnapshot(queryRef || collectionRef, {
@@ -244,6 +263,12 @@ class FirebaseService {
           const records = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id } as unknown as T;
           });
+          const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+          if (options) {
+            options.firstVisible = snapshot.docs[0];
+            options.firstItem = options.firstItem || options.firstVisible;
+            options.lastVisible = lastVisible;
+          }
           subscriber.next(records);
         },
         error: (err) => subscriber.error(err),
@@ -256,16 +281,22 @@ class FirebaseService {
   }
   async findAll(
     modelName: ModelName,
-    filter: { [field: string]: string } = {}
+    filter: { [field: string]: string } = {},
+    options?: QueryOptions
   ): Promise<Models[]> {
     const { queryRef, collectionRef } = this.getQueryFromFilter(
       modelName,
-      filter
+      filter,
+      options
     );
     const docsRef = await getDocs(queryRef || collectionRef);
     if (docsRef.empty) {
       return [];
     } else {
+      if (options) {
+        options.size = docsRef.size;
+        options.lastVisible = docsRef.docs[docsRef.docs.length - 1];
+      }
       return docsRef.docs.map((d) => d.data() as Models);
     }
   }
@@ -277,18 +308,21 @@ class FirebaseService {
   async aggregate(modelName: ModelName, specs: Record<string, string>, filter?: Record<string, string>) {
     const query = this.getQueryFromFilter(modelName, filter || {});
     const specVariables = Object.keys(specs);
-    const result = await getAggregateFromServer(query.queryRef || query.collectionRef, {
+    const aggregateSpecs = {
       ...specVariables.reduce((prev, curr) => {
         if (/^(average|mean)/.test(curr)) {
-          prev[curr] = average(specs[curr]);
-        } else {
-          prev[curr] = sum(specs[curr]);
+          prev[curr.replace('.', '')] = average(specs[curr]);
+        } else if (/^(sum|total)/.test(curr)) {
+          prev[curr.replace('.', '')] = sum(specs[curr]);
+        } else if (/^(count)/.test(curr)) {
+          prev[curr.replace('.', '')] = count();
         }
         return prev;
       }, {} as AggregateSpec)
-    });
+    };
+    const result = await getAggregateFromServer(query.queryRef || query.collectionRef, aggregateSpecs);
     if (specVariables.length == 1) {
-      return result.data()[specVariables[0]];
+      return result.data()[specVariables[0].replace('.', '')];
     } else {
       return result.data();
     }
@@ -296,26 +330,39 @@ class FirebaseService {
   private getQueryFromFilter(
     modelName: ModelName,
     filter: { [field: string]: string },
-    limits?: number
+    options?: QueryOptions
   ) {
     const collectionRef = collections[modelName]();
-
+    const { limits } = options ?? {};
     const supOps = /(.*) (==|<|<=|>=|!=|in)$/;
-    const conditions = Object.keys(filter)
+    const conditions: QueryConstraint[] = Object.keys(filter)
       .filter((f) => typeof filter[f] !== 'undefined')
       .map((f) => {
         const match = supOps.exec(f);
         if (match) {
           const OPERAND = 1,
             OPERATOR = 2;
-          const operand = match[OPERAND];
+          const operand = /\./.test(match[OPERAND]) ?
+            new FieldPath(...match[OPERAND].split('.')) : match[OPERAND];
           const operator = match[OPERATOR] as WhereFilterOp;
           return where(operand, operator, filter[f]);
         }
         return where(f, '==', filter[f]);
       });
+    if (typeof options?.orderBy == 'string') {
+      conditions.push(orderBy(options?.orderBy, options.order ?? 'asc'))
+    }
+    if (typeof limits == 'number') {
+      conditions.push(limit(limits))
+    }
+    if (options?.next) {
+      conditions.push(startAfter(options?.next));
+    } else if (options?.previous) {
+      conditions.push(startAt(options?.previous));
+    }
+
     const queryRef =
-      conditions.length > 0 && query(collectionRef, ...conditions, limit(limits ?? 100));
+      conditions.length > 0 && query(collectionRef, ...conditions);
     return { queryRef, collectionRef };
   }
 
@@ -323,7 +370,22 @@ class FirebaseService {
     await this.validateAuth();
     if (value) {
       const docRef = doc(fbStore, modelName + '/' + value.key);
-      await setDoc(docRef, this.clone(value));
+      await new Promise<void>((res, rej) => {
+        try {
+          const clone = this.clone(value);
+          setDoc(docRef, clone).then(() => {
+            res();
+          });
+          const unsubscribe = onSnapshot(docRef, () => {
+            unsubscribe();
+            setTimeout(() => {
+              rej('timeout');
+            }, 5 * 1000);
+          })
+        } catch (error) {
+          rej(error);
+        }
+      })
     }
     return value;
   }

@@ -96,11 +96,9 @@ import { useIterationStore } from 'src/stores/iterations.store';
 import { convoBus } from './convo-bus';
 import { ActionItem } from './ceremony.action-list';
 import { useDiscussionStore } from 'src/stores/discussions.store';
-import { useProfilesStore } from 'src/stores/profiles.store';
 import { useConvoStore } from 'src/stores/convo.store';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 
-const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
@@ -234,23 +232,13 @@ export default defineComponent({
       }
     },
     async agreeOnItem() {
-      if (this.item && profileStore.presentUser && this.project) {
-        this.item.awareness = this.item.awareness || {};
-        this.item.awareness[profileStore.presentUser.key] = 'agree';
-        await discussionStore.saveDiscussion(this.item);
-      }
-      await convoStore.sendMessage(
-        this.activeProject,
-        this.activeIteration,
-        this.activeItem || this.activeCeremony,
-        profileStore.presentUser?.key || '',
-        {
-          type: 'message',
-          message: 'I agree this disussion item is ready',
-        }
-      );
-      this.dialogAgree = false;
-      convoBus.emit('refresh');
+      if (!this.item) return;
+      TheDialogs.emit({
+        type: 'agreeOnItemReadiness',
+        arg: {
+          item: this.item,
+        },
+      });
     },
     async newPlanningDiscussion() {
       const goalCreated = this.goalIsCreated;

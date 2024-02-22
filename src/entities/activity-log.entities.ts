@@ -27,7 +27,7 @@ export type IAuthActivityLogs =
  */
 
 //Create Project
-export interface IProjecctCreateActivityLog extends IBaseActivityLog {
+export interface IProjectCreateActivityLog extends IBaseActivityLog {
   type: 'project-create'
   project: IProject;
 }
@@ -88,7 +88,7 @@ export interface IProjectCloseActivityLog extends IBaseActivityLog {
 }
 
 export type IProjectActivityLog =
-  | IProjecctCreateActivityLog
+  | IProjectCreateActivityLog
   | IProjectModifyActivityLog
   | IProjectAddMemberActivityLog
   | IProjectJoinActivityLog

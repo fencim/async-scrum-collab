@@ -49,10 +49,10 @@ TheWorkflows.on({
         }
         e.done && e.done(report);
       } catch (error) {
-        e.error && e.error(error);
+        e.error && e.error(new Error(String(error)));
       }
     } else if (e.error) {
-      e.error('Discussion is not part of an iteration');
+      e.error(new Error('Discussion is not part of an iteration'));
     }
   },
 })

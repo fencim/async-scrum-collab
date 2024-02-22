@@ -41,6 +41,7 @@
       <ProjectFormDialog />
       <ScrumGuideDialog />
       <VoteForComplexityDialog />
+      <AgreeOnItemReadinessDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -56,6 +57,7 @@ import IterationFormDialog from 'src/dialogs/iteration/IterationFormDialog.vue';
 import ProjectFormDialog from 'src/dialogs/project/ProjectFormDialog.vue';
 import ScrumGuideDialog from 'src/dialogs/guide/ScrumGuideDialog.vue';
 import VoteForComplexityDialog from 'src/dialogs/discussion/VoteForComplexityDialog.vue';
+import AgreeOnItemReadinessDialog from 'src/dialogs/discussion/AgreeOnItemReadinessDialog.vue';
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);

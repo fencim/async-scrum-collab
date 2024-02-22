@@ -7,3 +7,4 @@ import './resolve-question-of.workflow';
 import './confirm-disagreement.workflow';
 import './ask-question.workflow';
 import './reply-to-message.workflow';
+import './update-discussion-fields.workflow';

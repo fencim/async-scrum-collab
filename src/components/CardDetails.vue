@@ -7,6 +7,7 @@ import {
   IProgressFeedback,
   IVote,
   Convo,
+  IProfile,
 } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 import { useActiveStore } from 'src/stores/active.store';
@@ -17,6 +18,8 @@ import { formatKey } from './discussion.helper';
 import { getProfiles } from 'src/modules/task-board/cards/card-helpers';
 import RecentActiveMembers from './RecentActiveMembers.vue';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { useProfilesStore } from 'src/stores/profiles.store';
+import DueDateChipComp from 'src/modules/task-board/cards/DueDateChipComp.vue';
 const acceptanceCriteriaColumns = [
   {
     name: 'given',
@@ -141,14 +144,27 @@ const progressReport = computed<IProgressFeedback[]>(() => {
 function asProgress(progress: IProgressFeedback) {
   return progress;
 }
+function pendingClick(profile: IProfile) {
+  const user = useProfilesStore().theUser;
+  if (user?.key == profile.key) {
+    TheDialogs.emit({
+      type: 'agreeOnItemReadiness',
+      arg: {
+        item: props.item,
+      },
+    });
+  }
+}
 </script>
 <template>
   <q-card :style="{ width: $q.screen.sizes.md + 'px' }">
     <q-toolbar>
+      <q-chip icon="description"> {{ formatKey(task.key || 'KEY') }}</q-chip>
       <q-btn
         flat
-        class="text-h6"
+        round
         dense
+        icon="edit"
         @click="
           TheDialogs.emit({
             type: 'editTask',
@@ -160,7 +176,6 @@ function asProgress(progress: IProgressFeedback) {
         v-close-popup
         color="primary"
       >
-        {{ formatKey(task.key || 'KEY') }}
       </q-btn>
       <q-space />
       <recent-active-members
@@ -169,12 +184,10 @@ function asProgress(progress: IProgressFeedback) {
       />
       <q-space />
       <div class="q-px-sm">
-        <q-badge class="q-mr-xs" dense color="primary">{{
-          task.priority || 'P1'
+        <q-badge v-if="task.priority" class="q-mr-xs" dense color="primary">{{
+          task.priority
         }}</q-badge>
-        <q-badge dense :color="task.dueDate ? 'secondary' : 'negative'">{{
-          task.dueDate || 'ND'
-        }}</q-badge>
+        <due-date-chip-comp :task="task" />
       </div>
       <q-btn
         v-if="task.iteration"
@@ -245,12 +258,20 @@ function asProgress(progress: IProgressFeedback) {
         <recent-active-members sizes="xs" :profiles="membersAgreed" />
       </q-card-section>
       <q-card-section>
-        Disgreed
-        <recent-active-members sizes="xs" :profiles="membersDisagreed" />
+        Disagreed
+        <recent-active-members
+          sizes="xs"
+          :profiles="membersDisagreed"
+          @click-profile="pendingClick"
+        />
       </q-card-section>
       <q-card-section>
         Pending
-        <recent-active-members sizes="xs" :profiles="membersPending" />
+        <recent-active-members
+          sizes="xs"
+          :profiles="membersPending"
+          @click-profile="pendingClick"
+        />
       </q-card-section>
       <q-card-section>
         Voted

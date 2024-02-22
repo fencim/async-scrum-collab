@@ -1,5 +1,5 @@
 <template>
-  <q-list padding class="menu-list">
+  <q-list padding class="menu-list" style="overflow-y: auto">
     <q-item
       v-if="activeCeremony"
       clickable

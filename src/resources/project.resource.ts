@@ -46,7 +46,7 @@ class ProjectResource extends BaseResource<IProject> {
   }
 
   constructor() {
-    super('project')
+    super('projects')
   }
 }
 export const projectResource = new ProjectResource();

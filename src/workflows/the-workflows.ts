@@ -5,6 +5,7 @@ import { Auth } from './auth/definition';
 import { Iteration } from './iteration/definition';
 import { Project } from './project/definition';
 import { Discussion } from './discussion/definition';
+import { DeferredPromise } from 'src/resources/localbase';
 
 export type WorkflowStructs = Auth | Iteration | Project | Discussion;
 
@@ -25,4 +26,21 @@ export const TheWorkflows = {
   emit(desc: WorkflowStructs) {
     theBus.emit(desc.type, desc.arg);
   },
+  /**
+   * Requires done and error Callbacks to defined
+   * use done callback to resolve promise and error callback to reject
+  */
+  emitPromised<T = void>(desc: WorkflowStructs) {
+    const deferred = new DeferredPromise<T>();
+    const promised = {
+      type: desc.type,
+      arg: {
+        ...desc.arg,
+        done: deferred.resolve,
+        error: deferred.reject
+      }
+    } as WorkflowStructs;
+    this.emit(promised);
+    return deferred.promise;
+  }
 };

@@ -132,7 +132,6 @@ import {
 } from 'vue';
 import { convoBus } from './convo-bus';
 import { TheWorkflows } from 'src/workflows/the-workflows';
-import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 
@@ -209,22 +208,10 @@ async function init() {
     activeIteration.value,
     activeCeremony.value
   );
-
   activeItem.value = ($route.params.item && String($route.params.item)) || '';
-  // convoStore.ofDiscussion(
-  //   this.activeProject,
-  //   this.activeItem || this.activeCeremony
-  // );
 
   discussion.value = await discussionStore.withKey(activeItem.value);
-  if ($route.params.action == 'question') {
-    askQuestion();
-  } else if ($route.params.action == 'vote') {
-    vote();
-  } else if ($route.params.action == 'disagree') {
-    confirmDisagree();
-  }
-  assesItem();
+  await assesItem();
 }
 async function sendMessage() {
   if (askingQuestion.value && discussion.value) {
@@ -279,16 +266,6 @@ async function sendMessage() {
   message.value = '';
   convoBus.emit('progressed');
 }
-function vote() {
-  if (discussion.value) {
-    TheDialogs.emit({
-      type: 'voteForItemComplexity',
-      arg: {
-        item: discussion.value,
-      },
-    });
-  }
-}
 function scrollToBottom() {
   const scrollTo = () => {
     const elem = document.querySelector($route.hash || '#input-message');
@@ -311,19 +288,10 @@ function confirmDisagree() {
   convoBus.emit('onDisagree', confirmDisagreement);
 }
 async function assesItem() {
-  if (discussion.value && project.value) {
-    TheWorkflows.emit({
+  if (discussion.value && !discussion.value.progress) {
+    await TheWorkflows.emitPromised({
       type: 'assessDiscussion',
-      arg: {
-        item: discussion.value,
-        error: (e) => {
-          $q.notify({
-            message: String(e),
-            color: 'negative',
-            icon: 'error',
-          });
-        },
-      },
+      arg: { item: discussion.value },
     });
   }
 }

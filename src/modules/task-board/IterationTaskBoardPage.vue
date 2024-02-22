@@ -87,7 +87,7 @@ async function taskMoved(
                   (activeStore.activeProject?.discussionReadiness || 0) * 100
                 ).toFixed()}%`,
 
-              caption: 'Disscuss the issue with the team',
+              caption: 'Discuss the issue with the team',
               color: 'negative',
             });
             break;

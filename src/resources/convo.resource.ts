@@ -47,7 +47,7 @@ class ConvoResource extends BaseResource<Convo> {
     return result;
   }
   constructor() {
-    super('convo', 'key')
+    super('convos', 'key')
   }
 
 }

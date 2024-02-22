@@ -76,7 +76,7 @@ async function changeOnColumn(
         class="list-group-item q-ma-sm q-pa-sm board-card"
         :class="element.type + '-card'"
       >
-        <component :is="getComponent(element)" :task="element" />
+        <component :is="getComponent(element)" :task="element" mini />
       </q-card>
     </template>
   </draggable>

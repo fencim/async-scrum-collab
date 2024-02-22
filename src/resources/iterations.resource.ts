@@ -42,7 +42,7 @@ class IterationResource extends BaseResource<IIteration> {
     throw new Error('Method not implemented.');
   }
   constructor() {
-    super('iteration')
+    super('iterations')
   }
 }
 export const iterationResource = new IterationResource();
