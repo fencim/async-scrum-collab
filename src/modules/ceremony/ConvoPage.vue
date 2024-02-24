@@ -119,7 +119,7 @@ const replyTo = ref<Convo>();
 const timer = ref<NodeJS.Timeout | number>(0);
 const askingQuestion = ref(false);
 const revealVotes = computed(() => {
-  return !!discussion.value?.complexity;
+  return discussion.value?.complexity;
 });
 
 onMounted(async () => {
@@ -224,10 +224,6 @@ function scrollToBottom() {
 function askQuestion() {
   askingQuestion.value = !askingQuestion.value;
   convoBus.emit('onQuestion', askingQuestion);
-}
-function confirmDisagree() {
-  confirmDisagreement.value = !confirmDisagreement.value;
-  convoBus.emit('onDisagree', confirmDisagreement);
 }
 
 async function resolveQuestionOf(

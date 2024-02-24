@@ -56,7 +56,7 @@ defineProps({
       <q-linear-progress :value="task.progress || 0" />
     </template>
     <template #dropdown>
-      <div class="row bg-transaparent no-shadow">
+      <div class="row bg-transparent no-shadow">
         <common-card-action
           :task="task"
           @task-moved="

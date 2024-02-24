@@ -4,6 +4,7 @@ import { map } from 'rxjs';
 import { DiscussionItem, ICeremony } from 'src/entities';
 import { ceremonyResource } from 'src/resources';
 import { useDiscussionStore } from './discussions.store';
+import { DeferredPromise } from 'src/resources/localbase';
 
 export const useCeremonyStore = defineStore('ceremony', {
   state: () => ({
@@ -68,6 +69,29 @@ export const useCeremonyStore = defineStore('ceremony', {
         this.ceremonies.splice(index, 1, save);
       }
       return save;
+    },
+    async patchCeremony<T extends keyof ICeremony>(
+      key: string,
+      props: T[],
+      source: Partial<ICeremony>
+    ) {
+      const deferred = new DeferredPromise<ICeremony | undefined>();
+      ceremonyResource.updatePropertiesFrom(key, source, props, async (update) => {
+        if (update.status == 'synced') {
+          deferred.resolve(await ceremonyResource.getLocalData(update.newKey || update.key || ''));
+        } else if (/error/i.test(update.status)) {
+          const doc = await ceremonyResource.getDoc(update.newKey || update.key || '');
+          deferred.reject(doc?.remarks || 'Failed to update Ceremony');
+        }
+      });
+      const result = await deferred.promise;
+      if (result) {
+        const existing = this.ceremonies.find(c => c.key == result.key);
+        if (existing) {
+          existing.progress = result.progress;
+        }
+      }
+      return result;
     },
   }
 });

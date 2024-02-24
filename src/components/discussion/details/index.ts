@@ -4,6 +4,8 @@ import StorySubTasksTab from './StorySubTasksTab.vue';
 import ScrumReportTasksDidTab from './ScrumReportTasksDidTab.vue';
 import ScrumReportTodoTasksTabVue from './ScrumReportTodoTasksTab.vue';
 import ScrumReportRoadblocksTabVue from './ScrumReportRoadblocksTab.vue';
+import ObjectiveStoriesTabVue from './ObjectiveStoriesTab.vue';
+import GoalObjectivesTabVue from './GoalObjectivesTab.vue';
 
 export type DiscussionDetailsTab = {
   name: string;
@@ -38,4 +40,14 @@ export const discussionDetailsTabs: DiscussionDetailsTab[] = [{
   type: 'scrum',
   label: 'Roadblocks',
   component: ScrumReportRoadblocksTabVue,
+}, {
+  name: 'stories',
+  type: 'objective',
+  label: 'Stories',
+  component: ObjectiveStoriesTabVue
+}, {
+  name: 'Objectives',
+  type: 'goal',
+  label: 'Objectives',
+  component: GoalObjectivesTabVue
 }];

@@ -3,10 +3,10 @@ import { from, switchMap } from 'rxjs';
 import {
   ConvoList,
   DiscussionItem,
-  ICeremony, IDiscussion,
-  IQuestion, ISprintBoardColumn, IToImprove, IVote, IWentWell, IWentWrong,
+  ICeremony,
+  IQuestion, ISprintBoardColumn, IVote,
   PlanningItem, IProfile,
-  RetroItem, IBoardColumn, DiscussionReport, IRoadBlock
+  IBoardColumn, DiscussionReport, IRoadBlock, IScrumReport
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './ceremonies.store';
@@ -113,8 +113,9 @@ export const useDiscussionStore = defineStore('discussion', {
       return this.discussions.filter(d => !d.doneDate && d.assignees?.find(a => entityKey(a) == profileKey))
     },
     async withKey(key: string) {
-      if (key)
-        return discussionResource.findOne({ key });
+      if (key) {
+        return this.discussions.find(d => d.key == key) ?? discussionResource.findOne({ key });
+      }
     },
     async assignTaskTo(task: DiscussionItem, profile: IProfile) {
       const updated = (await this.getUpdated(task.key)) || task;
@@ -156,13 +157,12 @@ export const useDiscussionStore = defineStore('discussion', {
       const targetCeremony = ceremonyStore.ceremonies.find(
         c => c.iterationKey == iterationKey && c.projectKey == discussion.projectKey);
       if (targetCeremony) {
-        const items = this.discussions.filter(
-          i => entityKey(i.iteration || '') == entityKey(discussion.iteration || '#') && i.projectKey == discussion.projectKey);
+        const items = this.discussionsOf(targetCeremony);
         const progress = items.reduce((p, c) => p + (c.progress || 0), 0) /
           Math.max(items.length, 1);
         if (progress !== targetCeremony.progress) {
           targetCeremony.progress = progress;
-          await ceremonyStore.saveCeremony(targetCeremony);
+          await ceremonyStore.patchCeremony(targetCeremony.key, ['progress'], targetCeremony);
         }
       }
     },
@@ -173,7 +173,10 @@ export const useDiscussionStore = defineStore('discussion', {
         case 'objective':
           return 'Objective: ' + item.description;
         case 'story':
-          return `As a ${item.targetUser}, I want to ${item.subject}, so that ${item.purpose}`;
+          return item.description ||
+            (item.targetUser && `As a ${item.targetUser}, I want to ${item.subject ?? ''
+              }, so that ${item.purpose ?? ''}`) ||
+            'Story';
         case 'task':
           return 'Task: ' + item.description;
         case 'action-item':
@@ -252,7 +255,7 @@ export const useDiscussionStore = defineStore('discussion', {
         return {
           progress: value,
           factor: msg,
-          feedback: `Only ${(progress).toFixed(2)} of ${over} of ${msg} is complete`
+          feedback: `Only ${(progress)} of ${over} of ${msg} is complete`
         };
       } else {
         return {
@@ -264,7 +267,7 @@ export const useDiscussionStore = defineStore('discussion', {
     completenessOfItem(item: DiscussionItem) {
       let progress = 0;
       const feedbacks = [] as string[];
-      if (PlanningTypes.includes(item.type)) {
+      if (PlanningTypes.includes(item.type as PlanningItem['type'])) {
         if (!item.dueDate) {
           feedbacks.push('Estimated Due Date is not set');
         } else {
@@ -366,41 +369,21 @@ export const useDiscussionStore = defineStore('discussion', {
           };
       }
     },
-    async discussionsOf(ceremony: ICeremony) {
-      const items = this.discussions.filter(d => d.iteration == ceremony.iterationKey);
+    discussionsOf(ceremony: ICeremony): DiscussionItem[] {
+      const items = this.discussions.filter(d => d.iteration && entityKey(d.iteration) == ceremony.iterationKey);
       const project = useProjectStore().activeProject;
-      if (ceremony.type == 'scrum' && project) {
-
-      } else if (ceremony.type == 'retro') {
-        const base: IDiscussion = {
-          key: ceremony.key,
-          awareness: {},
-          ceremonyKey: ceremony.key,
-          projectKey: ceremony.projectKey,
-        }
-        const retroItems: RetroItem[] = [{
-          type: 'went-well',
-          ...base,
-          key: 'wr' + ceremony.key,
-          comments: []
-        } as IWentWell, {
-          type: 'went-wrong',
-          ...base,
-          key: 'ww' + ceremony.key,
-          comments: []
-        } as IWentWrong,
-        {
-          type: 'to-improve',
-          ...base,
-          key: 'ti' + ceremony.key,
-          comments: []
-        } as IToImprove,
-        ].filter(i => !(items.find(d => d.type == i.type && d.ceremonyKey == i.ceremonyKey)));
-        await Promise.all(retroItems.map((i) => {
-          return this.saveDiscussion(i)
-        }))
-
+      if (ceremony.type == 'planning') {
+        return items.filter(i => PlanningTypes.includes(i.type as PlanningItem['type']));
+      } else if (ceremony.type == 'scrum' && project) {
+        const reports = items.filter(i => i.type == 'scrum' && i.ceremonyKey == ceremony.key);
+        const roadblocks = items.filter(i => i.type == 'roadblock') as IRoadBlock[];
+        const mentionedRoadblocks = reports.reduce((prev, cur) => {
+          return [...(new Set(...prev, (cur as IScrumReport).roadblocks?.map(r => entityKey(r))))];
+        }, [] as string[]);
+        reports.push(...roadblocks.filter(r => mentionedRoadblocks.includes(r.key)));
+        return reports;
       }
+      return items.filter(d => d.ceremonyKey == ceremony.key);
     }
   }
 });

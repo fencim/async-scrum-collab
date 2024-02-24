@@ -38,6 +38,7 @@ export const useIterationStore = defineStore(
         || await iterationResource.findOne({ key });
     },
     async selectIteration(project: string, key: string) {
+      if (this.activeIteration?.key == key) return;
       if (project && key) {
         this.activeIteration = this.iterations.find(i => i.projectKey == project && i.key == key)
           || await iterationResource.findOne({

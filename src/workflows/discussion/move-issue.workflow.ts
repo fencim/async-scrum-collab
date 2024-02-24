@@ -3,7 +3,6 @@ import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
 import { DiscussionItem, IBoardColumn } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
-import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TaskActionError } from './definition';
 
 function isColumnBeforeDone(column: IBoardColumn) {
@@ -17,7 +16,6 @@ function isColumnBeforeDone(column: IBoardColumn) {
 TheWorkflows.on({
   type: 'moveIssue',
   async cb(e) {
-    const discussionStore = useDiscussionStore();
     const activeStore = useActiveStore();
     const issueReadiness = activeStore.activeProject?.discussionReadiness || 0;
     const { issue, column, iterationKey } = e;

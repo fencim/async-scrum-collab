@@ -1,9 +1,9 @@
 <template>
   <q-list padding class="menu-list" style="overflow-y: auto">
     <q-item
-      v-if="activeCeremony"
+      v-if="ceremonyStore.activeCeremony"
       clickable
-      :active="!activeItemKey"
+      :active="!$route.params.item"
       active-class="bg-grey-9"
       :to="{
         name: 'ceremony',
@@ -15,7 +15,7 @@
       }"
     >
       <q-circular-progress
-        :value="Number(activeCeremony.progress) * 100"
+        :value="Number(ceremonyStore.activeCeremony.progress) * 100"
         show-value
         font-size="12px"
         class="text-white q-ma-sm text-uppercase"
@@ -24,11 +24,17 @@
         color="grey"
         track-color="black"
       >
-        {{ (Number(activeCeremony.progress || 0) * 100).toFixed(0) }}%
+        {{
+          (Number(ceremonyStore.activeCeremony.progress || 0) * 100).toFixed(0)
+        }}%
       </q-circular-progress>
       <q-tooltip
-        ><div class="text-caption">Convo of {{ activeCeremony?.type }}</div>
-        <q-linear-progress :value="Number(activeCeremony.progress || 0)" />
+        ><div class="text-caption">
+          Convo of {{ ceremonyStore.activeCeremony?.type }}
+        </div>
+        <q-linear-progress
+          :value="Number(ceremonyStore.activeCeremony.progress || 0)"
+        />
       </q-tooltip>
     </q-item>
     <q-item
@@ -63,6 +69,7 @@
   <q-dialog v-model="expandMenu" position="left">
     <q-list class="bg-dark">
       <q-item
+        v-close-popup
         v-for="element in discussionItems"
         :key="element.key"
         :to="{
@@ -105,7 +112,7 @@ import { useRoute } from 'vue-router';
 import { entityKey } from 'src/entities/base.entity';
 import { useQuasar } from 'quasar';
 import { getComponent } from '../task-board/card-components';
-getComponent;
+
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
@@ -137,21 +144,11 @@ async function init() {
   );
 }
 const discussionItems = computed(() => {
-  const list = discussionStore.discussions.filter((d) => {
-    if (d.key == activeItemKey.value) return true;
-    if (activeCeremony.value?.type == 'planning') {
-      return (
-        (d.ceremonyKey == activeCeremony.value.key || !d.ceremonyKey) &&
-        d.iteration &&
-        entityKey(d.iteration) == activeIterationKey.value
-      );
-    } else {
-      return d.ceremonyKey == activeCeremony.value?.key;
-    }
-  });
+  if (!activeCeremony.value) return [];
   const theUser = profileStore.theUser;
+  const list = discussionStore.discussionsOf(activeCeremony.value);
   if (activeCeremony.value?.type == 'scrum' && theUser) {
-    const sorted = list.sort((a) => {
+    return list.sort((a) => {
       if (
         a.key == activeItemKey.value ||
         (a.type == 'scrum' &&
@@ -162,21 +159,15 @@ const discussionItems = computed(() => {
       }
       return 0;
     });
-    sorted.push(
-      ...discussionStore.discussions.filter(
-        (d) =>
-          d.type == 'roadblock' &&
-          !list.find((s) => s.key == entityKey(d)) &&
-          list.find(
-            (s) =>
-              s.type == 'scrum' &&
-              s.roadblocks.find((r) => entityKey(r) == entityKey(d))
-          )
-      )
-    );
-    return sorted;
   }
-  return list;
+  return list.sort((a, b) => {
+    if (a.key == activeItemKey.value) {
+      return -1;
+    } else if (b.key == activeItemKey.value) {
+      return 1;
+    }
+    return 0;
+  });
 });
 const topDiscussions = computed(() => {
   const max = $q.screen.gt.sm ? 6 : 4;

@@ -18,11 +18,16 @@ const newTaskPreFields = ref({
   assignedTo: undefined as string | undefined,
 });
 const showTopSheet = ref(false);
-function editTask(task: DiscussionItem) {
+async function editTask(task: DiscussionItem) {
   newTaskPreFields.value.type = task.type;
   newTaskPreFields.value.status = task.status || newTaskPreFields.value.status;
   newTaskPreFields.value.item = task;
-  newTaskPreFields.value.iteration = task.iteration as IIteration;
+  newTaskPreFields.value.iteration =
+    typeof task.iteration == 'object'
+      ? task.iteration
+      : typeof task.iteration == 'string'
+      ? await useIterationStore().getIteration(task.iteration)
+      : undefined;
   showTopSheet.value = true;
 }
 async function newTask(
@@ -82,8 +87,8 @@ TheDialogs.on({
 });
 TheDialogs.on({
   type: 'editTask',
-  cb: (e) => {
-    editTask(e.item);
+  cb: async (e) => {
+    await editTask(e.item);
     doneCb.value = e.done;
     errorCb.value = e.error;
   },

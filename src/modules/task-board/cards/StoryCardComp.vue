@@ -49,7 +49,7 @@ const props = defineProps({
           So that <span class="text-primary">{{ props.task.purpose }}</span>
         </div>
       </div>
-      <div v-else class="text-capital">{{ task.subject }}</div>
+      <div v-else>{{ task.description }}</div>
     </template>
     <template #side v-if="mini && typeof task.iteration == 'object'">
       <div>

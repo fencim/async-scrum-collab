@@ -107,9 +107,9 @@ const showDetails = ref(false);
     >
       <slot name="footer" />
     </div>
-    <div class="row full-width" v-if="!!$slots['bottom']">
-      <slot name="bottom" />
-    </div>
+  </div>
+  <div class="row full-width" v-if="!!$slots['bottom']">
+    <slot name="bottom" />
   </div>
   <q-btn
     v-if="!$slots['dropdown'] && !noAction && !headerOnly"

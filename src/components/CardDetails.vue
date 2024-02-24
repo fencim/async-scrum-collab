@@ -20,6 +20,7 @@ import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import DueDateChipComp from 'src/modules/task-board/cards/DueDateChipComp.vue';
 import { discussionDetailsTabs } from './discussion/details';
+import { discussionDetailsSections } from './discussion/sections';
 const props = defineProps({
   item: {
     required: true,
@@ -59,6 +60,14 @@ const membersPending = computed(() => {
   const awareness = props.item.awareness || {};
   const awareMembers = Object.keys(awareness);
   return activeStore.activeMembers.filter((m) => !awareMembers.includes(m.key));
+});
+
+const votesPending = computed(() => {
+  const activeStore = useActiveStore();
+  const votes = convos.value.filter((c) => c.type == 'vote') as IVote[];
+  return activeStore.activeMembers.filter(
+    (m) => !votes.find((v) => entityKey(v.from) == m.key)
+  );
 });
 const membersVoted = computed(() => {
   const activeStore = useActiveStore();
@@ -139,34 +148,75 @@ function pendingClick(profile: IProfile) {
     });
   }
 }
+function pendingVoteClick(profile: IProfile) {
+  const user = useProfilesStore().theUser;
+  if (user?.key == profile.key) {
+    TheDialogs.emit({
+      type: 'voteForItemComplexity',
+      arg: {
+        item: props.item,
+        async done() {
+          if (props.item.iteration) {
+            convos.value = await useConvoStore().ofDiscussion(
+              entityKey(props.item.iteration),
+              props.item.key
+            );
+          }
+        },
+      },
+    });
+  }
+}
+function viewItem(task: string | DiscussionItem) {
+  const item =
+    typeof task == 'string'
+      ? useDiscussionStore().discussions.find((d) => d.key == task)
+      : task;
+  if (item) {
+    TheDialogs.emit({
+      type: 'viewTask',
+      arg: item,
+    });
+  }
+}
 </script>
 <template>
   <q-card :style="{ width: $q.screen.sizes.md + 'px' }">
     <q-toolbar>
-      <q-chip icon="description"> {{ formatKey(task.key || 'KEY') }}</q-chip>
       <q-btn
-        flat
-        round
-        dense
-        icon="edit"
-        @click="
-          TheDialogs.emit({
-            type: 'editTask',
-            arg: {
-              item: task,
-            },
-          })
-        "
-        v-close-popup
-        color="primary"
-      >
+        v-if="task.parent"
+        class="q-pr-xs q-mr-sm"
+        icon-right="chevron_left"
+        @click="viewItem(task.parent)"
+        >{{ formatKey(entityKey(task.parent) || 'KEY')
+        }}<q-tooltip>View Parent</q-tooltip>
       </q-btn>
-      <q-space />
+      <q-toolbar-title class="bg-grey rounded-borders">
+        <q-chip icon="description"> {{ formatKey(task.key || 'KEY') }}</q-chip>
+        <q-btn
+          round
+          dense
+          size="sm"
+          icon="edit"
+          @click="
+            TheDialogs.emit({
+              type: 'editTask',
+              arg: {
+                item: task,
+              },
+            })
+          "
+          color="dark"
+          v-close-popup
+        >
+        </q-btn>
+        <q-badge class="text-uppercase q-mx-lg">{{ task.type }}</q-badge>
+      </q-toolbar-title>
       <recent-active-members
         sizes="xs"
         :profiles="getProfiles(task.assignees)"
       />
-      <q-space />
+
       <div class="q-px-sm">
         <q-badge v-if="task.priority" class="q-mr-xs" dense color="primary">{{
           task.priority
@@ -204,38 +254,13 @@ function pendingClick(profile: IProfile) {
         }}</q-badge>
       </q-card-section>
     </q-card-section>
-    <q-card-section
-      v-if="task.type == 'goal' || task.type == 'task'"
-      class="row"
-    >
-      {{ task.description }}
-    </q-card-section>
-    <q-card-section v-else-if="task.type == 'objective'" class="row">
-      <div class="col-12">
-        <strong>Description:</strong> {{ task.description }}
-      </div>
-      <div class="col-6"><strong>Specifics:</strong> {{ task.specifics }}</div>
-      <div class="col-6"><strong>Measures:</strong> {{ task.measures }}</div>
-      <div class="col-6"><strong>Enables:</strong> {{ task.enables }}</div>
-      <div class="col-6">
-        <strong>Due:</strong>
-        {{ date.formatDate(task.dueDate, 'MMM D, YYYY') }}
-      </div>
-    </q-card-section>
-    <q-card-section v-else-if="task.type == 'story'" class="row">
-      <div>
-        As
-        <span class="text-accent">{{ task.targetUser }}</span>
-      </div>
-      ,&nbsp;
-      <div>
-        I want to <span class="text-secondary">{{ task.subject }}</span>
-      </div>
-      ,&nbsp;
-      <div>
-        So that <span class="text-primary">{{ task.purpose }}</span>
-      </div>
-    </q-card-section>
+    <template v-for="section in discussionDetailsSections" :key="section.type">
+      <component
+        v-if="task.type == section.type"
+        :is="section.component"
+        :item="task"
+      />
+    </template>
     <q-card-section horizontal class="row">
       <q-card-section>
         Agreed
@@ -258,11 +283,11 @@ function pendingClick(profile: IProfile) {
         />
       </q-card-section>
       <q-card-section>
-        Pending
+        Pending Votes
         <recent-active-members
           sizes="xs"
-          :profiles="membersPending"
-          @click-profile="pendingClick"
+          :profiles="votesPending"
+          @click-profile="pendingVoteClick"
         />
       </q-card-section>
       <q-card-section>

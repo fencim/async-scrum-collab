@@ -11,6 +11,7 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { computed, onUpdated, ref } from 'vue';
 import { formatKey } from '../discussion.helper';
 import { TheWorkflows } from 'src/workflows/the-workflows';
+import { useQuasar } from 'quasar';
 
 const props = defineProps<{
   value: IScrumReport;
@@ -19,7 +20,7 @@ const $emits = defineEmits(['input']);
 onUpdated(() => {
   $emits('input', theDiscussion.value);
 });
-
+const $q = useQuasar();
 const theDiscussion = ref<IScrumReport>({ ...props.value });
 theDiscussion.value.todoTasks = theDiscussion.value.todoTasks ?? [];
 theDiscussion.value.tasksDid = theDiscussion.value.tasksDid ?? [];
@@ -28,9 +29,14 @@ theDiscussion.value.roadblocks = theDiscussion.value.roadblocks ?? [];
 const newRoadblock = ref<IRoadBlock>();
 const getNewRoadblock = ref(false);
 function enterNewRoadblock() {
+  const projectKey =
+    theDiscussion.value.projectKey ||
+    (typeof theDiscussion.value.iteration == 'object'
+      ? theDiscussion.value.iteration.projectKey
+      : '');
   newRoadblock.value = {
     iteration: theDiscussion.value.iteration,
-    projectKey: theDiscussion.value.projectKey,
+    projectKey,
     ceremonyKey: '',
     description: '',
     label: '#',
@@ -42,7 +48,9 @@ function enterNewRoadblock() {
 }
 async function createRoadblock() {
   const item = newRoadblock.value;
-  if (!item || !item.iteration || !item.projectKey) return;
+  if (!item || !item.iteration || !item.projectKey) {
+    return;
+  }
   const saved = await TheWorkflows.emitPromised<IRoadBlock>({
     type: 'createDiscussion',
     arg: {
@@ -68,7 +76,7 @@ const discussions = computed(() => {
   );
 });
 const doneDiscussions = computed(() => {
-  return discussions.value.filter((d) => !!d.doneDate);
+  return discussions.value;
 });
 const pendingDiscussions = computed(() => {
   return discussions.value.filter((d) => !d.doneDate && d.status);

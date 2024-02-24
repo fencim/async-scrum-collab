@@ -1,6 +1,6 @@
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TheWorkflows } from '../the-workflows';
-import { IBaseEntity, entityKey } from 'src/entities/base.entity';
+import { entityKey } from 'src/entities/base.entity';
 
 TheWorkflows.on({
   type: 'updateDiscussionFields',
@@ -30,6 +30,12 @@ TheWorkflows.on({
       return old[field] !== e.payload[field];
     });
     const update = await discussionStore.updateDiscussion(old.key, props, e.payload);
+    if (update) {
+      await TheWorkflows.emitPromised({
+        type: 'assessDiscussion',
+        arg: { item: update }
+      })
+    }
     if (update && e.done) {
       e.done(update);
     } else if (e.error && !update) {

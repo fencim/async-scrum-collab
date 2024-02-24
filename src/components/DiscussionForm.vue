@@ -12,7 +12,6 @@
       </q-toolbar>
       <div v-if="refItem" class="q-pa-sm q-mx-sm shadow-5 rounded-borders">
         <component
-          class=""
           :is="getComponent(refItem)"
           :task="refItem"
           mini
@@ -84,6 +83,12 @@
           @input="(v) => (theDiscussion = v)"
         />
       </q-card-section>
+      <q-card-section v-else-if="theDiscussion.type == 'roadblock'" class="row">
+        <roadblock-form-fields
+          :value="theDiscussion"
+          @input="(v) => (theDiscussion = v)"
+        />
+      </q-card-section>
       <q-card-actions :align="'right'">
         <q-btn icon="close" v-close-popup>Cancel</q-btn>
         <q-btn icon="save" :loading="saving" type="submit">Save</q-btn>
@@ -116,6 +121,7 @@ import StoryFormFields from './discussion/StoryFormFields.vue';
 import TaskFormFields from './discussion/TaskFormFields.vue';
 import ScrumFormFields from './discussion/ScrumFormFields.vue';
 import { TheWorkflows } from 'src/workflows/the-workflows';
+import RoadblockFormFields from './discussion/RoadblockFormFields.vue';
 
 const activeStore = useActiveStore();
 const profileStore = useProfilesStore();
