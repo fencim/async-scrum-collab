@@ -33,7 +33,7 @@
     </q-item>
     <q-item
       clickable
-      v-for="i in discussionItems"
+      v-for="i in topDiscussions"
       :key="i?.key"
       active-class="bg-grey-9"
       :to="{
@@ -56,7 +56,41 @@
         "
       />
     </q-item>
+    <q-item v-if="topDiscussions.length < discussionItems.length">
+      <q-btn round icon="more_vert" @click="expandMenu = true"></q-btn>
+    </q-item>
   </q-list>
+  <q-dialog v-model="expandMenu" position="left">
+    <q-list class="bg-dark">
+      <q-item
+        v-for="element in discussionItems"
+        :key="element.key"
+        :to="{
+          name: 'convo',
+          params: {
+            project: activeProjectKey,
+            iteration: activeIterationKey,
+            ceremony: activeCeremonyKey,
+            item: element.key,
+          },
+        }"
+      >
+        <q-card
+          class="list-group-item q-pa-sm board-card no-shadow"
+          :class="element.type + '-card'"
+          style="width: 200px"
+        >
+          <component
+            :is="getComponent(element)"
+            :task="element"
+            header-only
+            no-action
+            mini
+          />
+        </q-card>
+      </q-item>
+    </q-list>
+  </q-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -69,20 +103,22 @@ import DiscussionMenu from 'src/components/discussion/DiscussionMenu.vue';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useRoute } from 'vue-router';
 import { entityKey } from 'src/entities/base.entity';
-
+import { useQuasar } from 'quasar';
+import { getComponent } from '../task-board/card-components';
+getComponent;
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
 const profileStore = useProfilesStore();
 const $route = useRoute();
-
+const $q = useQuasar();
 const activeProjectKey = ref('');
 const activeIterationKey = ref('');
 const activeCeremonyKey = ref('');
 const activeItemKey = ref('');
 const activeProject = ref<IProject>();
 const activeCeremony = ref<ICeremony>();
-
+const expandMenu = ref(false);
 onMounted(async () => {
   await init();
 });
@@ -102,6 +138,7 @@ async function init() {
 }
 const discussionItems = computed(() => {
   const list = discussionStore.discussions.filter((d) => {
+    if (d.key == activeItemKey.value) return true;
     if (activeCeremony.value?.type == 'planning') {
       return (
         (d.ceremonyKey == activeCeremony.value.key || !d.ceremonyKey) &&
@@ -114,18 +151,36 @@ const discussionItems = computed(() => {
   });
   const theUser = profileStore.theUser;
   if (activeCeremony.value?.type == 'scrum' && theUser) {
-    return list.sort((a) => {
+    const sorted = list.sort((a) => {
       if (
-        a.type == 'scrum' &&
-        a.assignedTo &&
-        entityKey(a.assignedTo) == theUser.key
+        a.key == activeItemKey.value ||
+        (a.type == 'scrum' &&
+          a.assignedTo &&
+          entityKey(a.assignedTo) == theUser.key)
       ) {
         return -1;
       }
       return 0;
     });
+    sorted.push(
+      ...discussionStore.discussions.filter(
+        (d) =>
+          d.type == 'roadblock' &&
+          !list.find((s) => s.key == entityKey(d)) &&
+          list.find(
+            (s) =>
+              s.type == 'scrum' &&
+              s.roadblocks.find((r) => entityKey(r) == entityKey(d))
+          )
+      )
+    );
+    return sorted;
   }
   return list;
+});
+const topDiscussions = computed(() => {
+  const max = $q.screen.gt.sm ? 6 : 4;
+  return discussionItems.value.slice(0, max);
 });
 </script>
 <style></style>

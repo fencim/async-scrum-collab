@@ -16,6 +16,7 @@ const componentMap: Record<DiscussionItem['type'], string | Component> = {
   report: cards.TechnicalCard,
   roadblock: cards.TechnicalCard,
   scrum: cards.TechnicalCard,
+
 };
 export function getComponent(item: DiscussionItem) {
   if (typeof componentMap[item.type] == 'string') {

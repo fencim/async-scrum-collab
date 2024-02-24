@@ -37,6 +37,7 @@
         </q-toolbar-title>
         <q-btn type="submit" icon="send" flat round />
       </q-toolbar>
+      <slot />
     </q-page-sticky>
   </q-form>
 </template>

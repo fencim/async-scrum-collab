@@ -60,6 +60,7 @@ export interface IStory extends IDiscussion {
   type: 'story';
   forFeature?: string;
   targetUser?: string;
+  description?: string;
   subject?: string;
   purpose?: string;
   acceptanceCriteria: IAcceptanceCriteria[];

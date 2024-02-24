@@ -61,7 +61,11 @@
     </svg>
     <div class="text-overline">{{ status }}</div>
   </div>
-  <div v-else>{{ status }}</div>
+  <div v-else>
+    <q-icon name="history_toggle_off" size="sm">
+      <q-tooltip>{{ status }}</q-tooltip>
+    </q-icon>
+  </div>
 </template>
 
 <script lang="ts">

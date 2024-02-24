@@ -10,7 +10,6 @@ export abstract class FbBaseResource<T extends (IBaseEntity & { key: string })> 
     return firebaseService.count(this.entity as ModelName, filters as Record<string, string>);
   }
   streamWith(filters?: Filters<Entity> | undefined, options?: QueryOptions): Observable<T[]> {
-
     return super.streamWith(filters, options);
   }
   protected streamCb(filters?: Filters<Entity> | undefined, options?: {

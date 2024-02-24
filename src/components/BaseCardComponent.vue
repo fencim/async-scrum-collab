@@ -13,6 +13,7 @@ defineProps({
   maxed: Boolean,
   noAction: Boolean,
   headerOnly: Boolean,
+  chipOnly: Boolean,
   task: {
     required: true,
     type: Object as PropType<DiscussionItem>,
@@ -37,13 +38,13 @@ const showDetails = ref(false);
     <q-badge
       floating
       rounded
-      v-if="headerOnly && typeof task.iteration == 'object'"
+      v-if="headerOnly && !chipOnly && typeof task.iteration == 'object'"
       dense
       >{{ task.iteration.name || task.iteration }}</q-badge
     >
     <q-badge
       class="q-mr-xs self-center"
-      v-if="task.doneDate"
+      v-if="task.doneDate && !chipOnly"
       dense
       :color="
           (date.getDateDiff(task.dueDate!, task.doneDate, 'days') >= 0)

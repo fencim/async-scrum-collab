@@ -1,22 +1,5 @@
 <template>
   <div>
-    <q-dialog v-model="dialogAgree" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="thumb_up_alt" color="primary" text-color="white" />
-          <span class="q-ml-sm"
-            >You are about to confirm your agreement on discussion.</span
-          >
-        </q-card-section>
-        <q-card-section>{{
-          discussionStore.describeDiscussion(item)
-        }}</q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="negative" v-close-popup />
-          <q-btn push flat label="Yes" color="primary" @click="agreeOnItem" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
     <q-list padding class="menu-list">
       <EssentialLink
         v-for="link in convoStore.actions"
@@ -64,7 +47,10 @@
         <q-item-section avatar>
           <q-icon name="add" size="sm" />
         </q-item-section>
-        <q-tooltip v-if="goalIsCreated && objectiveIsCreated"
+        <q-tooltip v-if="ceremony?.type == 'scrum'"
+          >Report your Daily Scum</q-tooltip
+        >
+        <q-tooltip v-else-if="goalIsCreated && objectiveIsCreated"
           >New Discussion Item</q-tooltip
         >
         <q-tooltip
@@ -98,6 +84,8 @@ import { ActionItem } from './ceremony.action-list';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useConvoStore } from 'src/stores/convo.store';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { entityKey } from 'src/entities/base.entity';
+import { useProfilesStore } from 'src/stores/profiles.store';
 
 const projectStore = useProjectStore();
 const iterationStore = useIterationStore();
@@ -118,7 +106,6 @@ export default defineComponent({
       activeIteration: 'AI',
       activeCeremony: 'AC',
       activeItem: '',
-      dialogAgree: false,
       project: undefined as IProject | undefined,
       iteration: undefined as IIteration | undefined,
       ceremony: undefined as ICeremony | undefined,
@@ -130,9 +117,6 @@ export default defineComponent({
     await this.init();
     convoBus.on('onQuestion', (e) => {
       this.convoStore.activateLink('question', e as boolean);
-    });
-    convoBus.on('onDisagree', (e) => {
-      this.convoStore.activateLink('disagree', e as boolean);
     });
   },
   async updated() {
@@ -201,10 +185,9 @@ export default defineComponent({
       this.showCreateDiscussionTooltip =
         !this.goalIsCreated || !this.objectiveIsCreated;
     },
-
     async actOn(action: ActionItem) {
+      const discussion = await discussionStore.withKey(this.activeItem);
       if (action.key == 'view') {
-        const discussion = await discussionStore.withKey(this.activeItem);
         discussion && TheDialogs.emit({ type: 'viewTask', arg: discussion });
       } else if (action.key == 'vote') {
         const discussion = await discussionStore.withKey(this.activeItem);
@@ -225,8 +208,11 @@ export default defineComponent({
             item: this.activeItem,
           },
         });
-      } else if (action.key == 'agree') {
-        this.dialogAgree = true;
+      } else if (
+        (action.key == 'agree' || action.key == 'disagree') &&
+        discussion
+      ) {
+        this.agreeOnItem();
       } else {
         convoBus.emit(action.key);
       }
@@ -298,6 +284,35 @@ export default defineComponent({
       }
     },
     newScrumDiscussion() {
+      const existing = discussionStore.discussions.find(
+        (d) =>
+          d.type == 'scrum' &&
+          d.ceremonyKey == this.ceremony?.key &&
+          d.assignedTo &&
+          entityKey(d.assignedTo) == useProfilesStore().theUser?.key
+      );
+      if (existing) {
+        this.$q.notify({
+          icon: 'warning',
+          message: 'Report already exist',
+          actions: [
+            {
+              icon: 'open',
+              label: 'Open',
+              to: {
+                name: 'convo',
+                params: {
+                  project: this.project?.key,
+                  iteration: this.iteration?.key,
+                  ceremony: this.ceremony?.key,
+                  item: existing.key,
+                },
+              },
+            },
+          ],
+        });
+        return;
+      }
       TheDialogs.emit({
         type: 'newTask',
         arg: {

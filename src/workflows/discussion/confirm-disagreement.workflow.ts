@@ -26,7 +26,7 @@ TheWorkflows.on({
       if (profileStore.presentUser) {
         item.awareness = item.awareness || {};
         item.awareness[profileStore.presentUser.key] = 'disagree';
-        await discussionStore.saveDiscussion(item);
+        await discussionStore.updateDiscussion(item.key, ['awareness'], item);
         TheWorkflows.emit({
           type: 'assessDiscussion',
           arg: {

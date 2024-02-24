@@ -29,7 +29,8 @@ TheWorkflows.on({
         if (discussion.progress != report[0].progress) {
           const oldProgress = discussion.progress;
           discussion.progress = report[0].progress;
-          await discussionStore.saveDiscussion(discussion);
+          await discussionStore.updateDiscussion(discussion.key, ['progress'], discussion);
+          await discussionStore.updateCeremonyProgress(discussion);
           convoStore.sendMessage(
             discussion.projectKey,
             entityKey(discussion.iteration),

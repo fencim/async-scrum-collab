@@ -3,7 +3,6 @@ import { date } from 'quasar';
 import {
   DiscussionItem,
   IQuestion,
-  TechnicalTask,
   IProgressFeedback,
   IVote,
   Convo,
@@ -20,30 +19,14 @@ import RecentActiveMembers from './RecentActiveMembers.vue';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import DueDateChipComp from 'src/modules/task-board/cards/DueDateChipComp.vue';
-const acceptanceCriteriaColumns = [
-  {
-    name: 'given',
-    label: 'Given',
-    field: 'given',
-  },
-  {
-    name: 'when',
-    label: 'When',
-    field: 'when',
-  },
-  {
-    name: 'then',
-    label: 'Then',
-    field: 'then',
-  },
-];
+import { discussionDetailsTabs } from './discussion/details';
 const props = defineProps({
   item: {
     required: true,
     type: Object as PropType<DiscussionItem>,
   },
 });
-const convo = ref<Convo[]>([]);
+const convos = ref<Convo[]>([]);
 const task = ref<DiscussionItem>(props.item);
 const tab = ref('progress');
 const splitterModel = ref(20);
@@ -52,27 +35,13 @@ onMounted(async () => {
   const convoStore = useConvoStore();
   task.value = (await discussionStore.getUpdated(props.item.key)) || task.value;
   if (props.item.iteration) {
-    convo.value = await convoStore.ofDiscussion(
+    convos.value = await convoStore.ofDiscussion(
       entityKey(props.item.iteration),
       props.item.key
     );
   }
 });
 
-const subTasks = computed(() => {
-  const discussionStore = useDiscussionStore();
-  const task = props.item;
-  if (task.type == 'story') {
-    const listKeys = (task.tasks || []).filter(
-      (t) => typeof t == 'string'
-    ) as string[];
-    const listTasks = (task.tasks || []).filter(
-      (t) => typeof t == 'object'
-    ) as TechnicalTask[];
-    return [...listTasks, ...discussionStore.fromList(listKeys)];
-  }
-  return [];
-});
 const membersAgreed = computed(() => {
   const activeStore = useActiveStore();
   const awareness = props.item.awareness || {};
@@ -95,7 +64,7 @@ const membersVoted = computed(() => {
   const activeStore = useActiveStore();
   const voted = [
     ...new Set(
-      (convo.value.filter((c) => c.type == 'vote') as IVote[])
+      (convos.value.filter((c) => c.type == 'vote') as IVote[])
         .reduce(
           (p, c) => (typeof c.vote == 'undefined' ? [] : p.concat([c])),
           [] as IVote[]
@@ -108,8 +77,10 @@ const membersVoted = computed(() => {
     voted.find((v) => entityKey(v) == m.key)
   );
 });
-const unResolvedQuestions = computed<IQuestion[]>(() => {
-  return [];
+const unResolvedQuestions = computed(() => {
+  return convos.value.filter(
+    (c) => c.type == 'question' && !c.resolved
+  ) as IQuestion[];
 });
 const activeProjectKey = computed<string>(() => {
   const activeStore = useActiveStore();
@@ -136,11 +107,24 @@ const progressReport = computed<IProgressFeedback[]>(() => {
     return discussionStore.checkCompleteness(
       props.item,
       activeStore.activeProject.members,
-      convo.value
+      convos.value
     );
   }
   return [];
 });
+function getProfile(profile: string | IProfile) {
+  if (typeof profile == 'object') {
+    return profile;
+  } else {
+    return (
+      useActiveStore().activeMembers.find((m) => m.key == profile) || {
+        avatar: '',
+        key: profile,
+        name: 'UN',
+      }
+    );
+  }
+}
 function asProgress(progress: IProgressFeedback) {
   return progress;
 }
@@ -252,7 +236,7 @@ function pendingClick(profile: IProfile) {
         So that <span class="text-primary">{{ task.purpose }}</span>
       </div>
     </q-card-section>
-    <q-card-section horizontal>
+    <q-card-section horizontal class="row">
       <q-card-section>
         Agreed
         <recent-active-members sizes="xs" :profiles="membersAgreed" />
@@ -262,6 +246,14 @@ function pendingClick(profile: IProfile) {
         <recent-active-members
           sizes="xs"
           :profiles="membersDisagreed"
+          @click-profile="pendingClick"
+        />
+      </q-card-section>
+      <q-card-section>
+        Pending
+        <recent-active-members
+          sizes="xs"
+          :profiles="membersPending"
           @click-profile="pendingClick"
         />
       </q-card-section>
@@ -296,11 +288,11 @@ function pendingClick(profile: IProfile) {
               hash: '#' + q.key,
             }"
           >
-            <q-avatar size="xs">
-              <img v-if="typeof q.from == 'object'" :src="q.from.avatar" />
-              <q-icon v-else name="question_mark" />
-            </q-avatar>
-            <q-tooltip>{{ q.message }}?</q-tooltip>
+            <recent-active-members sizes="xs" :profiles="[getProfile(q.from)]">
+              <template #profileTooltip="{ profile }">
+                <q-tooltip>({{ profile.name }}) {{ q.message }}?</q-tooltip>
+              </template>
+            </recent-active-members>
           </q-btn>
         </div>
       </q-card-section>
@@ -310,10 +302,11 @@ function pendingClick(profile: IProfile) {
         <template v-slot:before>
           <q-tabs v-model="tab" vertical>
             <q-tab name="progress">Progress</q-tab>
-            <q-tab name="acceptance" v-if="task.type == 'story'"
-              >Acceptance</q-tab
-            >
-            <q-tab name="subTasks" v-if="task.type == 'story'">SubTasks</q-tab>
+            <template v-for="tab in discussionDetailsTabs" :key="tab.name">
+              <q-tab :name="tab.name" v-if="task.type == tab.type">{{
+                tab.label
+              }}</q-tab>
+            </template>
           </q-tabs>
         </template>
         <template v-slot:after>
@@ -355,30 +348,15 @@ function pendingClick(profile: IProfile) {
                 </template>
               </q-table>
             </q-tab-panel>
-            <q-tab-panel name="acceptance" v-if="task.type == 'story'">
-              <q-table
-                dense
-                class="col-12"
-                :rows="task.acceptanceCriteria"
-                :columns="acceptanceCriteriaColumns"
-              >
-              </q-table>
-            </q-tab-panel>
-            <q-tab-panel name="subTasks" v-if="task.type == 'story'">
-              <q-table
-                dense
-                v-if="task.tasks && task.tasks.length"
-                title="Sub-Tasks"
-                class="col-12"
-                :rows="subTasks"
-              >
-              </q-table>
-            </q-tab-panel>
+            <template v-for="tab in discussionDetailsTabs" :key="tab.name">
+              <q-tab-panel :name="tab.name" v-if="task.type == tab.type">
+                <component :is="tab.component" :item="task" />
+              </q-tab-panel>
+            </template>
           </q-tab-panels>
         </template>
       </q-splitter>
     </q-card-section>
   </q-card>
 </template>
-
 <style></style>

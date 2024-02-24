@@ -27,6 +27,7 @@ defineProps({
   maxed: Boolean,
   noAction: Boolean,
   headerOnly: Boolean,
+  chipOnly: Boolean,
 });
 </script>
 <template>
@@ -36,6 +37,7 @@ defineProps({
     :mini="mini"
     :no-action="noAction"
     :task="task"
+    :chip-only="chipOnly"
   >
     <template #title>
       {{ task.description }}

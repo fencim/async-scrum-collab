@@ -14,7 +14,8 @@
         <span v-else-if="p?.key == profileStore.presentUser?.key">Me</span>
         <span v-else>{{ initials(p?.name) }}</span>
       </q-avatar>
-      <q-tooltip
+      <slot name="profileTooltip" v-if="$slots.profileTooltip" :profile="p" />
+      <q-tooltip v-else
         >{{ p?.name
         }}<span v-if="p?.key == profileStore.presentUser?.key"
           >(Me)</span

@@ -78,7 +78,7 @@ TheWorkflows.on({
                 }
               );
               item.complexity = Number(winningVote);
-              await discussionStore.saveDiscussion(item);
+              await discussionStore.updateDiscussion(item.key, ['complexity'], item);
             } else if (uniqueVotes.length > 0 && item.iteration) {
               const winningVote =
                 uniqueVotes[Math.max(0, Math.round(uniqueVotes.length / 2) - 1)];
@@ -97,7 +97,7 @@ TheWorkflows.on({
                 }
               );
               item.complexity = Number(winningVote);
-              await discussionStore.saveDiscussion(item);
+              await discussionStore.updateDiscussion(item.key, ['complexity'], item);
             }
           }
           done && done(item);

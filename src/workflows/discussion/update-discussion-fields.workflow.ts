@@ -1,6 +1,6 @@
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TheWorkflows } from '../the-workflows';
-import { entityKey } from 'src/entities/base.entity';
+import { IBaseEntity, entityKey } from 'src/entities/base.entity';
 
 TheWorkflows.on({
   type: 'updateDiscussionFields',
@@ -16,8 +16,16 @@ TheWorkflows.on({
       if (Array.isArray(old[field]) && Array.isArray(e.payload[field])) {
         return (old[field] as string[]).map(a => entityKey(a)).sort().join(',') !==
           (e.payload[field] as string[]).map(a => entityKey(a)).sort().join(',')
-      } else if (typeof e.payload[field] == 'object' || typeof old[field] == 'object') {
-        return entityKey(old[field] as string) !== entityKey(e.payload[field] as string);
+      } else if ((typeof e.payload[field] == 'object' && e.payload[field]) || typeof old[field] == 'object') {
+        if ((e.payload[field] as { key: string }).key || (old[field] as { key: string }).key)
+          return entityKey(old[field] as string) !== entityKey(e.payload[field] as string);
+        else {
+          const a = e.payload[field] as unknown as Record<string, string>;
+          const b = old[field] as unknown as Record<string, string>;
+          return !Object.keys(a).reduce((p, c) => {
+            return p && (a[c] == b[c])
+          }, true);
+        }
       }
       return old[field] !== e.payload[field];
     });

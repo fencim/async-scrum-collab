@@ -3,13 +3,26 @@
     <the-present-project />
     <q-toolbar-title>
       <div class="text-subtitle2 text-uppercase q-pt-sm q-px-sm">
-        <q-btn
-          flat
-          dense
-          :to="{ name: 'projectHome', params: { project: activeProject } }"
-          >{{ projectStore.activeProject?.key }}</q-btn
-        >
-        : {{ iterationStore.activeIteration?.name }}
+        <q-breadcrumbs>
+          <template v-slot:separator>
+            <q-icon size="1.5em" name="chevron_right" color="primary" />
+          </template>
+          <q-breadcrumbs-el icon="home" :to="{ name: 'home' }" />
+          <q-breadcrumbs-el
+            :label="projectStore.activeProject?.key"
+            :to="{ name: 'projectHome', params: { project: activeProject } }"
+          />
+          <q-breadcrumbs-el
+            :label="iterationStore.activeIteration?.name"
+            :to="{
+              name: 'iteration',
+              params: {
+                project: activeProject,
+                iteration: activeIteration,
+              },
+            }"
+          />
+        </q-breadcrumbs>
       </div>
       <div
         class="text-overline q-px-sm bg-grey-10 rounded-borders"

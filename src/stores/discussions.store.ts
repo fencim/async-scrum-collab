@@ -127,7 +127,7 @@ export const useDiscussionStore = defineStore('discussion', {
         updated.assignees.splice(0, 0, profile.key);
       }
       updated.assignedTo = profile.key;
-      return await this.saveDiscussion(updated);
+      return await this.updateDiscussion(task.key, ['assignedTo', 'assignees'], updated);
     },
     async saveDiscussion(discussion: DiscussionItem) {
       const copy = (({
@@ -189,7 +189,7 @@ export const useDiscussionStore = defineStore('discussion', {
         case 'scrum':
           return 'Daily Task Report';
         case 'roadblock':
-          return 'Roadblock';
+          return item.description;
         default:
           return (item && `${(item as DiscussionItem).type}`) || ('Unknown item');
       }
@@ -370,20 +370,7 @@ export const useDiscussionStore = defineStore('discussion', {
       const items = this.discussions.filter(d => d.iteration == ceremony.iterationKey);
       const project = useProjectStore().activeProject;
       if (ceremony.type == 'scrum' && project) {
-        //const noItems = project.members.filter(m => !(items.find(i => i.key.includes(m))));
-        // await Promise.all(noItems.map(async (m) => {
-        //   return this.saveDiscussion({
-        //     type: 'scrum',
-        //     key: m + ceremony.key,
-        //     awareness: {},
-        //     ceremonyKey: ceremony.key,
-        //     projectKey: ceremony.projectKey,
-        //     reporter: m,
-        //     roadblocks: [],
-        //     tasksDid: [],
-        //     todoTasks: []
-        //   })
-        // }))
+
       } else if (ceremony.type == 'retro') {
         const base: IDiscussion = {
           key: ceremony.key,

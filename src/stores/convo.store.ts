@@ -115,7 +115,7 @@ export const useConvoStore = defineStore('convo', {
         const report = discussionStore.checkCompleteness(discItem, project.members, convo);
         if (report[0].progress != discItem.progress) {
           discItem.progress = report[0].progress;
-          await discussionStore.saveDiscussion(discItem);
+          await discussionStore.updateDiscussion(discItem.key, ['progress'], discItem);
         }
         //actions states
         const list = report.reduce((p, r) => {

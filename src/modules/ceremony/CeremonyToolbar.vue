@@ -3,26 +3,55 @@
     <the-present-project />
     <q-toolbar-title>
       <div class="text-subtitle2 text-uppercase q-pt-sm q-px-sm">
-        <q-btn
-          flat
-          dense
-          :to="{ name: 'projectHome', params: { project: activeProject } }"
-          >{{ activeProject }}</q-btn
-        >
-        :
-        <q-btn
-          flat
-          dense
-          :to="{
-            name: 'iteration',
-            params: {
-              project: activeProject,
-              iteration: activeIteration,
-            },
-          }"
-          >{{ iteration?.name }}</q-btn
-        >
-        : {{ ceremony?.type.toUpperCase() }}
+        <q-breadcrumbs>
+          <template v-slot:separator>
+            <q-icon size="1.5em" name="chevron_right" color="primary" />
+          </template>
+          <q-breadcrumbs-el icon="home" :to="{ name: 'home' }" />
+          <q-breadcrumbs-el
+            :label="activeProject"
+            :to="{ name: 'projectHome', params: { project: activeProject } }"
+          />
+          <q-breadcrumbs-el
+            :label="iteration?.name"
+            :to="{
+              name: 'iteration',
+              params: {
+                project: activeProject,
+                iteration: activeIteration,
+              },
+            }"
+          />
+          <q-breadcrumbs-el
+            :to="{
+              name: 'ceremony',
+              params: {
+                project: activeProject,
+                iteration: activeIteration,
+                ceremony: activeCeremony,
+              },
+            }"
+            >{{ ceremony?.type.toUpperCase() }}
+            <q-badge v-if="ceremony?.type == 'scrum'" class="q-ml-sm">
+              {{ date.formatDate(ceremony.start, 'MMM D') }}
+            </q-badge>
+          </q-breadcrumbs-el>
+          <q-breadcrumbs-el v-if="item">
+            <q-card
+              class="list-group-item board-card no-shadow"
+              :class="item.type + '-card'"
+            >
+              <component
+                :is="getComponent(item)"
+                :task="item"
+                header-only
+                no-action
+                mini
+                chip-only
+              />
+            </q-card>
+          </q-breadcrumbs-el>
+        </q-breadcrumbs>
       </div>
       <div
         class="text-subtitle2 q-px-sm bg-grey-10 rounded-borders"
@@ -35,18 +64,25 @@
         hours)
       </div>
       <recent-active-members :profiles="members" @ctrl-click="setAsUser" />
-      <q-linear-progress :value="ceremony?.progress" />
+      <q-linear-progress :value="progress" />
     </q-toolbar-title>
 
-    <the-synchronizer />
-    <hour-glass v-if="ceremony" :start="ceremony.start" :end="ceremony.end" />
-    <the-present-user />
+    <div class="absolute-top-right q-ma-sm row">
+      <the-synchronizer />
+      <hour-glass
+        class="self-center q-mx-sm"
+        v-if="ceremony"
+        :start="ceremony.start"
+        :end="ceremony.end"
+      />
+      <the-present-user />
+    </div>
   </q-toolbar>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { useProfilesStore } from 'src/stores/profiles.store';
-import { defineComponent } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import HourGlass from 'src/components/HourGlass.vue';
@@ -58,78 +94,59 @@ import { ICeremony, IIteration, IProfile, IProject } from 'src/entities';
 import { date } from 'quasar';
 import { useActiveStore } from 'src/stores/active.store';
 import TheSynchronizer from 'src/components/TheSynchronizer.vue';
+import { useRoute } from 'vue-router';
+import { useDiscussionStore } from 'src/stores/discussions.store';
+import { getComponent } from '../task-board/card-components';
+import { useRouter } from 'vue-router';
 
 const projectStore = useProjectStore();
 const profileStore = useProfilesStore();
 const activeStore = useActiveStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
-
-export default defineComponent({
-  name: 'CeremonyToolbar',
-  components: {
-    ThePresentProject,
-    HourGlass,
-    RecentActiveMembers,
-    ThePresentUser,
-    TheSynchronizer,
-  },
-  data() {
-    return {
-      date,
-      profileStore,
-      showToday: true,
-      activeProject: 'AP',
-      activeIteration: 'AI',
-      activeCeremony: 'AC',
-      activeItem: '0',
-      project: undefined as IProject | undefined,
-      iteration: undefined as IIteration | undefined,
-      ceremony: undefined as ICeremony | undefined,
-    };
-  },
-  mounted() {
-    this.init();
-  },
-  updated() {
-    this.init();
-  },
-  computed: {
-    members() {
-      return [...activeStore.activeMembers, ...activeStore.guests];
-    },
-    progress() {
-      return ceremonyStore.activeCeremonyProgress;
-    },
-  },
-  methods: {
-    async init() {
-      this.activeProject =
-        (this.$route.params.project && String(this.$route.params.project)) ||
-        '';
-      this.project = projectStore.activeProject;
-      this.activeIteration =
-        (this.$route.params.iteration &&
-          String(this.$route.params.iteration)) ||
-        '';
-      this.iteration = iterationStore.activeIteration;
-      this.activeCeremony =
-        (this.$route.params.ceremony && String(this.$route.params.ceremony)) ||
-        '';
-      this.ceremony = await ceremonyStore.withKey(
-        this.activeProject,
-        this.activeIteration,
-        this.activeCeremony
-      );
-      this.activeItem =
-        (this.$route.params.item && String(this.$route.params.item)) || '';
-    },
-    setAsUser(profile?: IProfile) {
-      if (profile?.key) {
-        profileStore.setAsTheUser(profile.key);
-      }
-    },
-  },
+const discussionStore = useDiscussionStore();
+const $route = useRoute();
+const $router = useRouter();
+const activeProject = ref('AP');
+const activeIteration = ref('AI');
+const activeCeremony = ref('AC');
+const activeItem = ref('0');
+const project = ref<IProject>();
+const iteration = ref<IIteration>();
+const ceremony = ref<ICeremony>();
+const item = computed(() => {
+  return discussionStore.discussions.find((d) => d.key == activeItem.value);
 });
+const members = computed(() => {
+  return [...activeStore.activeMembers, ...activeStore.guests];
+});
+const progress = computed(() => {
+  return ceremonyStore.activeCeremonyProgress;
+});
+
+onMounted(init);
+$router.afterEach(init);
+
+async function init() {
+  activeProject.value =
+    ($route.params.project && String($route.params.project)) || '';
+  project.value = projectStore.activeProject;
+  activeIteration.value =
+    ($route.params.iteration && String($route.params.iteration)) || '';
+  iteration.value = iterationStore.activeIteration;
+  activeCeremony.value =
+    ($route.params.ceremony && String($route.params.ceremony)) || '';
+  ceremony.value = await ceremonyStore.withKey(
+    activeProject.value,
+    activeIteration.value,
+    activeCeremony.value
+  );
+  activeItem.value = ($route.params.item && String($route.params.item)) || '';
+}
+function setAsUser(profile?: IProfile) {
+  if (profile?.key) {
+    profileStore.setAsTheUser(profile.key);
+  }
+}
 </script>
 <style></style>

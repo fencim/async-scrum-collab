@@ -34,7 +34,7 @@ function newAcceptanceCriteria() {
   newAcceptance.value = {} as IAcceptanceCriteria;
   dialogAcceptance.value = true;
 }
-function createAccepatance() {
+function createAcceptance() {
   if (
     !newAcceptance?.value?.given ||
     !newAcceptance?.value?.when ||
@@ -52,7 +52,7 @@ function createAccepatance() {
 }
 const discussions = computed(() => {
   const discussionStore = useDiscussionStore();
-  return discussionStore.discussions;
+  return discussionStore.discussions.filter((d) => d.type == 'task');
 });
 function describeDiscussion(item: DiscussionItem) {
   const discussionStore = useDiscussionStore();
@@ -60,6 +60,12 @@ function describeDiscussion(item: DiscussionItem) {
 }
 </script>
 <template>
+  <q-input
+    class="col-12"
+    v-model="theDiscussion.description"
+    label="Description"
+    type="textarea"
+  />
   <q-input class="col-6" v-model="theDiscussion.targetUser" label="As a" />
   <q-input class="col-6" v-model="theDiscussion.subject" label="I want to" />
   <q-input class="col-12" v-model="theDiscussion.purpose" label="So that" />
@@ -80,7 +86,9 @@ function describeDiscussion(item: DiscussionItem) {
     class="col-12"
     emit-value
     label="Tasks"
+    v-if="theDiscussion.key"
     map-options
+    multiple
     v-model="theDiscussion.tasks"
     :options="discussions"
     :option-label="describeDiscussion"
@@ -94,7 +102,7 @@ function describeDiscussion(item: DiscussionItem) {
         <q-input v-model="newAcceptance.then" label="Then" />
       </q-card-section>
       <q-card-actions>
-        <q-btn icon="add" @click="createAccepatance">Add</q-btn>
+        <q-btn icon="add" @click="createAcceptance">Add</q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>

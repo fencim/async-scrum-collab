@@ -10,7 +10,11 @@ const showItemBottomSheet = ref(false);
 
 TheDialogs.on({
   type: 'viewTask',
-  cb(e) {
+  async cb(e) {
+    if (showItemBottomSheet.value) {
+      showItemBottomSheet.value = false;
+      await new Promise((resolve) => setTimeout(resolve));
+    }
     selectedItem.value = e;
     showItemBottomSheet.value = true;
   },

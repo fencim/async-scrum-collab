@@ -6,6 +6,7 @@ import DiscussionForm from 'src/components/DiscussionForm.vue';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useRoute } from 'vue-router';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useIterationStore } from 'src/stores/iterations.store';
 const $route = useRoute();
 const discussionStore = useDiscussionStore();
 const newTaskPreFields = ref({
@@ -33,6 +34,7 @@ async function newTask(
   newTaskPreFields.value.status = status || newTaskPreFields.value.status;
   newTaskPreFields.value.iteration = iteration;
   newTaskPreFields.value.refItem = undefined;
+  newTaskPreFields.value.item = undefined;
   if (type == 'scrum') {
     const assignedTo = useProfilesStore().theUser?.key;
     newTaskPreFields.value.assignedTo = assignedTo;
@@ -47,7 +49,8 @@ async function newTask(
   }
   showTopSheet.value = true;
 }
-function newSubTask(refItem: DiscussionItem) {
+async function newSubTask(refItem: DiscussionItem) {
+  newTaskPreFields.value.item = undefined;
   newTaskPreFields.value.refItem = refItem;
   newTaskPreFields.value.type =
     refItem.type == 'goal'
@@ -55,7 +58,12 @@ function newSubTask(refItem: DiscussionItem) {
       : refItem.type == 'objective'
       ? 'story'
       : 'task';
-  newTaskPreFields.value.iteration = refItem.iteration as IIteration;
+  newTaskPreFields.value.iteration =
+    typeof refItem.iteration == 'object'
+      ? refItem.iteration
+      : typeof refItem.iteration == 'string'
+      ? await useIterationStore().getIteration(refItem.iteration)
+      : undefined;
   showTopSheet.value = true;
 }
 const doneCb = ref<(item: DiscussionItem) => void>();

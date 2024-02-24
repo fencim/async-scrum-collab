@@ -1,6 +1,6 @@
 <template>
-  <q-chip clickable dense :color="task.dueDate ? 'secondary' : 'negative'"
-    >{{ (task.dueDate && formatDate(task.dueDate)) || 'ND' }}
+  <q-chip clickable dense :color="dueDate ? 'secondary' : 'negative'"
+    >{{ (dueDate && formatDate(dueDate)) || 'ND' }}
     <q-popup-proxy cover transition-show="scale" transition-hide="scale">
       <q-date v-model="dueDate" :options="withInIterationOnly">
         <div class="row items-center justify-end">

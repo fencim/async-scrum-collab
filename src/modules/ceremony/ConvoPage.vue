@@ -1,6 +1,5 @@
 <template>
   <q-page class="justify-between q-pa-sm column q-pb-xl">
-    <!-- <q-scroll-area ref="scrollAreaRef" style="height: calc(100vh - 185px)"> -->
     <q-infinite-scroll
       @load="(i, done) => done()"
       reverse
@@ -60,45 +59,8 @@
       @send-message="sendMessage"
       @update:message="(e) => (message = e)"
       @update:asking-question="(e) => (askingQuestion = e)"
-    />
-    <q-form v-if="false" @submit="sendMessage">
-      <q-toolbar class="bg-grey-10 col" style="padding-right: 70px">
-        <q-btn icon="poll " flat round />
-        <q-btn icon="attachment" flat round />
-        <q-toolbar-title class="q-pa-sm">
-          <q-input
-            id="input-message"
-            autofocus
-            v-model="message"
-            rounded
-            :label-slot="!!replyTo || confirmDisagreement"
-          >
-            <template v-slot:label>
-              <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
-                <img :src="asFromAvatar(replyTo)" />
-              </q-avatar>
-              <q-avatar size="sm" v-else-if="confirmDisagreement">
-                <q-icon name="thumb_down_alt" />
-              </q-avatar>
-              &nbsp;
-              <span
-                v-if="replyTo && !confirmDisagreement"
-                class="text-weight-bold text-deep-orange"
-                >{{ replyTo?.message
-                }}<q-icon
-                  name="question_mark"
-                  v-if="replyTo?.type == 'question'"
-              /></span>
-              <span v-else>Why disagree?</span>
-            </template>
-            <template v-slot:append>
-              <q-icon name="question_mark" v-if="askingQuestion" />
-            </template>
-          </q-input>
-        </q-toolbar-title>
-        <q-btn type="submit" icon="send" flat round />
-      </q-toolbar>
-    </q-form>
+    >
+    </chat-message-form>
   </q-page>
 </template>
 
@@ -156,13 +118,13 @@ const discussion = ref<DiscussionItem>();
 const replyTo = ref<Convo>();
 const timer = ref<NodeJS.Timeout | number>(0);
 const askingQuestion = ref(false);
-const confirmDisagreement = ref(false);
-const revealVotes = ref();
+const revealVotes = computed(() => {
+  return !!discussion.value?.complexity;
+});
 
 onMounted(async () => {
   await init();
   convoBus.on('question', askQuestion);
-  convoBus.on('disagree', confirmDisagree);
   convoBus.on('refresh', init);
   scrollToBottom();
 });
@@ -190,9 +152,7 @@ const messages = computed(() => {
   }
   return convo;
 });
-function asFromAvatar(msg: Convo | undefined) {
-  return typeof msg?.from == 'object' ? msg?.from.avatar : '';
-}
+
 async function init() {
   activeProject.value =
     ($route.params.project && String($route.params.project)) || '';
@@ -209,9 +169,8 @@ async function init() {
     activeCeremony.value
   );
   activeItem.value = ($route.params.item && String($route.params.item)) || '';
-
   discussion.value = await discussionStore.withKey(activeItem.value);
-  await assesItem();
+  // await assesItem();
 }
 async function sendMessage() {
   if (askingQuestion.value && discussion.value) {
@@ -237,23 +196,6 @@ async function sendMessage() {
         },
       },
     });
-  } else if (confirmDisagreement.value && message.value.trim()) {
-    convoStore.sendMessage(
-      activeProject.value,
-      activeIteration.value,
-      activeItem.value || activeCeremony.value,
-      profileStore.presentUser?.key || '',
-      {
-        type: 'question',
-        message: 'I disagree because ' + message.value,
-      }
-    );
-    if (discussion.value && profileStore.presentUser && project.value) {
-      discussion.value.awareness = discussion.value.awareness || {};
-      discussion.value.awareness[profileStore.presentUser.key] = 'disagree';
-      await assesItem();
-    }
-    confirmDisagree(); //toggle
   } else {
     convoStore.sendMessage(
       activeProject.value,
@@ -287,14 +229,7 @@ function confirmDisagree() {
   confirmDisagreement.value = !confirmDisagreement.value;
   convoBus.emit('onDisagree', confirmDisagreement);
 }
-async function assesItem() {
-  if (discussion.value && !discussion.value.progress) {
-    await TheWorkflows.emitPromised({
-      type: 'assessDiscussion',
-      arg: { item: discussion.value },
-    });
-  }
-}
+
 async function resolveQuestionOf(
   msg: IResponse,
   resolution: 'agree' | 'disagree'
@@ -307,7 +242,11 @@ async function resolveQuestionOf(
       message: msg,
       resolution,
       done: () => {
-        //
+        $q.notify({
+          message: 'A Question is resolved',
+          color: 'positive',
+          icon: 'info',
+        });
       },
       error: (e) => {
         $q.notify({

@@ -5,6 +5,7 @@ import { PropType } from 'vue';
 import CommonCardAction from './CommonCardActionComp.vue';
 import { convoBus } from 'src/modules/ceremony/convo-bus';
 import CommonCardFooterComp from './CommonCardFooterComp.vue';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 defineEmits<{
   (
     e: 'taskMoved',
@@ -23,6 +24,7 @@ const props = defineProps({
   maxed: Boolean,
   noAction: Boolean,
   headerOnly: Boolean,
+  chipOnly: Boolean,
 });
 </script>
 <template>
@@ -31,6 +33,7 @@ const props = defineProps({
     :maxed="maxed"
     :mini="mini"
     :no-action="noAction"
+    :chip-only="chipOnly"
     :task="task"
   >
     <template #title>
@@ -48,10 +51,7 @@ const props = defineProps({
       </div>
       <div v-else class="text-capital">{{ task.subject }}</div>
     </template>
-    <template
-      #side
-      v-if="(mini && typeof task.iteration == 'object') || task.complexity"
-    >
+    <template #side v-if="mini && typeof task.iteration == 'object'">
       <div>
         <q-badge v-if="mini && typeof task.iteration == 'object'" dense>{{
           task.iteration.name || task.iteration
@@ -60,6 +60,20 @@ const props = defineProps({
         <q-badge v-if="task.complexity" class="text-h6 on-right">{{
           task.complexity
         }}</q-badge>
+        <q-btn
+          v-else
+          dense
+          flat
+          icon="poll"
+          @click="
+            TheDialogs.emit({
+              type: 'voteForItemComplexity',
+              arg: { item: task },
+            })
+          "
+        >
+          <q-tooltip>Vote for Complexity</q-tooltip>
+        </q-btn>
       </div>
     </template>
     <template #details>
