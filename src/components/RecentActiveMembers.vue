@@ -29,7 +29,7 @@
       @click.prevent.stop="$emit('clickProfile', 'extra', profiles)"
       style="margin-left: -35px"
     >
-      <q-avatar size="32px">
+      <q-avatar :size="sizes || '32px'">
         <span class="absolute-center">+{{ extraProfiles }}</span>
         <img v-if="extra.avatar" :src="extra.avatar" />
       </q-avatar>

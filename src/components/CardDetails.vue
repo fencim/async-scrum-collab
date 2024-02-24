@@ -278,6 +278,7 @@ function viewItem(task: string | DiscussionItem) {
         Pending
         <recent-active-members
           sizes="xs"
+          :max-count="15"
           :profiles="membersPending"
           @click-profile="pendingClick"
         />
@@ -286,6 +287,7 @@ function viewItem(task: string | DiscussionItem) {
         Pending Votes
         <recent-active-members
           sizes="xs"
+          :max-count="15"
           :profiles="votesPending"
           @click-profile="pendingVoteClick"
         />
