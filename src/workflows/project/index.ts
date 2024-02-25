@@ -13,6 +13,8 @@ TheWorkflows.on({
 
 TheWorkflows.on({
   type: 'updateProject',
+  permissions: ['admin', 'moderator'],
+  loggable: 'operation',
   async cb(e) {
     const projectStore = useProjectStore();
     const result = await projectStore.saveProject(e.project, e.icon);
@@ -22,6 +24,8 @@ TheWorkflows.on({
 
 TheWorkflows.on({
   type: 'updateProjectSettings',
+  permissions: ['admin', 'moderator'],
+  loggable: 'operation',
   async cb(e) {
     const { project, settings, value, done } = e;
     const projectStore = useProjectStore();
@@ -29,6 +33,3 @@ TheWorkflows.on({
     done && result && done(result);
   },
 })
-
-
-

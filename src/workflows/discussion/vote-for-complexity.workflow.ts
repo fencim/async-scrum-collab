@@ -7,6 +7,8 @@ import { useActiveStore } from 'src/stores/active.store';
 
 TheWorkflows.on({
   type: 'voteForComplexity',
+  permissions: ['admin', 'moderator', 'member'],
+  loggable: 'operation',
   async cb(e) {
     const { item, vote, voter, done, error } = e;
     const convoStore = useConvoStore();

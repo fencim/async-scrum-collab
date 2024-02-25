@@ -7,6 +7,8 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 
 TheWorkflows.on({
   type: 'confirmDisagreement',
+  permissions: ['admin', 'moderator', 'member'],
+  loggable: 'operation',
   async cb(e) {
     const { item, message, done, error } = e;
     const convoStore = useConvoStore();

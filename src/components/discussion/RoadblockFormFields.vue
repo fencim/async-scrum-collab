@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { DiscussionItem, IGoal, IRoadBlock } from 'src/entities';
+import { DiscussionItem, IRoadBlock } from 'src/entities';
 import { onUpdated, ref } from 'vue';
 
 const props = defineProps<{

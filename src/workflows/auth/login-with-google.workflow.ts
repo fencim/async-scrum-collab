@@ -3,6 +3,7 @@ import { TheWorkflows } from '../the-workflows';
 
 TheWorkflows.on({
   type: 'loginWithGoogle',
+  loggable: 'post-operation',
   async cb(e) {
     const profileStore = useProfilesStore();
     try {

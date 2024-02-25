@@ -1,4 +1,3 @@
-import { logsResource } from 'src/resources/logs.resource';
 import { SynchronizerEventNames, SynchronizerRequestEvent } from './message.event';
 import './resource.registration';
 import resourceSynchronizer from './resource.synchronizer';
@@ -69,7 +68,7 @@ ctx.addEventListener('message', (event) => {
         );
         break;
       case 'setUserKey':
-        logsResource.userKey = message.data as string;
+
         break;
       default:
         break;

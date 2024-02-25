@@ -170,15 +170,20 @@ const discussionItems = computed(() => {
 });
 const topDiscussions = computed(() => {
   const max = $q.screen.gt.sm ? 5 : 4;
-  const list = [...discussionItems.value].sort((a, b) => {
-    if (a.key == activeItemKey.value) {
-      return -1;
-    } else if (b.key == activeItemKey.value) {
-      return 1;
-    }
-    return 0;
-  });
-  return list.slice(0, max);
+  const menu = [...discussionItems.value];
+  const index = menu.findIndex((a) => a.key == activeItemKey.value);
+  if (index >= max) {
+    const list = menu.sort((a, b) => {
+      if (a.key == activeItemKey.value) {
+        return -1;
+      } else if (b.key == activeItemKey.value) {
+        return 1;
+      }
+      return 0;
+    });
+    return list.slice(0, max);
+  }
+  return menu;
 });
 </script>
 <style></style>

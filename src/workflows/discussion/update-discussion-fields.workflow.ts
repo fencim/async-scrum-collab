@@ -4,6 +4,8 @@ import { entityKey } from 'src/entities/base.entity';
 
 TheWorkflows.on({
   type: 'updateDiscussionFields',
+  permissions: ['admin', 'moderator', 'member'],
+  loggable: 'operation',
   async cb(e) {
     const discussionStore = useDiscussionStore();
     const old = await discussionStore.getUpdated(e.payload.key);

@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-form @submit="submitDiscussion">
+    <q-form @submit="submitDiscussion()">
       <q-toolbar>
         <q-avatar>
           <img src="/icons/favicon-128x128.png" />

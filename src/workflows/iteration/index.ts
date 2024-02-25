@@ -6,6 +6,8 @@ import { date } from 'quasar';
 
 TheWorkflows.on({
   type: 'createIteration',
+  permissions: ['admin', 'moderator'],
+  loggable: 'operation',
   async cb(e) {
     const iterationStore = useIterationStore();
     const ceremonyStore = useCeremonyStore();
@@ -38,6 +40,8 @@ TheWorkflows.on({
 
 TheWorkflows.on({
   type: 'updateIteration',
+  permissions: ['admin', 'moderator'],
+  loggable: 'operation',
   async cb(e) {
     const iteration = e.iteration;
     await useIterationStore().saveIteration(iteration);

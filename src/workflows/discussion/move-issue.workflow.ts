@@ -15,6 +15,8 @@ function isColumnBeforeDone(column: IBoardColumn) {
 
 TheWorkflows.on({
   type: 'moveIssue',
+  permissions: ['admin', 'moderator', 'member'],
+  loggable: 'operation',
   async cb(e) {
     const activeStore = useActiveStore();
     const issueReadiness = activeStore.activeProject?.discussionReadiness || 0;

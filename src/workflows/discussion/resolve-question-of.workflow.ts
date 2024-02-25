@@ -6,6 +6,8 @@ import { entityKey } from 'src/entities/base.entity';
 
 TheWorkflows.on({
   type: 'resolveQuestionOf',
+  permissions: ['admin', 'moderator', 'member'],
+  loggable: 'operation',
   async cb(e) {
     const profileStore = useProfilesStore();
     const convoStore = useConvoStore();

@@ -6,6 +6,8 @@ import { IQuestion } from 'src/entities';
 
 TheWorkflows.on({
   type: 'askQuestion',
+  permissions: ['admin', 'moderator', 'member', 'guest'],
+  loggable: 'operation',
   async cb(e) {
     const { item, message, done, error } = e;
     const convoStore = useConvoStore();

@@ -6,7 +6,6 @@ import { useCeremonyStore } from './ceremonies.store';
 import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useActiveStore } from './active.store';
-import { logsResource } from 'src/resources/logs.resource';
 import { DeferredPromise } from 'src/resources/localbase';
 
 
@@ -89,38 +88,8 @@ export const useProjectStore = defineStore('projectStore', {
       await projectResource.updatePropertiesFrom(theProject.key, {
         [toBe]: destination,
         [from]: source
-      }, [toBe, from], (async info => {
-        if (info.status == 'synced') {
-          if (from == 'pending' && toBe == 'members') {
-            await logsResource.setData(
-              '', {
-              projectKey: theProject.key,
-              type: 'project-approve-membership',
-              newMember: destination[destination.length - 1],
-            })
-          } else if (toBe == 'guests') {
-            await logsResource.setData(
-              '', {
-              projectKey: theProject.key,
-              type: 'project-set-as-guest',
-              member: destination[destination.length - 1],
-            })
-          } else if (toBe == 'admins') {
-            await logsResource.setData(
-              '', {
-              projectKey: theProject.key,
-              type: 'project-set-as-admin',
-              member: destination[destination.length - 1]
-            })
-          } else if (toBe == 'moderators') {
-            await logsResource.setData(
-              '', {
-              projectKey: theProject.key,
-              type: 'project-set-as-moderator',
-              member: destination[destination.length - 1]
-            })
-          }
-        }
+      }, [toBe, from], (() => {
+        //
       })
       );
     },

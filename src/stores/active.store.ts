@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { IProfile, IProject } from 'src/entities';
+import { IProfile, IProject, MembershipType } from 'src/entities';
 import { useProfilesStore } from './profiles.store';
 
 interface IActiveState {
@@ -23,7 +23,11 @@ export const useActiveStore = defineStore('activeStore', {
       const profileStore = useProfilesStore();
       return !![...this.administrators, ... this.moderators].find(m => m.key == profileStore.theUser?.key);
     },
-    userRole(): string {
+    canOperateOnProject(): boolean {
+      const role = this.userRole;
+      return (['admin', 'moderator', 'member'] as MembershipType[]).includes(role);
+    },
+    userRole(): MembershipType {
       const profileStore = useProfilesStore();
       if (this.administrators.find(m => m.key == profileStore.theUser?.key)) {
         return 'admin'

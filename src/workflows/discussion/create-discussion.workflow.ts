@@ -5,6 +5,8 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 
 TheWorkflows.on({
   type: 'createDiscussion',
+  permissions: ['admin', 'moderator', 'member'],
+  loggable: 'operation',
   async cb(e) {
     const { item, iterationKey, projectKey, refItem, done, error } = e;
     const discussionStore = useDiscussionStore();
