@@ -51,6 +51,13 @@ export type Discussion =
     done?: (message: IQuestion) => void
     error?: (error: unknown) => void;
   }>
+  | Struct<'sendMessage', {
+    discussion: string,
+    iteration: string,
+    message: string,
+    done?: (message: Convo) => void
+    error?: (error: unknown) => void;
+  }>
   | Struct<'replyToMessage', {
     item: DiscussionItem,
     message: string,

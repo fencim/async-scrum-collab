@@ -15,20 +15,18 @@ TheWorkflows.on({
     const discussionStore = useDiscussionStore();
     const activeStore = useActiveStore();
 
-    if (activeStore.canUserModerate) {
+    if (activeStore.canUserModerate && !item.complexity) {
       item.complexity = Number(vote);
       await discussionStore.updateDiscussion(item.key, ['complexity'], item);
       if (item.iteration) {
-        await convoStore.sendMessage(
-          item.projectKey,
-          entityKey(item.iteration),
-          item.key,
-          voter,
-          {
-            type: 'message',
-            message: 'As moderator, I\'m overriding complexity of this ticket to ' + vote,
+        await TheWorkflows.emitPromised({
+          type: 'sendMessage',
+          arg: {
+            discussion: item.key,
+            iteration: entityKey(item.iteration),
+            message: 'As moderator, I\'m overriding voting for this ticket to ' + vote
           }
-        );
+        })
       }
       done && done(item);
       return;

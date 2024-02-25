@@ -96,6 +96,7 @@ import { convoBus } from './convo-bus';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { entityKey } from 'src/entities/base.entity';
 
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
@@ -196,14 +197,15 @@ async function sendMessage() {
         },
       },
     });
-  } else {
-    convoStore.sendMessage(
-      activeProject.value,
-      activeIteration.value,
-      activeItem.value || activeCeremony.value,
-      profileStore.presentUser?.key || '',
-      { type: 'message', message: message.value }
-    );
+  } else if (message.value) {
+    await TheWorkflows.emitPromised({
+      type: 'sendMessage',
+      arg: {
+        discussion: activeItem.value || activeCeremony.value,
+        iteration: activeIteration.value,
+        message: message.value,
+      },
+    });
   }
   message.value = '';
   convoBus.emit('progressed');

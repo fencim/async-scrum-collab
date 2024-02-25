@@ -9,7 +9,6 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 TheWorkflows.on({
   type: 'assessDiscussion',
   permissions: ['admin', 'moderator', 'member'],
-  loggable: 'operation',
   async cb(e) {
     const discussionStore = useDiscussionStore();
     const convoStore = useConvoStore();

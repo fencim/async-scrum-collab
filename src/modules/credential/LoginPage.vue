@@ -32,7 +32,7 @@
           />
           <div class="text-center">Or</div>
           <q-btn
-            :loading="action == LoginAction.goolgle"
+            :loading="action == LoginAction.google"
             :disable="action != LoginAction.none"
             @click="withGoogle"
             label="Login with Gooogle"
@@ -61,7 +61,6 @@
 <script lang="ts" setup>
 import { FirebaseError } from 'firebase/app';
 import { useQuasar } from 'quasar';
-import { useProfilesStore } from 'src/stores/profiles.store';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -69,20 +68,24 @@ import { useRouter } from 'vue-router';
 enum LoginAction {
   none,
   userAndPassword,
-  goolgle,
+  google,
   signUp,
 }
+const $q = useQuasar();
+const $router = useRouter();
 const email = ref('');
 const password = ref('');
 const action = ref(LoginAction.none);
-
 async function signIn() {
-  const profileStore = useProfilesStore();
-  const $q = useQuasar();
-  const $router = useRouter();
   try {
     action.value = LoginAction.userAndPassword;
-    await profileStore.signIn(email.value, password.value);
+    await TheWorkflows.emitPromised({
+      type: 'login',
+      arg: {
+        username: email.value,
+        password: password.value,
+      },
+    });
     $q.notify({
       message: 'Successfully signed',
     });
@@ -95,10 +98,9 @@ async function signIn() {
     });
   }
 }
-const $q = useQuasar();
-const $router = useRouter();
+
 async function withGoogle() {
-  action.value = LoginAction.goolgle;
+  action.value = LoginAction.google;
   TheWorkflows.emit({
     type: 'loginWithGoogle',
     arg: {

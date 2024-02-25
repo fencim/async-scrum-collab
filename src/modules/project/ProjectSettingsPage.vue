@@ -673,22 +673,26 @@ export default defineComponent({
       this.resetSelected();
     },
     async disableProject() {
-      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.updateSettings(
-        activeStore.activeProject.key,
-        'status',
-        'disabled'
-      );
+      TheWorkflows.emit({
+        type: 'updateProjectSettings',
+        arg: {
+          project: activeStore.activeProject,
+          settings: 'status',
+          value: 'disabled',
+        },
+      });
     },
     async closeProject() {
-      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.updateSettings(
-        activeStore.activeProject.key,
-        'status',
-        'closed'
-      );
+      TheWorkflows.emit({
+        type: 'updateProjectSettings',
+        arg: {
+          project: activeStore.activeProject,
+          settings: 'status',
+          value: 'closed',
+        },
+      });
     },
     async activateProject() {
       if (!this.activeStore.canUserModerate) return;
@@ -701,11 +705,6 @@ export default defineComponent({
           value: 'active',
         },
       });
-      await projectStore.updateSettings(
-        activeStore.activeProject.key,
-        'status',
-        'active'
-      );
     },
     createNewCol() {
       this.editingCol = this.newBoardCol;

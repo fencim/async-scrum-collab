@@ -1,7 +1,5 @@
 import { ILoggable } from 'src/entities';
-import { firebaseService } from '../services/firebase.service';
 import { CbResponse } from './base.resource';
-import { Filters, Entity } from './localbase/state-db.controller';
 import { FbBaseResource } from './fb-base.resource';
 
 class LogResource extends FbBaseResource<ILoggable> {
@@ -16,9 +14,6 @@ class LogResource extends FbBaseResource<ILoggable> {
   protected async deleteAllCb(): Promise<boolean | void> {
     return true;
   }
-  protected async getAllCb(filters?: Filters<Entity> | undefined): Promise<void | ILoggable[]> {
-    return await firebaseService.findAll('logs', filters as { [field: string]: string }) as ILoggable[];
-  }
   protected async updateCb(): Promise<boolean | void | ILoggable> {
     throw 'Not Implemented';
   }
@@ -26,7 +21,7 @@ class LogResource extends FbBaseResource<ILoggable> {
     throw 'Not Implemented';
   }
   constructor() {
-    super('log')
+    super('logs')
   }
 }
 export const logResource = new LogResource();

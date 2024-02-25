@@ -8,3 +8,4 @@ import './confirm-disagreement.workflow';
 import './ask-question.workflow';
 import './reply-to-message.workflow';
 import './update-discussion-fields.workflow';
+import './send-message.workflow';

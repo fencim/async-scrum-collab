@@ -8,8 +8,10 @@ TheWorkflows.on({
     const profileStore = useProfilesStore();
     try {
       await profileStore.signInWithGoogle();
-      profileStore.getUserAsync();
-      e.done && e.done();
+      const user = await profileStore.getUserAsync();
+      e.done && e.done({
+        username: user?.email || 'user'
+      });
     } catch (error) {
       e.error && e.error(e as Error);
     }
