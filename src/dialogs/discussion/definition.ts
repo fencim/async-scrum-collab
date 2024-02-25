@@ -35,3 +35,8 @@ export type Discussions =
     done?: (item: DiscussionItem) => void
     error?: ErrorCallback;
   }>
+  | Struct<'playSprintPresentation', {
+    iteration: IIteration,
+    done?: VoidCallback;
+    error?: ErrorCallback;
+  }>;

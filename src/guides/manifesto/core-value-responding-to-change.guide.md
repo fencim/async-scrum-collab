@@ -1,0 +1,3 @@
+An important benefit of the agile methodology is that it encourages frequent reviewing and retooling of current plans based on new information that the team is continually gathering and analyzing. The product roadmap, then, is no longer a static document, but a dynamic strategy. Product managers in agile environments will need to learn to present their dynamic roadmaps to stakeholders in a transparent manner that reflects the likelihood of change based on new learnings.
+
+In other words, the agile methodology lets a product team adjust its priorities and plans whenever doing so makes strategic sense. These teams do not get stuck in an outdated plan simply because they have committed to seeing it through.

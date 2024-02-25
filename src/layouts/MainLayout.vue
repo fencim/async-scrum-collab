@@ -42,6 +42,7 @@
       <ScrumGuideDialog />
       <VoteForComplexityDialog />
       <AgreeOnItemReadinessDialog />
+      <SprintPresentationDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -58,6 +59,7 @@ import ProjectFormDialog from 'src/dialogs/project/ProjectFormDialog.vue';
 import ScrumGuideDialog from 'src/dialogs/guide/ScrumGuideDialog.vue';
 import VoteForComplexityDialog from 'src/dialogs/discussion/VoteForComplexityDialog.vue';
 import AgreeOnItemReadinessDialog from 'src/dialogs/discussion/AgreeOnItemReadinessDialog.vue';
+import SprintPresentationDialog from 'src/dialogs/discussion/SprintPresentationDialog.vue';
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);

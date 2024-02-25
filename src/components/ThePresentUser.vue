@@ -10,7 +10,20 @@
     <q-menu>
       <div class="row no-wrap q-pa-md">
         <div class="column">
-          <div class="text-h6 q-mb-md">Settings</div>
+          <div class="text-h6 q-mb-md">Guide</div>
+          <q-btn
+            round
+            size="lg"
+            icon="help"
+            @click="
+              TheDialogs.emit({
+                type: 'scrumGuide',
+                arg: {
+                  keyword: '',
+                },
+              })
+            "
+          />
         </div>
 
         <q-separator vertical inset class="q-mx-lg" />
@@ -43,6 +56,7 @@
 </template>
 
 <script lang="ts">
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { defineComponent } from 'vue';
 const profileStore = useProfilesStore();
@@ -51,6 +65,7 @@ export default defineComponent({
   components: {},
   data() {
     return {
+      TheDialogs,
       profile: profileStore,
     };
   },

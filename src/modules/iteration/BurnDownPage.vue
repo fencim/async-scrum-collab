@@ -22,6 +22,9 @@ const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
 const profileStore = useProfilesStore();
 const activeStore = useActiveStore();
+defineProps<{
+  preview?: boolean;
+}>();
 onMounted(async () => {
   const project = activeStore.activeProject;
   if (project) {
@@ -340,7 +343,7 @@ function describeDiscussion(item: DiscussionItem | string): string {
       :loading="loading"
     />
   </div>
-  <div class="row q-px-xl">
+  <div class="row q-px-xl" v-if="!preview && $q.screen.gt.sm">
     <div
       class="col row q-px-xs"
       v-for="workday in ['unmapped', ...workDays]"
@@ -425,7 +428,7 @@ function describeDiscussion(item: DiscussionItem | string): string {
     </div>
   </div>
 
-  <div class="row q-px-xl">
+  <div class="row q-px-xl" v-if="!preview && $q.screen.gt.sm">
     <div class="col-12 text-title">
       Actual
       <q-separator />

@@ -213,6 +213,13 @@ export default defineComponent({
         discussion
       ) {
         this.agreeOnItem();
+      } else if (action.key == 'presentation' && this.iteration) {
+        TheDialogs.emit({
+          type: 'playSprintPresentation',
+          arg: {
+            iteration: this.iteration,
+          },
+        });
       } else {
         convoBus.emit(action.key);
       }
