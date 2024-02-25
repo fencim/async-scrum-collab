@@ -58,8 +58,7 @@ export const useProjectStore = defineStore('projectStore', {
         this.activeProject = undefined;
       }
     },
-    async setProjectMember(project: IProject, profiles: IProfile[], tobe: MembershipType, from: MembershipType) {
-
+    async setProjectMember(project: IProject, profiles: IProfile[], toBe: MembershipType, from: MembershipType) {
       const theProject = (await projectResource.findOne({ key: project.key })) || project;
       const getCollection = (membershipType: MembershipType) => {
         switch (membershipType) {
@@ -77,41 +76,43 @@ export const useProjectStore = defineStore('projectStore', {
         }
       }
       const source = getCollection(from);
-      const destination = getCollection(tobe);
+      const destination = getCollection(toBe);
       profiles.forEach(profile => {
         const sourceIndex = source.findIndex(p => profile.key == p);
         if (sourceIndex >= 0) {
-          source.splice(sourceIndex, 1);
+          if (from !== 'admins') {
+            source.splice(sourceIndex, 1);
+          }
           destination.push(profile.key);
         }
       })
       await projectResource.updatePropertiesFrom(theProject.key, {
-        [tobe]: destination,
+        [toBe]: destination,
         [from]: source
-      }, [tobe, from], (async info => {
+      }, [toBe, from], (async info => {
         if (info.status == 'synced') {
-          if (from == 'pending' && tobe == 'members') {
+          if (from == 'pending' && toBe == 'members') {
             await logsResource.setData(
               '', {
               projectKey: theProject.key,
               type: 'project-approve-membership',
               newMember: destination[destination.length - 1],
             })
-          } else if (tobe == 'guests') {
+          } else if (toBe == 'guests') {
             await logsResource.setData(
               '', {
               projectKey: theProject.key,
               type: 'project-set-as-guest',
               member: destination[destination.length - 1],
             })
-          } else if (tobe == 'admins') {
+          } else if (toBe == 'admins') {
             await logsResource.setData(
               '', {
               projectKey: theProject.key,
               type: 'project-set-as-admin',
               member: destination[destination.length - 1]
             })
-          } else if (tobe == 'moderators') {
+          } else if (toBe == 'moderators') {
             await logsResource.setData(
               '', {
               projectKey: theProject.key,
@@ -124,6 +125,7 @@ export const useProjectStore = defineStore('projectStore', {
       );
     },
     async saveProject(newProject: IProject, icon?: File) {
+
       const iconURL = await (new Promise<string | undefined>((resolve) => {
         if (icon) {
           resolve(firebaseService.uploadImage(icon, {

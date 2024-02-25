@@ -10,12 +10,14 @@
         >
         <q-card-section>
           <recent-active-members
+            :max-count="15"
             :profiles="activeStore.administrators"
             @click-profile="selectAdmin"
           />
         </q-card-section>
         <q-card-section v-if="selectedAdmins.length" class="bg-primary">
           <recent-active-members
+            :max-count="15"
             :profiles="selectedAdmins"
             @click-profile="unSelectAdmin"
           />
@@ -31,12 +33,14 @@
         >
         <q-card-section>
           <recent-active-members
+            :max-count="15"
             :profiles="activeStore.moderators"
             @click-profile="selectModerator"
           />
         </q-card-section>
         <q-card-section v-if="selectedModerators.length" class="bg-primary">
           <recent-active-members
+            :max-count="15"
             :profiles="selectedModerators"
             @click-profile="unSelectModerator"
           />
@@ -53,12 +57,14 @@
         <q-card-section>
           <recent-active-members
             :profiles="pending"
+            :max-count="15"
             @click-profile="selectPending"
           />
         </q-card-section>
         <q-card-section v-if="selectedPending.length" class="bg-primary">
           <recent-active-members
             :profiles="selectedPending"
+            :max-count="15"
             @click-profile="unSelectPending"
           />
         </q-card-section>
@@ -74,12 +80,14 @@
         <q-card-section>
           <recent-active-members
             :profiles="activeStore.activeMembers"
+            :max-count="15"
             @click-profile="selectMember"
           />
         </q-card-section>
         <q-card-section v-if="selectedMembers.length" class="bg-primary">
           <recent-active-members
             :profiles="selectedMembers"
+            :max-count="15"
             @click-profile="unSelectMember"
           />
         </q-card-section>
@@ -94,6 +102,7 @@
         >
         <q-card-section>
           <recent-active-members
+            :max-count="15"
             :profiles="activeStore.guests"
             @click-profile="selectGuest"
           />
@@ -101,6 +110,7 @@
         <q-card-section v-if="selectedGuests.length" class="bg-primary">
           <recent-active-members
             :profiles="selectedGuests"
+            :max-count="15"
             @click-profile="unSelectGuest"
           />
         </q-card-section>
@@ -481,6 +491,7 @@ export default defineComponent({
       this.selectedMembers = [];
     },
     selectAdmin(profile: IProfile) {
+      if (this.activeStore.canUserModerate) return;
       if (!this.selectedAdmins.find((m) => m.key == profile.key)) {
         this.selectedAdmins.push(profile);
       }
@@ -492,6 +503,7 @@ export default defineComponent({
       }
     },
     selectModerator(profile: IProfile) {
+      if (this.activeStore.canUserModerate) return;
       if (!this.selectedModerators.find((m) => m.key == profile.key)) {
         this.selectedModerators.push(profile);
       }
@@ -505,6 +517,7 @@ export default defineComponent({
       }
     },
     selectPending(profile: IProfile) {
+      if (this.activeStore.canUserModerate) return;
       if (!this.selectedPending.find((m) => m.key == profile.key)) {
         this.selectedPending.push(profile);
       }
@@ -516,6 +529,7 @@ export default defineComponent({
       }
     },
     selectMember(profile: IProfile) {
+      if (this.activeStore.canUserModerate) return;
       if (!this.selectedMembers.find((m) => m.key == profile.key)) {
         this.selectedMembers.push(profile);
       }
@@ -527,6 +541,7 @@ export default defineComponent({
       }
     },
     selectGuest(profile: IProfile) {
+      if (this.activeStore.canUserModerate) return;
       if (!this.selectedGuests.find((m) => m.key == profile.key)) {
         this.selectedGuests.push(profile);
       }
@@ -727,7 +742,7 @@ export default defineComponent({
       }
     },
     async saveProject() {
-      if (!activeStore.activeProject) return;
+      if (!activeStore.activeProject || !activeStore.canUserModerate) return;
       this.saving = true;
       if (!this.columnsSaved) {
         //save taskboard columns
