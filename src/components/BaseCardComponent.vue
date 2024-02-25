@@ -7,6 +7,7 @@ import { useActiveStore } from 'src/stores/active.store';
 import { date } from 'quasar';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { TheWorkflows } from 'src/workflows/the-workflows';
+import TaskComplexityComp from 'src/modules/task-board/cards/TaskComplexityComp.vue';
 const activeStore = useActiveStore();
 defineProps({
   mini: Boolean,
@@ -31,17 +32,27 @@ const showDetails = ref(false);
     >
       {{ formatKey(task.key || 'KEY') }}
     </q-btn>
-    <div v-if="headerOnly" class="self-center">
+    <div
+      v-if="headerOnly"
+      class="self-center ellipsis"
+      style="max-width: 200px"
+    >
       <slot name="title" />
+      <q-tooltip>
+        <slot name="title" />
+      </q-tooltip>
     </div>
     <q-space />
     <q-badge
       floating
       rounded
-      v-if="headerOnly && !chipOnly && typeof task.iteration == 'object'"
+      v-if="
+        headerOnly && !chipOnly && !mini && typeof task.iteration == 'object'
+      "
       dense
       >{{ task.iteration.name || task.iteration }}</q-badge
     >
+    <task-complexity-comp v-else-if="mini" :task="task" />
     <q-badge
       class="q-mr-xs self-center"
       v-if="task.doneDate && !chipOnly"
@@ -56,13 +67,14 @@ const showDetails = ref(false);
     <recent-active-members
       v-if="typeof task.assignedTo == 'object'"
       :profiles="[task.assignedTo]"
+      :max-count="15"
       sizes="sm"
     />
     <q-btn-dropdown
       v-else
       dense
       rounded
-      content-class="bg-transparent no-shadow"
+      content-class="bg-dark no-shadow"
       no-icon-animation
       dropdown-icon="person"
       size="sm"
@@ -70,6 +82,7 @@ const showDetails = ref(false);
       <RecentActiveMembers
         sizes="xs"
         v-close-popup
+        :max-count="15"
         :profiles="activeStore.activeMembers"
         @click-profile="
           (p) =>

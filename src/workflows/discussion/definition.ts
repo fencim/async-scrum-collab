@@ -16,7 +16,8 @@ export type Discussion =
   | Struct<'assignTask', {
     issue: DiscussionItem,
     profile: IProfile,
-    done?: (issue: DiscussionItem) => void
+    done?: (issue: DiscussionItem) => void;
+    error?: ErrorCallback;
   }>
   | Struct<'createDiscussion', {
     item: DiscussionItem,
@@ -24,6 +25,7 @@ export type Discussion =
     projectKey: string;
     iterationKey: string;
     done?: (item: DiscussionItem) => void
+    error?: ErrorCallback;
   }>
   | Struct<'assessDiscussion', {
     item: DiscussionItem,

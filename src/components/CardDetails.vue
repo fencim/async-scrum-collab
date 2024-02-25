@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { date } from 'quasar';
 import {
   DiscussionItem,
   IQuestion,
@@ -21,6 +20,8 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 import DueDateChipComp from 'src/modules/task-board/cards/DueDateChipComp.vue';
 import { discussionDetailsTabs } from './discussion/details';
 import { discussionDetailsSections } from './discussion/sections';
+import TaskComplexityComp from 'src/modules/task-board/cards/TaskComplexityComp.vue';
+import CompletedDateChipComp from 'src/modules/task-board/cards/CompletedDateChipComp.vue';
 const props = defineProps({
   item: {
     required: true,
@@ -43,34 +44,30 @@ onMounted(async () => {
   }
 });
 
+const activeStore = useActiveStore();
 const membersAgreed = computed(() => {
-  const activeStore = useActiveStore();
   const awareness = props.item.awareness || {};
   return activeStore.activeMembers.filter((m) => awareness[m.key] == 'agree');
 });
 const membersDisagreed = computed(() => {
-  const activeStore = useActiveStore();
   const awareness = props.item.awareness || {};
   return activeStore.activeMembers.filter(
     (m) => awareness[m.key] == 'disagree'
   );
 });
 const membersPending = computed(() => {
-  const activeStore = useActiveStore();
   const awareness = props.item.awareness || {};
   const awareMembers = Object.keys(awareness);
   return activeStore.activeMembers.filter((m) => !awareMembers.includes(m.key));
 });
 
 const votesPending = computed(() => {
-  const activeStore = useActiveStore();
   const votes = convos.value.filter((c) => c.type == 'vote') as IVote[];
   return activeStore.activeMembers.filter(
     (m) => !votes.find((v) => entityKey(v.from) == m.key)
   );
 });
 const membersVoted = computed(() => {
-  const activeStore = useActiveStore();
   const voted = [
     ...new Set(
       (convos.value.filter((c) => c.type == 'vote') as IVote[])
@@ -92,7 +89,6 @@ const unResolvedQuestions = computed(() => {
   ) as IQuestion[];
 });
 const activeProjectKey = computed<string>(() => {
-  const activeStore = useActiveStore();
   return activeStore.activeProject?.key || '';
 });
 const activeIterationKey = computed(() => {
@@ -110,7 +106,6 @@ const activeCeremonyKey = computed<string>(() => {
   return activeIterationKey.value + 'planning';
 });
 const progressReport = computed<IProgressFeedback[]>(() => {
-  const activeStore = useActiveStore();
   const discussionStore = useDiscussionStore();
   if (activeStore.activeProject) {
     return discussionStore.checkCompleteness(
@@ -179,6 +174,21 @@ function viewItem(task: string | DiscussionItem) {
     });
   }
 }
+
+function describeDiscussion(item: DiscussionItem | string): string {
+  const discussionStore = useDiscussionStore();
+  if (typeof item == 'object') {
+    return (
+      '[' +
+      formatKey(item.key) +
+      '] ' +
+      discussionStore.describeDiscussion(item)
+    );
+  } else {
+    const disc = discussionStore.discussions.find((d) => d.key == item);
+    return (disc && describeDiscussion(disc)) || 'Unknown Roadblock';
+  }
+}
 </script>
 <template>
   <q-card :style="{ width: $q.screen.sizes.md + 'px' }">
@@ -189,7 +199,9 @@ function viewItem(task: string | DiscussionItem) {
         icon-right="chevron_left"
         @click="viewItem(task.parent)"
         >{{ formatKey(entityKey(task.parent) || 'KEY')
-        }}<q-tooltip>View Parent</q-tooltip>
+        }}<q-tooltip
+          >View Parent: {{ describeDiscussion(task.parent) }}</q-tooltip
+        >
       </q-btn>
       <q-toolbar-title class="bg-grey rounded-borders">
         <q-chip icon="description"> {{ formatKey(task.key || 'KEY') }}</q-chip>
@@ -249,9 +261,8 @@ function viewItem(task: string | DiscussionItem) {
           task.iteration.name || task.iteration
         }}</q-badge>
         <q-space />
-        <q-badge v-if="task.complexity" class="text-h6 on-right">{{
-          task.complexity
-        }}</q-badge>
+        <task-complexity-comp :task="task" />
+        <completed-date-chip-comp :task="task" />
       </q-card-section>
     </q-card-section>
     <template v-for="section in discussionDetailsSections" :key="section.type">

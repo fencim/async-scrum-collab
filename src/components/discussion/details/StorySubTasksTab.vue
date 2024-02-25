@@ -18,6 +18,7 @@
 </template>
 <script lang="ts" setup>
 import { TechnicalTask, IStory, DiscussionItem } from 'src/entities';
+import { entityKey } from 'src/entities/base.entity';
 import { getComponent } from 'src/modules/task-board/card-components';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { computed, ref } from 'vue';
@@ -30,13 +31,9 @@ const subTasks = computed(() => {
   const discussionStore = useDiscussionStore();
   const story = task.value;
   if (story.type == 'story') {
-    const listKeys = (story.tasks || []).filter(
-      (t) => typeof t == 'string'
-    ) as string[];
-    const listTasks = (story.tasks || []).filter(
-      (t) => typeof t == 'object'
+    return discussionStore.discussions.filter(
+      (d) => d.type == 'task' && d.parent && entityKey(d.parent) == story.key
     ) as TechnicalTask[];
-    return [...listTasks, ...discussionStore.fromList(listKeys)];
   }
   return [];
 });

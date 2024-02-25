@@ -37,7 +37,7 @@
         />
       </q-card-section>
       <q-card-section
-        v-if="PlanningTypes.includes(theDiscussion.type as PlanningItem['type']) && !refItem"
+        v-if="PlanningTypes.includes(theDiscussion.type as PlanningItem['type'])"
         class="row"
       >
         <q-select
@@ -91,6 +91,9 @@
       </q-card-section>
       <q-card-actions :align="'right'">
         <q-btn icon="close" v-close-popup>Cancel</q-btn>
+        <q-btn icon="save" :loading="saving" @click="submitDiscussion(true)"
+          >Save++</q-btn
+        >
         <q-btn icon="save" :loading="saving" type="submit">Save</q-btn>
       </q-card-actions>
     </q-form>
@@ -137,7 +140,7 @@ const props = defineProps<{
   refItem?: DiscussionItem;
   assignedTo?: string;
 }>();
-const $emit = defineEmits(['closeForm']);
+const $emit = defineEmits(['closeForm', 'createAnother']);
 
 const activeProjectKey = ref('AA1');
 const activeProject = ref<IProject | undefined>();
@@ -211,7 +214,7 @@ const discussions = computed(() => {
   return discussionStore.discussions;
 });
 
-async function submitDiscussion() {
+async function submitDiscussion(createAnother?: boolean) {
   saving.value = true;
   if (!props.item || !theDiscussion.value.key) {
     let counter = discussions.value.length;
@@ -237,7 +240,11 @@ async function submitDiscussion() {
         projectKey: activeProjectKey.value,
         done(item) {
           saving.value = false;
-          $emit('closeForm', item);
+          if (createAnother) {
+            $emit('createAnother', item);
+          } else {
+            $emit('closeForm', item);
+          }
         },
       },
     });

@@ -3,6 +3,7 @@ import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
 import { IVote } from 'src/entities';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { useActiveStore } from 'src/stores/active.store';
 
 TheWorkflows.on({
   type: 'voteForComplexity',
@@ -10,6 +11,26 @@ TheWorkflows.on({
     const { item, vote, voter, done, error } = e;
     const convoStore = useConvoStore();
     const discussionStore = useDiscussionStore();
+    const activeStore = useActiveStore();
+
+    if (activeStore.canUserModerate) {
+      item.complexity = Number(vote);
+      await discussionStore.updateDiscussion(item.key, ['complexity'], item);
+      if (item.iteration) {
+        await convoStore.sendMessage(
+          item.projectKey,
+          entityKey(item.iteration),
+          item.key,
+          voter,
+          {
+            type: 'message',
+            message: 'As moderator, I\'m overriding complexity of this ticket to ' + vote,
+          }
+        );
+      }
+      done && done(item);
+      return;
+    }
     if (item && item.iteration) {
       await convoStore.sendMessage(
         item.projectKey,

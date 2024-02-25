@@ -281,6 +281,20 @@ function updateDueDate(d: string, task: DiscussionItem) {
     },
   });
 }
+function describeDiscussion(item: DiscussionItem | string): string {
+  const discussionStore = useDiscussionStore();
+  if (typeof item == 'object') {
+    return (
+      '[' +
+      formatKey(item.key) +
+      '] ' +
+      discussionStore.describeDiscussion(item)
+    );
+  } else {
+    const disc = discussionStore.discussions.find((d) => d.key == item);
+    return (disc && describeDiscussion(disc)) || 'Unknown Roadblock';
+  }
+}
 </script>
 <template>
   <div class="row">
@@ -369,8 +383,9 @@ function updateDueDate(d: string, task: DiscussionItem) {
             <span
               @click="TheDialogs.emit({ type: 'viewTask', arg: element })"
               class="cursor-pointer"
-              >{{ formatKey(element.key) }}</span
-            >
+              >{{ formatKey(element.key) }}
+              <q-tooltip>{{ describeDiscussion(element) }}</q-tooltip>
+            </span>
             <q-space />
             <recent-active-members
               sizes="xs"
@@ -423,11 +438,12 @@ function updateDueDate(d: string, task: DiscussionItem) {
         :key="task.key"
         dense
         :color="!task.dueDate || date.getDateDiff(task.dueDate!, task.doneDate!, 'days') >=0 ? 'primary': 'negative'"
-        class="col-12"
+        class="col-12 self-start"
         clickable
         @click="TheDialogs.emit({ type: 'viewTask', arg: task })"
-        >{{ formatKey(task.key) }}<q-space />{{ task.complexity }}</q-chip
-      >
+        >{{ formatKey(task.key) }}<q-space />{{ task.complexity }}
+        <q-tooltip>{{ describeDiscussion(task) }}</q-tooltip>
+      </q-chip>
     </div>
   </div>
 </template>

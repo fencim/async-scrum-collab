@@ -77,6 +77,12 @@ function onClose(item: DiscussionItem) {
   doneCb.value && doneCb.value(item);
   showTopSheet.value = false;
 }
+function createAnother(item: DiscussionItem) {
+  onClose(item);
+  setTimeout(() => {
+    showTopSheet.value = true;
+  });
+}
 TheDialogs.on({
   type: 'newTask',
   cb: async (e) => {
@@ -112,6 +118,7 @@ TheDialogs.on({
       :item="newTaskPreFields.item"
       :assigned-to="newTaskPreFields.assignedTo"
       @close-form="(d) => onClose(d)"
+      @create-another="createAnother"
     />
   </q-dialog>
 </template>

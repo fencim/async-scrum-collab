@@ -19,11 +19,36 @@ export const useActiveStore = defineStore('activeStore', {
     guests: []
   } as IActiveState),
   getters: {
+    canUserModerate(): boolean {
+      const profileStore = useProfilesStore();
+      return !![...this.administrators, ... this.moderators].find(m => m.key == profileStore.theUser?.key);
+    },
+    userRole(): string {
+      const profileStore = useProfilesStore();
+      if (this.administrators.find(m => m.key == profileStore.theUser?.key)) {
+        return 'admin'
+      } else if (this.moderators.find(m => m.key == profileStore.theUser?.key)) {
+        return 'moderator';
+      } else if (this.moderators.find(m => m.key == profileStore.theUser?.key)) {
+        return 'moderator';
+      } else if (this.pendingMembers.find(m => m.key == profileStore.theUser?.key)) {
+        return 'pending';
+      } else if (this.guests.find(m => m.key == profileStore.theUser?.key)) {
+        return 'guest';
+      } else {
+        return 'anonymous'
+      }
+    }
   },
   actions: {
     async selectProject(project: IProject) {
       const profileStore = useProfilesStore();
       this.activeProject = project;
+      this.activeMembers = [];
+      this.administrators = [];
+      this.moderators = [];
+      this.pendingMembers = [];
+      this.guests = [];
       this.activeMembers = await profileStore.selectProjectMembers(project.members);
       this.administrators = await profileStore.selectProjectMembers(project.admins);
       this.moderators = await profileStore.selectProjectMembers(project.moderators);

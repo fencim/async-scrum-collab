@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import draggable from 'vuedraggable';
-import { PropType } from 'vue';
+import { PropType, ref, computed } from 'vue';
 import { getComponent } from './card-components';
 import {
   DiscussionItem,
@@ -9,7 +9,8 @@ import {
   PlanningItem,
 } from 'src/entities';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
-defineProps({
+import { useDiscussionStore } from 'src/stores/discussions.store';
+const props = defineProps({
   column: {
     required: true,
     type: Object as PropType<ISprintBoardColumn>,
@@ -28,6 +29,14 @@ const emit = defineEmits<{
     iterationKey: string
   ): void;
 }>();
+const keyword = ref('');
+const filteredList = computed(() => {
+  if (!keyword.value) return props.column.tasks;
+  const discussionStore = useDiscussionStore();
+  return props.column.tasks.filter((t) =>
+    new RegExp(keyword.value, 'i').test(discussionStore.describeDiscussion(t))
+  );
+});
 async function changeOnColumn(
   column: ISprintBoardColumn,
   change: {
@@ -46,7 +55,7 @@ async function changeOnColumn(
 <template>
   <draggable
     class="col kanban-task-list dragArea list-group full-height"
-    :list="column.tasks"
+    :list="filteredList"
     group="tasks"
     item-key="key"
     @change="(e) => changeOnColumn(column, e, iteration.key)"
@@ -54,7 +63,7 @@ async function changeOnColumn(
     <template #header>
       <div class="row">
         <q-btn
-          class="col q-ma-sm"
+          class="col-12 q-mx-sm"
           :icon="column.icon"
           :color="column.color || 'accent'"
           :style="{ 'background-color': column.color }"
@@ -69,6 +78,12 @@ async function changeOnColumn(
           "
           >{{ column.name }}</q-btn
         >
+        <q-input
+          class="col-12 q-mx-sm"
+          dense
+          label="Keyword"
+          v-model="keyword"
+        />
       </div>
     </template>
     <template #item="{ element }">

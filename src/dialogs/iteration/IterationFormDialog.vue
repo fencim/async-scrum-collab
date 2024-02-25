@@ -98,7 +98,7 @@ const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6].map((day) => {
 });
 function futureOnly(d: string) {
   const dateRef = new Date();
-  dateRef.setDate(dateRef.getDate() - dateRef.getDay());
+  dateRef.setDate(dateRef.getDate() - dateRef.getDay() - 30);
   const start = date.formatDate(dateRef, 'YYYY/MM/DD');
   return d >= start;
 }

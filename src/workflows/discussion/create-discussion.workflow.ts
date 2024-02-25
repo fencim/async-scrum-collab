@@ -6,7 +6,7 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 TheWorkflows.on({
   type: 'createDiscussion',
   async cb(e) {
-    const { item, iterationKey, projectKey, refItem, done } = e;
+    const { item, iterationKey, projectKey, refItem, done, error } = e;
     const discussionStore = useDiscussionStore();
     const discussions = discussionStore.discussions;
     let counter = discussions.length;
@@ -29,17 +29,17 @@ TheWorkflows.on({
         arg: {
           issue: result,
           profile: theUser,
-          done
+          done,
+          error
         }
       })
     } else {
+      done && done(result);
       TheWorkflows.emit({
         type: 'assessDiscussion',
         arg: {
           item: result,
-          done() {
-            done && done(result);
-          },
+          error
         }
       })
     }

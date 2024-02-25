@@ -112,6 +112,7 @@ import { useRoute } from 'vue-router';
 import { entityKey } from 'src/entities/base.entity';
 import { useQuasar } from 'quasar';
 import { getComponent } from '../task-board/card-components';
+import { useRouter } from 'vue-router';
 
 const projectStore = useProjectStore();
 const ceremonyStore = useCeremonyStore();
@@ -119,6 +120,7 @@ const discussionStore = useDiscussionStore();
 const profileStore = useProfilesStore();
 const $route = useRoute();
 const $q = useQuasar();
+const $router = useRouter();
 const activeProjectKey = ref('');
 const activeIterationKey = ref('');
 const activeCeremonyKey = ref('');
@@ -127,6 +129,9 @@ const activeProject = ref<IProject>();
 const activeCeremony = ref<ICeremony>();
 const expandMenu = ref(false);
 onMounted(async () => {
+  await init();
+});
+$router.afterEach(async () => {
   await init();
 });
 
@@ -142,6 +147,7 @@ async function init() {
     activeIterationKey.value,
     activeCeremonyKey.value
   );
+  topDiscussions.effect.run();
 }
 const discussionItems = computed(() => {
   if (!activeCeremony.value) return [];
@@ -160,7 +166,11 @@ const discussionItems = computed(() => {
       return 0;
     });
   }
-  return list.sort((a, b) => {
+  return list;
+});
+const topDiscussions = computed(() => {
+  const max = $q.screen.gt.sm ? 5 : 4;
+  const list = [...discussionItems.value].sort((a, b) => {
     if (a.key == activeItemKey.value) {
       return -1;
     } else if (b.key == activeItemKey.value) {
@@ -168,10 +178,7 @@ const discussionItems = computed(() => {
     }
     return 0;
   });
-});
-const topDiscussions = computed(() => {
-  const max = $q.screen.gt.sm ? 6 : 4;
-  return discussionItems.value.slice(0, max);
+  return list.slice(0, max);
 });
 </script>
 <style></style>
