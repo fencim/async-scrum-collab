@@ -491,7 +491,7 @@ export default defineComponent({
       this.selectedMembers = [];
     },
     selectAdmin(profile: IProfile) {
-      if (this.activeStore.canUserModerate) return;
+      if (!this.activeStore.canUserModerate) return;
       if (!this.selectedAdmins.find((m) => m.key == profile.key)) {
         this.selectedAdmins.push(profile);
       }
@@ -503,7 +503,7 @@ export default defineComponent({
       }
     },
     selectModerator(profile: IProfile) {
-      if (this.activeStore.canUserModerate) return;
+      if (!this.activeStore.canUserModerate) return;
       if (!this.selectedModerators.find((m) => m.key == profile.key)) {
         this.selectedModerators.push(profile);
       }
@@ -529,7 +529,7 @@ export default defineComponent({
       }
     },
     selectMember(profile: IProfile) {
-      if (this.activeStore.canUserModerate) return;
+      if (!this.activeStore.canUserModerate) return;
       if (!this.selectedMembers.find((m) => m.key == profile.key)) {
         this.selectedMembers.push(profile);
       }
@@ -541,7 +541,7 @@ export default defineComponent({
       }
     },
     selectGuest(profile: IProfile) {
-      if (this.activeStore.canUserModerate) return;
+      if (!this.activeStore.canUserModerate) return;
       if (!this.selectedGuests.find((m) => m.key == profile.key)) {
         this.selectedGuests.push(profile);
       }
@@ -553,6 +553,7 @@ export default defineComponent({
       }
     },
     async adminsToMembers() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -564,6 +565,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async adminsToModerators() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -575,6 +577,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async moderatorsToAdmins() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -586,6 +589,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async moderatorsToMembers() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -597,6 +601,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async pendingToMembers() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -608,6 +613,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async pendingToGuest() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -619,6 +625,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async membersToModerators() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -630,6 +637,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async membersToGuests() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -641,6 +649,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async guestsToMembers() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -652,6 +661,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async guestsToPending() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.setProjectMember(
         activeStore.activeProject,
@@ -663,6 +673,7 @@ export default defineComponent({
       this.resetSelected();
     },
     async disableProject() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.updateSettings(
         activeStore.activeProject.key,
@@ -671,6 +682,7 @@ export default defineComponent({
       );
     },
     async closeProject() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       await projectStore.updateSettings(
         activeStore.activeProject.key,
@@ -679,6 +691,7 @@ export default defineComponent({
       );
     },
     async activateProject() {
+      if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
       TheWorkflows.emit({
         type: 'updateProjectSettings',
@@ -703,10 +716,12 @@ export default defineComponent({
       col.icon = icon;
     },
     editBoardColumn(col: IBoardColumn) {
+      if (!this.activeStore.canUserModerate) return;
       this.editingCol = { ...col };
       this.editColumn = true;
     },
     saveTaskColumn(col: IBoardColumn) {
+      if (!this.activeStore.canUserModerate) return;
       if (col === this.newBoardCol) {
         const savingCol = {
           ...col,
@@ -734,6 +749,7 @@ export default defineComponent({
       this.columnsSaved = false;
     },
     deleteTaskColumn(col: IBoardColumn) {
+      if (!this.activeStore.canUserModerate) return;
       const index = this.taskboardColumns.findIndex((c) => c.key == col.key);
       if (index >= 0) {
         this.taskboardColumns.splice(index, 1);
