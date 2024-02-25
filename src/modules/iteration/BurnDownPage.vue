@@ -399,10 +399,12 @@ function describeDiscussion(item: DiscussionItem | string): string {
               no-icon-animation
               dropdown-icon="person"
               size="xs"
+              dense
             >
               <RecentActiveMembers
                 sizes="xs"
                 v-close-popup
+                :max-count="15"
                 :profiles="activeStore.activeMembers"
                 @click-profile="
                   (p) =>
