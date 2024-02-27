@@ -144,7 +144,7 @@ export const useProfilesStore = defineStore('Profiles', {
       return profiles;
     },
     setAsTheUser(profileKey: string) {
-      this.theUser = this.profiles.find(p => p.key == profileKey);
+      this.theUser = this.profiles.find(p => p.key == profileKey) || this.theUser;
     },
     async signInWithGoogle() {
       this.theUser = undefined;

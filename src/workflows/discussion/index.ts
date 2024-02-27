@@ -9,3 +9,5 @@ import './ask-question.workflow';
 import './reply-to-message.workflow';
 import './update-discussion-fields.workflow';
 import './send-message.workflow';
+import './vote-for-confidence.workflow';
+import './reset-confidence-voting.workflow';

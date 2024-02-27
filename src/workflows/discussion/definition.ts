@@ -1,4 +1,4 @@
-import { Convo, DiscussionItem, DiscussionReport, IBoardColumn, IProfile, IQuestion, IResponse } from 'src/entities';
+import { Convo, DiscussionItem, DiscussionReport, IBoardColumn, ICeremony, IProfile, IQuestion, IResponse } from 'src/entities';
 import { Struct } from 'src/structs';
 export enum TaskActionError {
   notReady,
@@ -37,6 +37,19 @@ export type Discussion =
     vote: string;
     voter: string;
     done?: (item: DiscussionItem) => void
+    error?: (error: unknown) => void;
+  }>
+  | Struct<'voteForConfidence', {
+    ceremony: ICeremony,
+    vote: string;
+    voter: string;
+    done?: (item: ICeremony) => void
+    error?: (error: unknown) => void;
+  }>
+  | Struct<'resetConfidenceVoting', {
+    ceremony: ICeremony,
+    moderator: string;
+    done?: (item: ICeremony) => void
     error?: (error: unknown) => void;
   }>
   | Struct<'askQuestion', {

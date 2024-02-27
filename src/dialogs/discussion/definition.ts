@@ -1,4 +1,4 @@
-import { DiscussionItem, IIteration } from 'src/entities';
+import { DiscussionItem, ICeremony, IIteration } from 'src/entities';
 import { Struct } from 'src/structs';
 
 export type Discussions =
@@ -25,6 +25,11 @@ export type Discussions =
     done?: () => void
     error?: (error: unknown) => void;
   }>
+  | Struct<'voteForConfidenceDialog', {
+    ceremony: ICeremony,
+    done?: () => void
+    error?: (error: unknown) => void;
+  }>
   | Struct<'agreeOnItemReadiness', {
     item: DiscussionItem,
     done?: (item: DiscussionItem) => void
@@ -36,7 +41,7 @@ export type Discussions =
     error?: ErrorCallback;
   }>
   | Struct<'playSprintPresentation', {
-    iteration: IIteration,
+    iteration?: IIteration,
     done?: VoidCallback;
     error?: ErrorCallback;
   }>;

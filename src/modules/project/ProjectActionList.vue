@@ -65,6 +65,21 @@
       <q-item
         v-if="$route.params.iteration"
         clickable
+        @click="
+          TheDialogs.emit({
+            type: 'playSprintPresentation',
+            arg: { iteration: activeIteration() },
+          })
+        "
+      >
+        <q-item-section avatar>
+          <q-icon name="smart_display" />
+        </q-item-section>
+        <q-tooltip>Play Presentation</q-tooltip>
+      </q-item>
+      <q-item
+        v-if="$route.params.iteration"
+        clickable
         :to="{
           name: 'burn-down',
           params: {
@@ -99,9 +114,11 @@
 <script lang="ts">
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { IProject } from 'src/entities';
+import { useIterationStore } from 'src/stores/iterations.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
+const iterationStore = useIterationStore();
 export default defineComponent({
   name: 'ProjectActionList',
   components: {},
@@ -121,6 +138,9 @@ export default defineComponent({
         (this.$route.params.project && String(this.$route.params.project)) ||
         '';
       this.project = projectStore.activeProject;
+    },
+    activeIteration() {
+      return iterationStore.activeIteration;
     },
   },
 });

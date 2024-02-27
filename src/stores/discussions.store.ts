@@ -16,6 +16,7 @@ import { useIterationStore } from './iterations.store';
 import { entityKey } from 'src/entities/base.entity';
 import { PlanningTypes } from '../entities';
 import { DeferredPromise } from 'src/resources/localbase';
+import { useActiveStore } from './active.store';
 
 interface IDiscussionState {
   discussions: DiscussionItem[];
@@ -28,11 +29,12 @@ export const useDiscussionStore = defineStore('discussion', {
   } as IDiscussionState),
   getters: {
     productBacklog(): ISprintBoardColumn {
+      const project = useActiveStore().activeProject;
       return {
         key: 'product-backlog',
         name: 'Product Backlog',
         tasks: this.discussions
-          .filter(d => (['story', 'task'] as PlanningItem['type'][]).includes(d.type as PlanningItem['type'])) as PlanningItem[]
+          .filter(d => d.projectKey == project?.key && (['story', 'task', 'roadblock'] as string[]).includes(d.type)) as PlanningItem[]
       };
     },
   },
@@ -255,7 +257,7 @@ export const useDiscussionStore = defineStore('discussion', {
         return {
           progress: value,
           factor: msg,
-          feedback: `Only ${(progress)} of ${over} of ${msg} is complete`
+          feedback: `Only ${Math.round(progress * 100) / 100} of ${over} of ${msg} is complete`
         };
       } else {
         return {
@@ -355,6 +357,24 @@ export const useDiscussionStore = defineStore('discussion', {
             feedbacks.push(reported + ' tasks are reported')
           } else {
             feedbacks.push('No tasks reported')
+          }
+          return {
+            factor: 'details',
+            progress: progress / feedbacks.length,
+            feedback: feedbacks.join('\n')
+          };
+        case 'roadblock':
+          if (item.assignedTo) {
+            progress += 1;
+            feedbacks.push('Responsible by is defined')
+          } else {
+            feedbacks.push('Responsible by is not defined')
+          }
+          if (item.description) {
+            progress += 1;
+            feedbacks.push('Roadblock is defined')
+          } else {
+            feedbacks.push('Roadblock is not well defined')
           }
           return {
             factor: 'details',

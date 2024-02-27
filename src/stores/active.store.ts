@@ -33,8 +33,8 @@ export const useActiveStore = defineStore('activeStore', {
         return 'admin'
       } else if (this.moderators.find(m => m.key == profileStore.theUser?.key)) {
         return 'moderator';
-      } else if (this.moderators.find(m => m.key == profileStore.theUser?.key)) {
-        return 'moderator';
+      } else if (this.activeMembers.find(m => m.key == profileStore.theUser?.key)) {
+        return 'member';
       } else if (this.pendingMembers.find(m => m.key == profileStore.theUser?.key)) {
         return 'pending';
       } else if (this.guests.find(m => m.key == profileStore.theUser?.key)) {
@@ -45,6 +45,9 @@ export const useActiveStore = defineStore('activeStore', {
     }
   },
   actions: {
+    getUserRole(): MembershipType {
+      return this.userRole;
+    },
     async selectProject(project: IProject) {
       const profileStore = useProfilesStore();
       this.activeProject = project;

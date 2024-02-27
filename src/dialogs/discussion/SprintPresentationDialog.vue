@@ -208,6 +208,71 @@
           </div>
           <burn-down-page preview />
         </q-carousel-slide>
+        <q-carousel-slide
+          v-for="slide in roadblocksSlides"
+          :key="slide.name"
+          :name="slide.name"
+          class="column no-wrap flex-center"
+        >
+          <q-icon name="adjust" size="56px" />
+          <div class="q-mt-md text-center text-bold text-h5">Roadblocks</div>
+          <q-banner
+            rounded
+            class="q-my-xs text-center text-h6 full-width"
+            :class="item.resolution ? 'bg-accent' : 'bg-negative'"
+            v-for="item in slide.roadblocks"
+            :key="item.key"
+          >
+            {{ discussionStore.describeDiscussion(item) }}
+
+            <div v-if="item.resolution">
+              <q-separator />
+              {{ item.resolution }}
+            </div>
+            <div>
+              <recent-active-members
+                :profiles="membersAgreed(item)"
+                sizes="sm"
+              />
+            </div>
+            <template #action
+              ><q-btn
+                icon="thumb_up_alt"
+                size="sm"
+                flat
+                dense
+                round
+                @click="
+                  TheDialogs.emit({
+                    type: 'agreeOnItemReadiness',
+                    arg: {
+                      item,
+                    },
+                  })
+                "
+            /></template>
+          </q-banner>
+        </q-carousel-slide>
+        <q-carousel-slide name="summary">
+          <div class="q-mt-md text-center text-bold text-h5">Summary</div>
+          <div class="row absolute-center">
+            <div class="text-center">
+              <div class="text-h6">Total Points</div>
+              <div class="text-h4">{{ totalPoints }}</div>
+              <q-separator />
+              <div
+                v-if="completedPoints"
+                :class="completedPoints < totalPoints ? 'text-negative' : ''"
+              >
+                <div class="text-h6">Completed</div>
+                <div class="text-h4 text-bold">{{ completedPoints }}</div>
+              </div>
+              <q-separator />
+              <div class="text-h6">Team Confidence Vote</div>
+              <div class="text-h4">{{ planning?.confidence }}</div>
+            </div>
+          </div>
+        </q-carousel-slide>
         <template v-slot:control>
           <q-carousel-control position="bottom-right" :offset="[18, 18]">
             <q-btn
@@ -230,9 +295,11 @@ import { ref, computed } from 'vue';
 import { TheDialogs } from '../the-dialogs';
 import {
   DiscussionItem,
+  ICeremony,
   IGoal,
   IIteration,
   IObjective,
+  IRoadBlock,
   IStory,
 } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
@@ -241,12 +308,16 @@ import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { entityKey } from 'src/entities/base.entity';
 import BurnDownPage from 'src/modules/iteration/BurnDownPage.vue';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 const showPresentation = ref(false);
 const slide = ref('sprint');
 const fullscreen = ref(false);
 const iteration = ref<IIteration>();
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
+const planning = ref<ICeremony>();
+const totalPoints = ref(0);
+const completedPoints = ref(0);
 function membersAgreed(item: DiscussionItem) {
   const awareness = item.awareness || {};
   return activeStore.activeMembers.filter((m) => awareness[m.key] == 'agree');
@@ -259,7 +330,11 @@ const moderators = computed(() => {
 });
 const goals = computed(() => {
   return discussionStore.discussions.filter(
-    (d) => d.type == 'goal' && d.projectKey == activeStore.activeProject?.key
+    (d) =>
+      d.type == 'goal' &&
+      d.projectKey == activeStore.activeProject?.key &&
+      d.iteration &&
+      entityKey(d.iteration) == iteration.value?.key
   ) as IGoal[];
 });
 const MAX_SLIDE_ITEM_COUNT = 2;
@@ -271,7 +346,9 @@ const objectiveSlides = computed(() => {
       (d) =>
         d.type == 'objective' &&
         ((d.parent && entityKey(d.parent) == goal.key) ||
-          d.projectKey == activeStore.activeProject?.key)
+          d.projectKey == activeStore.activeProject?.key) &&
+        d.iteration &&
+        entityKey(d.iteration) == iteration.value?.key
     ) as IObjective[];
     while (list.length > 0) {
       slides.push({
@@ -297,7 +374,9 @@ const storiesSlides = computed(() => {
         (d) =>
           d.type == 'story' &&
           ((d.parent && entityKey(d.parent) == obj.key) ||
-            d.projectKey == activeStore.activeProject?.key)
+            d.projectKey == activeStore.activeProject?.key) &&
+          d.iteration &&
+          entityKey(d.iteration) == iteration.value?.key
       ) as IStory[];
       while (list.length > 0) {
         slides.push({
@@ -311,10 +390,50 @@ const storiesSlides = computed(() => {
   });
   return slides;
 });
+const roadblocksSlides = computed(() => {
+  const slides: {
+    name: string;
+    roadblocks: IRoadBlock[];
+  }[] = [];
+  const parts = discussionStore.discussions.filter(
+    (d) =>
+      d.type == 'roadblock' &&
+      d.projectKey == activeStore.activeProject?.key &&
+      d.iteration &&
+      entityKey(d.iteration) == iteration.value?.key
+  ) as IRoadBlock[];
+  while (parts.length > 0) {
+    slides.push({
+      name: 'roadblocks-' + (slides.length + 1),
+      roadblocks: parts.splice(0, MAX_SLIDE_ITEM_COUNT),
+    });
+  }
+  return slides;
+});
 TheDialogs.on({
   type: 'playSprintPresentation',
   cb(e) {
+    if (!e.iteration) return;
+    const sprint = e.iteration;
+    const ceremonyStore = useCeremonyStore();
     iteration.value = e.iteration;
+    planning.value = ceremonyStore.ceremonies.find((c) => c.type == 'planning');
+    const planned = discussionStore.discussions.filter(
+      (d) => d.iteration && entityKey(d.iteration) == e.iteration?.key
+    );
+    totalPoints.value = planned.reduce((prev, curr) => {
+      return prev + Number(curr.complexity || 0);
+    }, 0);
+    completedPoints.value = planned
+      .filter(
+        (d) =>
+          d.doneDate &&
+          date.getDateDiff(d.doneDate, sprint.start, 'days') >= 0 &&
+          date.getDateDiff(sprint.end, d.doneDate, 'days') >= 0
+      )
+      .reduce((prev, curr) => {
+        return prev + Number(curr.complexity || 0);
+      }, 0);
     slide.value = 'sprint';
     showPresentation.value = true;
   },

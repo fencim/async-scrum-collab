@@ -531,13 +531,18 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
 
     //update online data from merged
     for (const mergeDoc of mergedDocs || []) {
-      updatedDocs.push(
-        mergeDoc.status == 'synced'
-          ? await this.saveDoc(mergeDoc.key, {
-            ...mergeDoc,
-          })
-          : mergeDoc
-      );
+      try {
+        const savedDoc = await this.saveDoc(mergeDoc.key, {
+          ...mergeDoc,
+        });
+        updatedDocs.push(
+          mergeDoc.status == 'synced'
+            ? savedDoc
+            : mergeDoc
+        );
+      } catch {
+        updatedDocs.push(mergeDoc);
+      }
     }
 
     for (const newOnlineRecord of newOnlineRecords) {

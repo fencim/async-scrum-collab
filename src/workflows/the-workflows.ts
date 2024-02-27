@@ -44,7 +44,7 @@ export const TheWorkflows = {
   emit(desc: WorkflowStructs) {
     const activeStore = useActiveStore();
     const emitStore = useEmitStore();
-    const role = activeStore.userRole;
+    const role = activeStore.getUserRole();
     const permissions = emitStore.permissions[desc.type];
     if ((permissions?.length && !role)
       || (permissions?.length && !permissions.includes(role || 'anonymous'))) {

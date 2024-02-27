@@ -220,6 +220,13 @@ export default defineComponent({
             iteration: this.iteration,
           },
         });
+      } else if (action.key == 'confidence' && this.ceremony) {
+        TheDialogs.emit({
+          type: 'voteForConfidenceDialog',
+          arg: {
+            ceremony: this.ceremony,
+          },
+        });
       } else {
         convoBus.emit(action.key);
       }

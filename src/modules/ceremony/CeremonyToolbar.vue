@@ -63,7 +63,11 @@
         }}
         hours)
       </div>
-      <recent-active-members :profiles="members" @ctrl-click="setAsUser" />
+      <recent-active-members
+        :profiles="members"
+        :max-count="15"
+        @ctrl-click="setAsUser"
+      />
       <q-linear-progress :value="progress" />
     </q-toolbar-title>
 

@@ -120,7 +120,11 @@ const replyTo = ref<Convo>();
 const timer = ref<NodeJS.Timeout | number>(0);
 const askingQuestion = ref(false);
 const revealVotes = computed(() => {
-  return discussion.value?.complexity;
+  if (discussion.value) {
+    return discussion.value?.complexity;
+  } else {
+    return ceremony.value?.confidence;
+  }
 });
 
 onMounted(async () => {

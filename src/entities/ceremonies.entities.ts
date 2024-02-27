@@ -8,6 +8,7 @@ export interface ICeremony extends IBaseEntity {
   type: CeremonyType;
   start: string;
   end: string;
+  confidence?: number;
   progress?: number;
   discussions: string[];
 }

@@ -31,6 +31,13 @@ export const ticketActionList: ActionItem[] = [
     link: '',
   },
   {
+    key: 'confidence',
+    title: 'Vote',
+    caption: 'Vote for Confidence Vote',
+    icon: 'how_to_vote',
+    link: '',
+  },
+  {
     key: 'attachment',
     title: 'Attachments',
     caption: 'Download',
