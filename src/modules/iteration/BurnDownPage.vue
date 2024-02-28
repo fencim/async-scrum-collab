@@ -48,6 +48,11 @@ const dailyScrums = (
 ).sort((a, b) => {
   return date.getDateDiff(a.start, b.start, 'days');
 });
+const planning = ref(
+  ceremonyStore.ceremonies.find(
+    (c) => c.iterationKey == iteration?.key && c.type == 'planning'
+  )
+);
 const today = computed(() => date.formatDate(new Date(), 'YYYY/MM/DD'));
 const discussions = computed(() => {
   return (
@@ -167,6 +172,22 @@ const ideal = computed(() => {
   });
 });
 const totalCompleted = ref(0);
+const unplannedTasks = computed(() => {
+  return mappedDiscussions.value
+    .filter(
+      (t) =>
+        t.datePlanned &&
+        planning.value &&
+        date.getDateDiff(planning.value?.end, t.datePlanned, 'days') < 0
+    )
+    .reduce((p, c) => {
+      const plannedDate = date.formatDate(c.datePlanned!, 'YYYY/MM/DD');
+      const exist = p[plannedDate] || [];
+      exist.push(c);
+      p[plannedDate] = exist;
+      return p;
+    }, {} as { [date: string]: DiscussionItem[] });
+});
 const actual = computed(() => {
   let remainingPts = totalPoints.value;
   const now = new Date();
@@ -175,28 +196,51 @@ const actual = computed(() => {
       if (date.getDateDiff(workday, now, 'days') > 0) {
         return undefined;
       }
-      const compleltedTasks = discussions.value.filter(
+      const completedTasks = discussions.value.filter(
         (d) => d.doneDate && date.getDateDiff(workday, d.doneDate, 'days') == 0
       );
-      const subTotalPts = compleltedTasks.reduce(
+      const subTotalPts = completedTasks.reduce(
         (p, c) => (c.complexity || 0) + p,
         0
       );
       totalCompleted.value += subTotalPts;
       remainingPts -= subTotalPts;
+      const unplanned =
+        unplannedTasks.value[date.formatDate(workday, 'YYYY/MM/DD')];
+      if (unplanned?.length) {
+        remainingPts += unplanned.reduce((p, c) => (c.complexity || 0) + p, 0);
+      }
       return Math.round(remainingPts);
     })
     .filter((d) => typeof d !== 'undefined');
 });
+const unplanned = computed(() => {
+  let unPlanned = 0;
+  return workDays.map((workday) => {
+    const unplanned =
+      unplannedTasks.value[date.formatDate(workday, 'YYYY/MM/DD')];
+    if (unplanned?.length) {
+      unPlanned += unplanned.reduce((p, c) => (c.complexity || 0) + p, 0);
+    }
+    return Math.round(unPlanned);
+  });
+});
 const plannedTasks = computed(() => {
-  return discussions.value.reduce((p, c) => {
-    const dueDate =
-      (c.dueDate && date.formatDate(c.dueDate, 'YYYY/MM/DD')) || 'unmapped';
-    const exist = p[dueDate] || [];
-    exist.push(c);
-    p[dueDate] = exist;
-    return p;
-  }, {} as { [date: string]: DiscussionItem[] });
+  return discussions.value
+    .filter(
+      (t) =>
+        planning.value &&
+        (!t.datePlanned ||
+          date.getDateDiff(planning.value?.end, t.datePlanned, 'days') >= 0)
+    )
+    .reduce((p, c) => {
+      const dueDate =
+        (c.dueDate && date.formatDate(c.dueDate, 'YYYY/MM/DD')) || 'unmapped';
+      const exist = p[dueDate] || [];
+      exist.push(c);
+      p[dueDate] = exist;
+      return p;
+    }, {} as { [date: string]: DiscussionItem[] });
 });
 const completedTasks = computed(() => {
   return mappedDiscussions.value
@@ -250,6 +294,12 @@ const chartOptions = computed<EChartsOption>(() => {
         name: 'Planned',
         label: 'Planned',
         data: planned.value,
+      } as LineSeriesOption,
+      {
+        type: 'line',
+        name: 'UnPlanned',
+        label: 'Un-Planned',
+        data: unplanned.value,
       } as LineSeriesOption,
       {
         type: 'line',

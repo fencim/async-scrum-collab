@@ -4,6 +4,7 @@ import { entityKey } from 'src/entities/base.entity';
 import { IVote } from 'src/entities';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useActiveStore } from 'src/stores/active.store';
+import { date } from 'quasar';
 
 TheWorkflows.on({
   type: 'voteForComplexity',
@@ -17,7 +18,8 @@ TheWorkflows.on({
 
     if (activeStore.canUserModerate && !item.complexity) {
       item.complexity = Number(vote);
-      await discussionStore.updateDiscussion(item.key, ['complexity'], item);
+      item.datePlanned = date.formatDate(new Date(), 'YYYY/MM/DD');
+      await discussionStore.updateDiscussion(item.key, ['complexity', 'datePlanned'], item);
       if (item.iteration) {
         await TheWorkflows.emitPromised({
           type: 'sendMessage',
@@ -118,7 +120,8 @@ TheWorkflows.on({
                 }
               );
               item.complexity = Number(winningVote);
-              await discussionStore.updateDiscussion(item.key, ['complexity'], item);
+              item.datePlanned = date.formatDate(new Date(), 'YYYY/MM/DD');
+              await discussionStore.updateDiscussion(item.key, ['complexity', 'datePlanned'], item);
             }
           }
           done && done(item);

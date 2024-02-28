@@ -21,6 +21,7 @@ export interface IDiscussion extends IBaseEntity {
   convoCount?: number;
   progress?: number;
   dueDate?: string;
+  datePlanned?: string;
   priority?: number;
   unread?: number;
   info?: string;
