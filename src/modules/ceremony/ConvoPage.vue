@@ -53,6 +53,7 @@
       <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
     </q-infinite-scroll>
     <chat-message-form
+      id="input-message"
       :message="message"
       :asking-question="askingQuestion"
       :reply-to="replyTo"
@@ -96,7 +97,6 @@ import { convoBus } from './convo-bus';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
-import { entityKey } from 'src/entities/base.entity';
 
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
@@ -152,10 +152,10 @@ const messages = computed(() => {
   }
   if (ceremony.value?.type == 'planning') {
     return convo.filter((m) => m.discussion == `${iteration.value?.key}plan`);
-  } else if (ceremony.value?.type == 'scrum') {
+  } else {
     return convo.filter((m) => m.discussion == `${ceremony.value?.key || ''}`);
   }
-  return convo;
+  return [];
 });
 
 async function init() {
@@ -178,22 +178,23 @@ async function init() {
   // await assesItem();
 }
 async function sendMessage() {
-  if (askingQuestion.value && discussion.value) {
+  const item = discussion.value || ceremony.value;
+  if (askingQuestion.value && item) {
     TheWorkflows.emit({
       type: 'askQuestion',
       arg: {
-        item: discussion.value,
+        item: item,
         message: message.value,
         done: () => {
           askQuestion(); //toggle question
         },
       },
     });
-  } else if (replyTo.value && discussion.value) {
+  } else if (replyTo.value && item) {
     TheWorkflows.emit({
       type: 'replyToMessage',
       arg: {
-        item: discussion.value,
+        item,
         message: message.value,
         ref: replyTo.value,
         done: () => {
@@ -216,7 +217,9 @@ async function sendMessage() {
 }
 function scrollToBottom() {
   const scrollTo = () => {
-    const elem = document.querySelector($route.hash || '#input-message');
+    const elem = document.getElementById(
+      $route.hash.replace('#', '') || 'input-message'
+    );
     if (!elem) setTimeout(scrollTo, 100);
     elem?.scrollIntoView({
       behavior: 'smooth',
@@ -236,11 +239,12 @@ async function resolveQuestionOf(
   msg: IResponse,
   resolution: 'agree' | 'disagree'
 ) {
-  if (!discussion.value) return;
+  const item = discussion.value || ceremony.value;
+  if (!item) return;
   TheWorkflows.emit({
     type: 'resolveQuestionOf',
     arg: {
-      item: discussion.value,
+      item,
       message: msg,
       resolution,
       done: () => {

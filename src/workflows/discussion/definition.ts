@@ -53,7 +53,7 @@ export type Discussion =
     error?: (error: unknown) => void;
   }>
   | Struct<'askQuestion', {
-    item: DiscussionItem,
+    item: DiscussionItem | ICeremony,
     message: string,
     done?: (message: IQuestion) => void
     error?: (error: unknown) => void;
@@ -72,14 +72,14 @@ export type Discussion =
     error?: (error: unknown) => void;
   }>
   | Struct<'replyToMessage', {
-    item: DiscussionItem,
+    item: DiscussionItem | ICeremony,
     message: string,
     ref: Convo,
     done?: (message: Convo) => void
     error?: (error: unknown) => void;
   }>
   | Struct<'resolveQuestionOf', {
-    item: DiscussionItem,
+    item: DiscussionItem | ICeremony,
     message: IResponse,
     resolution: 'agree' | 'disagree'
     done?: (message: IResponse) => void

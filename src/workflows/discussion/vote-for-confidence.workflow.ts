@@ -4,6 +4,7 @@ import { entityKey } from 'src/entities/base.entity';
 import { IVote } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
+import { useDiscussionStore } from 'src/stores/discussions.store';
 
 TheWorkflows.on({
   type: 'voteForConfidence',
@@ -12,12 +13,23 @@ TheWorkflows.on({
   async cb(e) {
     const { ceremony, vote, voter, done, error } = e;
     const convoStore = useConvoStore();
+    const discussionStore = useDiscussionStore();
     const ceremonyStore = useCeremonyStore();
     const activeStore = useActiveStore();
-
-    if (activeStore.canUserModerate && !ceremony.confidence) {
+    const convo = await convoStore.ofDiscussion((ceremony.iterationKey), ceremony.key)
+    const members = activeStore.activeMembers.map(m => m.key);
+    const voteCasts = convo.filter(c =>
+      (c.type == 'vote')
+      && members.includes(entityKey(c.from || ''))).sort((a, b) => a.date.localeCompare(b.date)) as IVote[];
+    const lastIndex = voteCasts.findLastIndex((v) => v.vote == '0');
+    if (lastIndex >= 0) {
+      voteCasts.splice(0, lastIndex + 1);
+    }
+    if (activeStore.canUserModerate && ceremony.type == 'planning' && !ceremony.confidence && voteCasts.length == 0) {
       ceremony.confidence = Number(vote);
-      await ceremonyStore.patchCeremony(ceremony.key, ['confidence'], ceremony);
+      ceremony.totalCommitted = discussionStore.fromIteration(ceremony.projectKey, ceremony.iterationKey)
+        .reduce((total, r) => total + Number(r.complexity || 0), 0)
+      await ceremonyStore.patchCeremony(ceremony.key, ['confidence', 'totalCommitted'], ceremony);
       if (ceremony.iterationKey) {
         await TheWorkflows.emitPromised({
           type: 'sendMessage',
@@ -51,16 +63,8 @@ TheWorkflows.on({
     }
     //delay
     await new Promise(resolve => setTimeout(resolve, 100));
-    const convo = await convoStore.ofDiscussion((ceremony.iterationKey), ceremony.key)
-    const members = activeStore.activeMembers.map(m => m.key);
-    const voteCasts = convo.filter(c =>
-      (c.type == 'vote')
-      && members.includes(entityKey(c.from || ''))).sort((a, b) => a.date.localeCompare(b.date)) as IVote[];
-    const lastIndex = voteCasts.findLastIndex((v) => v.vote == '0');
-    if (lastIndex >= 0) {
-      voteCasts.splice(0, lastIndex + 1);
-    }
-    if (voteCasts.length >= members.length && ceremony.iterationKey) {
+
+    if (voteCasts.length >= members.length && ceremony.iterationKey && ceremony.type == 'planning') {
       const winningVote = voteCasts.reduce((prev, curr) => prev + Number(curr.vote), 0) / voteCasts.length;
       await convoStore.sendMessage(
         ceremony.projectKey,
@@ -74,7 +78,9 @@ TheWorkflows.on({
         }
       );
       ceremony.confidence = Number(winningVote);
-      await ceremonyStore.patchCeremony(ceremony.key, ['confidence'], ceremony);
+      ceremony.totalCommitted = discussionStore.fromIteration(ceremony.projectKey, ceremony.iterationKey)
+        .reduce((total, r) => total + Number(r.complexity || 0), 0)
+      await ceremonyStore.patchCeremony(ceremony.key, ['confidence', 'totalCommitted'], ceremony);
     }
     done && done(ceremony);
   },

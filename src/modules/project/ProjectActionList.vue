@@ -67,7 +67,7 @@
         clickable
         @click="
           TheDialogs.emit({
-            type: 'playSprintPresentation',
+            type: 'playPlanningPresentation',
             arg: { iteration: activeIteration() },
           })
         "

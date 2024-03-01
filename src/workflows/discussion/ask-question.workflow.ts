@@ -2,7 +2,7 @@ import { useConvoStore } from 'src/stores/convo.store';
 import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
 import { useProfilesStore } from 'src/stores/profiles.store';
-import { IQuestion } from 'src/entities';
+import { CeremonyTypes, DiscussionItem, ICeremony, IQuestion } from 'src/entities';
 
 TheWorkflows.on({
   type: 'askQuestion',
@@ -12,10 +12,13 @@ TheWorkflows.on({
     const { item, message, done, error } = e;
     const convoStore = useConvoStore();
     const profileStore = useProfilesStore();
-    if (item.iteration) {
+    const ceremony = CeremonyTypes.includes(item.type as ICeremony['type']) ? item as ICeremony : undefined;
+    const discussion = !CeremonyTypes.includes(item.type as ICeremony['type']) ? item as DiscussionItem : undefined;
+    const iterationKey = ceremony?.iterationKey || (discussion?.iteration && entityKey(discussion?.iteration)) || '';
+    try {
       const question = await convoStore.sendMessage(
         item.projectKey,
-        entityKey(item.iteration),
+        iterationKey,
         item.key,
         profileStore.presentUser?.key || '',
         {
@@ -24,8 +27,8 @@ TheWorkflows.on({
         }
       );
       done && done(question as IQuestion);
-    } else if (error) {
-      error('Item is not part of iteration');
+    } catch (err) {
+      error && error(err)
     }
   },
 })

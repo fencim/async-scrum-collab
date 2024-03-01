@@ -11,7 +11,7 @@ TheWorkflows.on({
     const convoStore = useConvoStore();
     const ceremonyStore = useCeremonyStore();
 
-    if (ceremony && ceremony.iterationKey) {
+    if (ceremony && ceremony.iterationKey && ceremony.type == 'planning') {
       await convoStore.sendMessage(
         ceremony.projectKey,
         ceremony.iterationKey,

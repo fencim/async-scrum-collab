@@ -40,8 +40,18 @@ export type Discussions =
     done?: (item: DiscussionItem) => void
     error?: ErrorCallback;
   }>
-  | Struct<'playSprintPresentation', {
+  | Struct<'playPlanningPresentation', {
     iteration?: IIteration,
+    done?: VoidCallback;
+    error?: ErrorCallback;
+  }>
+  | Struct<'playReviewPresentation', {
+    iteration?: IIteration,
+    done?: VoidCallback;
+    error?: ErrorCallback;
+  }>
+  | Struct<'viewCeremonyProgress', {
+    ceremony: ICeremony;
     done?: VoidCallback;
     error?: ErrorCallback;
   }>;

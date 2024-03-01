@@ -42,8 +42,10 @@
       <ScrumGuideDialog />
       <VoteForComplexityDialog />
       <AgreeOnItemReadinessDialog />
-      <SprintPresentationDialog />
+      <PlanningPresentationDialog />
       <VoteForConfidenceDialog />
+      <ReviewPresentationDialog />
+      <CeremonyDetailsDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -60,8 +62,10 @@ import ProjectFormDialog from 'src/dialogs/project/ProjectFormDialog.vue';
 import ScrumGuideDialog from 'src/dialogs/guide/ScrumGuideDialog.vue';
 import VoteForComplexityDialog from 'src/dialogs/discussion/VoteForComplexityDialog.vue';
 import AgreeOnItemReadinessDialog from 'src/dialogs/discussion/AgreeOnItemReadinessDialog.vue';
-import SprintPresentationDialog from 'src/dialogs/discussion/SprintPresentationDialog.vue';
 import VoteForConfidenceDialog from 'src/dialogs/discussion/VoteForConfidenceDialog.vue';
+import PlanningPresentationDialog from 'src/dialogs/discussion/PlanningPresentationDialog.vue';
+import ReviewPresentationDialog from 'src/dialogs/discussion/ReviewPresentationDialog.vue';
+import CeremonyDetailsDialog from 'src/dialogs/discussion/CeremonyDetailsDialog.vue';
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);

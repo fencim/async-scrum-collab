@@ -2,7 +2,7 @@
   <base-chat-message :msg="msg" :curr-user="currUser" @reply-to="onReply">
     <div style="min-width: 150px" v-if="msg.type == 'question'">
       <q-icon v-if="msg.resolved" name="check" size="sm" />
-      {{ msg.message }}
+      {{ msg.message.replace(/\?\s*$/, '') }}
       <q-icon name="question_mark" size="sm" />
     </div>
   </base-chat-message>

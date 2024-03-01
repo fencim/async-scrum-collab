@@ -107,7 +107,7 @@ TheDialogs.on({
       >
         <q-card
           @click="submitVote(c)"
-          class="pocker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer q-ma-sm"
+          class="poker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer q-ma-sm"
           v-for="c in ['1', '2', '3', '4', '5']"
           :key="c"
           style="width: 100px"
@@ -132,7 +132,7 @@ TheDialogs.on({
       </q-card-section>
       <q-card-section class="row justify-center" v-else>
         <q-card
-          class="pocker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer q-ma-sm"
+          class="poker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer q-ma-sm"
           style="width: 100px; height: 150px"
           v-ripple.early
         >
@@ -154,7 +154,10 @@ TheDialogs.on({
       </q-card-actions>
       <q-card-actions v-else-if="activeStore.canUserModerate">
         <q-space />
-        <q-btn icon="refresh" color="secondary" @click="resetVoting"
+        <q-btn
+          icon="settings_backup_restore"
+          color="secondary"
+          @click="resetVoting"
           >Reset Voting</q-btn
         >
       </q-card-actions>

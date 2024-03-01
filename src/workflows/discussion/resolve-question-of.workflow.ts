@@ -1,7 +1,7 @@
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { TheWorkflows } from '../the-workflows';
 import { useConvoStore } from 'src/stores/convo.store';
-import { IQuestion, IResponse } from 'src/entities';
+import { CeremonyTypes, DiscussionItem, ICeremony, IQuestion, IResponse } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 
 TheWorkflows.on({
@@ -12,10 +12,13 @@ TheWorkflows.on({
     const profileStore = useProfilesStore();
     const convoStore = useConvoStore();
     const { message, resolution, item, done, error } = e;
-    if (profileStore.presentUser && item.iteration) {
+    const ceremony = CeremonyTypes.includes(item.type as ICeremony['type']) ? item as ICeremony : undefined;
+    const discussion = !CeremonyTypes.includes(item.type as ICeremony['type']) ? item as DiscussionItem : undefined;
+    const iterationKey = ceremony?.iterationKey || (discussion?.iteration && entityKey(discussion?.iteration)) || '';
+    if (profileStore.presentUser && iterationKey) {
       try {
         const messages = await convoStore.ofDiscussion(
-          entityKey(item.iteration), item.key
+          iterationKey, item.key
         )
         message.feedback = { ...message.feedback } || {};
         message.feedback[profileStore.presentUser.key] = resolution;

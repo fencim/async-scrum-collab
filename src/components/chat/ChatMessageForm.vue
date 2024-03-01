@@ -5,12 +5,18 @@
         <q-btn icon="poll " flat round />
         <q-btn icon="attachment" flat round />
         <q-toolbar-title class="q-pa-sm">
-          <q-input
-            autofocus
+          <q-editor
+            style="text-align: right"
             :model-value="message"
             @update:model-value="onType"
             rounded
-            :label-slot="!!replyTo || confirmDisagreement"
+            @keydown.enter.prevent="sendMessage"
+            :toolbar="[]"
+            :definitions="{}"
+            dense
+            flat
+            class="input-box"
+            placeholder="Message"
           >
             <template v-slot:label>
               <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
@@ -30,10 +36,7 @@
               /></span>
               <span v-else>Why disagree?</span>
             </template>
-            <template v-slot:append>
-              <q-icon name="question_mark" v-if="askingQuestion" />
-            </template>
-          </q-input>
+          </q-editor>
         </q-toolbar-title>
         <q-btn type="submit" icon="send" flat round />
       </q-toolbar>
@@ -73,14 +76,18 @@ export default defineComponent({
     onType(e: string | number | null) {
       if (typeof e == 'string' && e && /\?$/.test(e)) {
         this.$emit('update:askingQuestion', true);
-        this.$emit('update:message', e.replace(/\s*\?$/, ''));
       } else {
         this.$emit('update:askingQuestion', false);
-        this.$emit('update:message', e);
       }
+      this.$emit('update:message', e);
     },
   },
 });
 </script>
 
-<style></style>
+<style scoped>
+.input-box {
+  height: 40px;
+  font-size: 16px;
+}
+</style>

@@ -52,7 +52,7 @@ TheDialogs.on({
       <q-card-section class="row justify-center">
         <q-card
           @click="submitVote(c)"
-          class="pocker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer q-ma-sm"
+          class="poker-card bg-grey-9 q-pa-sm text-h5 cursor-pointer q-ma-sm"
           v-for="c in ['1', '2', '3', '5', '8', '13', '21']"
           :key="c"
           style="width: 100px"

@@ -34,8 +34,8 @@
           <div class="q-mt-md text-h2 text-center text-bold">
             {{ activeStore.activeProject.name }}
           </div>
-          <div class="q-mt-md text-h6 text-center">
-            {{ iteration.name }}
+          <div class="q-mt-md text-h6 text-center text-capitalize">
+            {{ iteration.name }} {{ planning?.type || '' }}
           </div>
           <div class="q-mt-md text-center">
             <q-icon name="today" />
@@ -259,17 +259,12 @@
             <div class="text-center">
               <div class="text-h6">Total Points</div>
               <div class="text-h4">{{ totalPoints }}</div>
-              <q-separator />
-              <div
-                v-if="completedPoints"
-                :class="completedPoints < totalPoints ? 'text-negative' : ''"
-              >
-                <div class="text-h6">Completed</div>
-                <div class="text-h4 text-bold">{{ completedPoints }}</div>
+
+              <div v-if="planning?.confidence">
+                <q-separator />
+                <div class="text-h6">Team Confidence Vote</div>
+                <div class="text-h4">{{ planning?.confidence }}</div>
               </div>
-              <q-separator />
-              <div class="text-h6">Team Confidence Vote</div>
-              <div class="text-h4">{{ planning?.confidence }}</div>
             </div>
           </div>
         </q-carousel-slide>
@@ -295,10 +290,10 @@ import { ref, computed } from 'vue';
 import { TheDialogs } from '../the-dialogs';
 import {
   DiscussionItem,
-  ICeremony,
   IGoal,
   IIteration,
   IObjective,
+  IPlanningCeremony,
   IRoadBlock,
   IStory,
 } from 'src/entities';
@@ -315,7 +310,7 @@ const fullscreen = ref(false);
 const iteration = ref<IIteration>();
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
-const planning = ref<ICeremony>();
+const planning = ref<IPlanningCeremony>();
 const totalPoints = ref(0);
 const completedPoints = ref(0);
 function membersAgreed(item: DiscussionItem) {
@@ -411,19 +406,24 @@ const roadblocksSlides = computed(() => {
   return slides;
 });
 TheDialogs.on({
-  type: 'playSprintPresentation',
+  type: 'playPlanningPresentation',
   cb(e) {
     if (!e.iteration) return;
     const sprint = e.iteration;
     const ceremonyStore = useCeremonyStore();
     iteration.value = e.iteration;
-    planning.value = ceremonyStore.ceremonies.find((c) => c.type == 'planning');
+    planning.value = ceremonyStore.ceremonies.find(
+      (c) => c.type == 'planning' && c.iterationKey == iteration.value?.key
+    ) as IPlanningCeremony;
     const planned = discussionStore.discussions.filter(
       (d) => d.iteration && entityKey(d.iteration) == e.iteration?.key
     );
-    totalPoints.value = planned.reduce((prev, curr) => {
-      return prev + Number(curr.complexity || 0);
-    }, 0);
+
+    totalPoints.value =
+      planning.value.totalCommitted ||
+      planned.reduce((prev, curr) => {
+        return prev + Number(curr.complexity || 0);
+      }, 0);
     completedPoints.value = planned
       .filter(
         (d) =>

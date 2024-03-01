@@ -157,6 +157,11 @@ export default defineComponent({
         this.activeIteration,
         this.activeCeremony
       );
+      this.convoStore.setLinkVisibility(
+        /^(planning-presentation|confidence)$/i,
+        this.ceremony?.type == 'planning'
+      );
+
       this.activeItem =
         (this.$route.params.item && String(this.$route.params.item)) || '';
 
@@ -213,9 +218,9 @@ export default defineComponent({
         discussion
       ) {
         this.agreeOnItem();
-      } else if (action.key == 'presentation' && this.iteration) {
+      } else if (action.key == 'planning-presentation' && this.iteration) {
         TheDialogs.emit({
-          type: 'playSprintPresentation',
+          type: 'playPlanningPresentation',
           arg: {
             iteration: this.iteration,
           },
@@ -223,6 +228,13 @@ export default defineComponent({
       } else if (action.key == 'confidence' && this.ceremony) {
         TheDialogs.emit({
           type: 'voteForConfidenceDialog',
+          arg: {
+            ceremony: this.ceremony,
+          },
+        });
+      } else if (action.key == 'progress' && this.ceremony) {
+        TheDialogs.emit({
+          type: 'viewCeremonyProgress',
           arg: {
             ceremony: this.ceremony,
           },

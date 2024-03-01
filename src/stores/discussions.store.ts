@@ -162,7 +162,7 @@ export const useDiscussionStore = defineStore('discussion', {
         const items = this.discussionsOf(targetCeremony);
         const progress = items.reduce((p, c) => p + (c.progress || 0), 0) /
           Math.max(items.length, 1);
-        if (progress !== targetCeremony.progress) {
+        if (progress !== targetCeremony.progress && targetCeremony.type == 'planning') {
           targetCeremony.progress = progress;
           await ceremonyStore.patchCeremony(targetCeremony.key, ['progress'], targetCeremony);
         }
@@ -205,7 +205,10 @@ export const useDiscussionStore = defineStore('discussion', {
       const votes = convo.filter(c =>
         (c.type == 'vote')
         && members.includes(entityKey(c.from || ''))) as IVote[];
-
+      const lastIndex = votes.findLastIndex((v) => v.vote == '0');
+      if (lastIndex >= 0) {
+        votes.splice(0, lastIndex + 1);
+      }
       const vCast = votes.reduce((p, c) =>
       (typeof c.vote == 'undefined' ? {} :
         { ...p, [entityKey(c.from)]: c.vote }),

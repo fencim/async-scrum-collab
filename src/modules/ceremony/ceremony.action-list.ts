@@ -17,6 +17,12 @@ export const ticketActionList: ActionItem[] = [
     icon: 'info',
   },
   {
+    key: 'progress',
+    title: 'Ceremony Progress',
+    caption: 'Progress Details',
+    icon: 'donut_small',
+  },
+  {
     key: 'convo',
     title: 'Conversation',
     caption: 'Activity',
@@ -73,9 +79,16 @@ export const ticketActionList: ActionItem[] = [
     link: '',
   },
   {
-    key: 'presentation',
-    title: 'Presentation',
-    caption: 'Play Presentation',
+    key: 'planning-presentation',
+    title: 'Planning Presentation',
+    caption: 'Play Planning Presentation',
+    icon: 'smart_display',
+    link: '',
+  },
+  {
+    key: 'review-presentation',
+    title: 'Review Presentation',
+    caption: 'Play Review Presentation',
     icon: 'smart_display',
     link: '',
   },
