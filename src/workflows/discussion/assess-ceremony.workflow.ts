@@ -23,6 +23,9 @@ TheWorkflows.on({
       if (ceremony.progress != report[0].progress) {
         ceremony.progress = report[0].progress;
         await ceremonyStore.patchCeremony(ceremony.key, ['progress'], ceremony as IPlanningCeremony);
+        if (ceremonyStore.activeCeremony?.key == ceremony.key) {
+          ceremonyStore.setActiveCeremony(ceremony);
+        }
       }
       done && done(report);
     } catch (err) {

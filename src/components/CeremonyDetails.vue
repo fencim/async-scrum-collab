@@ -265,7 +265,18 @@ function resetVoting() {
                         <q-linear-progress
                           instant-feedback
                           :value="row.progress"
-                        />
+                        >
+                          <q-tooltip class="bg-transparent">
+                            <q-badge
+                              color="white"
+                              text-color="accent"
+                              :label="
+                                (Math.round(row.progress * 100) / 100) * 100 +
+                                '%'
+                              "
+                            />
+                          </q-tooltip>
+                        </q-linear-progress>
                       </q-card-section>
                     </q-card>
                   </div>
