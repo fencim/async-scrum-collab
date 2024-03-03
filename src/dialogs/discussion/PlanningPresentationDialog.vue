@@ -65,6 +65,20 @@
               sizes="lg"
             />
           </div>
+          <div class="q-mt-md text-center">
+            <q-separator />
+            <div class="text-h6">Team Velocity</div>
+            <div>
+              <span v-if="previousReviews.length > 1"
+                >({{
+                  previousReviews.map((r) => r.totalCompleted || 0).join(',')
+                }})</span
+              >
+              <span class="text-h4">
+                {{ teamVelocity }}
+              </span>
+            </div>
+          </div>
         </q-carousel-slide>
         <q-carousel-slide
           name="goals"
@@ -294,6 +308,7 @@ import {
   IIteration,
   IObjective,
   IPlanningCeremony,
+  IReviewCeremony,
   IRoadBlock,
   IStory,
 } from 'src/entities';
@@ -312,6 +327,7 @@ const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
 const planning = ref<IPlanningCeremony>();
 const totalPoints = ref(0);
+const teamVelocity = ref(0);
 const completedPoints = ref(0);
 function membersAgreed(item: DiscussionItem) {
   const awareness = item.awareness || {};
@@ -405,6 +421,7 @@ const roadblocksSlides = computed(() => {
   }
   return slides;
 });
+const previousReviews = ref<IReviewCeremony[]>([]);
 TheDialogs.on({
   type: 'playPlanningPresentation',
   cb(e) {
@@ -415,6 +432,23 @@ TheDialogs.on({
     planning.value = ceremonyStore.ceremonies.find(
       (c) => c.type == 'planning' && c.iterationKey == iteration.value?.key
     ) as IPlanningCeremony;
+    previousReviews.value = ceremonyStore.ceremonies
+      .filter(
+        (c) =>
+          c.type == 'review' &&
+          c.projectKey == sprint.projectKey &&
+          date.getDateDiff(sprint.start, c.start, 'days') > 0
+      )
+      .sort((a, b) => b.start.localeCompare(a.start))
+      .splice(0, 3) as IReviewCeremony[];
+    //max last  sprints
+    teamVelocity.value = previousReviews.value.reduce(
+      (total, r) => total + (r.totalCompleted || 0),
+      0
+    );
+    if (previousReviews.value.length) {
+      teamVelocity.value = teamVelocity.value / previousReviews.value.length;
+    }
     const planned = discussionStore.discussions.filter(
       (d) => d.iteration && entityKey(d.iteration) == e.iteration?.key
     );

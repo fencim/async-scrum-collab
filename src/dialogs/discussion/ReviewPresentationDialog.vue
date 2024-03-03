@@ -241,8 +241,21 @@
                 :class="completedPoints < totalPoints ? 'text-negative' : ''"
               >
                 <q-separator />
-                <div class="text-h6">Completed</div>
-                <div class="text-h4 text-bold">{{ completedPoints }}</div>
+                <div class="row justify-around" :style="'min-width:200px'">
+                  <div class="col">
+                    <div class="text-h6">Completed</div>
+                    <div class="text-h4 text-bold">{{ completedPoints }}</div>
+                  </div>
+                  <div class="col">
+                    <div class="text-h6">Missed</div>
+                    <div class="text-h4 text-bold">
+                      {{
+                        (planning?.totalCommitted || totalPoints) -
+                        completedPoints
+                      }}
+                    </div>
+                  </div>
+                </div>
               </div>
               <div
                 v-if="!review?.totalCompleted && activeStore.canUserModerate"
@@ -258,6 +271,19 @@
                   @click="acceptSprintResult"
                 />
               </div>
+              <q-icon
+                v-else
+                name="verified"
+                :color="completedPoints < totalPoints ? 'negative' : 'positive'"
+                size="xl"
+              >
+                <q-tooltip
+                  >Reviewed on
+                  {{
+                    date.formatDate(review?.dateReviewed, 'MMM DD, YYYY')
+                  }}</q-tooltip
+                >
+              </q-icon>
             </div>
           </div>
         </q-carousel-slide>
