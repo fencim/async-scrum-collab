@@ -2,7 +2,7 @@ import { IBaseEntity } from './base.entity';
 
 export type CeremonyType = 'planning' | 'review' | 'scrum' | 'retro';
 
-interface IBaseCeremony extends IBaseEntity {
+export interface IBaseCeremony extends IBaseEntity {
   key: string;
   projectKey: string;
   iterationKey: string;

@@ -32,6 +32,11 @@ export type Discussion =
     done?: (report?: DiscussionReport[]) => void
     error?: ErrorCallback;
   }>
+  | Struct<'assessCeremony', {
+    ceremony: ICeremony,
+    done?: (report?: DiscussionReport[]) => void
+    error?: ErrorCallback;
+  }>
   | Struct<'voteForComplexity', {
     item: DiscussionItem,
     vote: string;

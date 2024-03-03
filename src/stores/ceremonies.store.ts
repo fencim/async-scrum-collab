@@ -95,6 +95,7 @@ export const useCeremonyStore = defineStore('ceremony', {
       return result;
     },
     checkCompleteness(ceremony: ICeremony, members: string[], convo: ConvoList) {
+      const discussionStore = useDiscussionStore();
       const factors: DiscussionReport[] = [];
       const questions = convo.filter(c => c.type == 'question') as IQuestion[];
       const votes = convo.filter(c =>
@@ -138,6 +139,12 @@ export const useCeremonyStore = defineStore('ceremony', {
         { resolved: 0, pending: 0 });
 
       factors.push(this.logFactor(qProgress.resolved, qProgress.resolved + qProgress.pending, 'questions resolution'));
+
+      const discussions = discussionStore.discussionsOf(ceremony);
+      const sum = discussions.reduce((total, disc) => (total + (disc.progress || 0)), 0);
+      const mean = (discussions.length) ? (sum / discussions.length) : 0;
+      factors.push(this.logFactor(mean * discussions.length, discussions.length, 'discussion items'));
+
       factors.splice(0, 0, this.logFactor(
         factors.reduce((p, c) => (p + c.progress), 0),
         factors.length, 'overall progress factors'))

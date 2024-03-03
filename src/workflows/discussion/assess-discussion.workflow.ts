@@ -5,12 +5,14 @@ import { useActiveStore } from 'src/stores/active.store';
 import { entityKey } from 'src/entities/base.entity';
 import { format } from 'quasar';
 import { useProfilesStore } from 'src/stores/profiles.store';
+import { useCeremonyStore } from 'src/stores/ceremonies.store';
 
 TheWorkflows.on({
   type: 'assessDiscussion',
   permissions: ['admin', 'moderator', 'member'],
   async cb(e) {
     const discussionStore = useDiscussionStore();
+    const ceremonyStore = useCeremonyStore();
     const convoStore = useConvoStore();
     const activeStore = useActiveStore();
     const project = activeStore.activeProject;
@@ -31,7 +33,15 @@ TheWorkflows.on({
           const oldProgress = discussion.progress;
           discussion.progress = report[0].progress;
           await discussionStore.updateDiscussion(discussion.key, ['progress'], discussion);
-          await discussionStore.updateCeremonyProgress(discussion);
+          const ceremony = ceremonyStore.ceremonies.find(c =>
+            (c.key == discussion.ceremonyKey) ||
+            (!discussion.ceremonyKey && c.type == 'planning' && discussion.iteration && c.iterationKey == entityKey(discussion.iteration)));
+          if (ceremony) {
+            await TheWorkflows.emitPromised({
+              type: 'assessCeremony',
+              arg: { ceremony }
+            })
+          }
           convoStore.sendMessage(
             discussion.projectKey,
             entityKey(discussion.iteration),

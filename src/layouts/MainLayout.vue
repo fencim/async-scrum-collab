@@ -28,7 +28,11 @@
       side="right"
     >
       <router-view name="actions" />
-      <q-page-sticky position="bottom-right" :offset="[5, 20]">
+      <q-page-sticky
+        v-if="!/^(ceremony|convo)$/.test(String($route.name))"
+        position="bottom-right"
+        :offset="[5, 20]"
+      >
         <q-btn round size="lg" dense icon="home" to="/" />
       </q-page-sticky>
     </q-drawer>

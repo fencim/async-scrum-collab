@@ -11,3 +11,4 @@ import './update-discussion-fields.workflow';
 import './send-message.workflow';
 import './vote-for-confidence.workflow';
 import './reset-confidence-voting.workflow';
+import './assess-ceremony.workflow';
