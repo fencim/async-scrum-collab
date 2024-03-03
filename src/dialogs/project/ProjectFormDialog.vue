@@ -20,6 +20,14 @@
 
         <q-card-section>
           <q-input
+            v-model="projectValidation"
+            type="password"
+            v-if="!formPreFields.project"
+            :label="'Security Code:'"
+            :disable="saving"
+            :rules="[(v) => valid == v || 'Wrong Secret Code']"
+          />
+          <q-input
             v-model="theProject.key"
             :readonly="!!formPreFields.project"
             label="Key"
@@ -50,6 +58,7 @@
             :disable="saving"
             type="textarea"
           />
+
           <q-file
             v-if="!icon"
             v-model="icon"
@@ -86,7 +95,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useQuasar } from 'quasar';
+import { date, useQuasar } from 'quasar';
 import TheImageCropper from 'src/components/TheImageCropper.vue';
 import { IProject } from 'src/entities';
 import { useProfilesStore } from 'src/stores/profiles.store';
@@ -118,6 +127,12 @@ const saving = ref(false);
 const doneCb = ref<undefined | ((p: IProject) => void)>();
 const $router = useRouter();
 const $q = useQuasar();
+const today = new Date();
+const valid =
+  String(today.getFullYear() + today.getMonth()) +
+  date.formatDate(today, 'dd')[0];
+const projectValidation = ref('');
+
 onMounted(async () => {
   await profileStore.init();
 });
