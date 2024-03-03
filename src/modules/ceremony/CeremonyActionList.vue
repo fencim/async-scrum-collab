@@ -157,10 +157,6 @@ export default defineComponent({
         this.activeIteration,
         this.activeCeremony
       );
-      this.convoStore.setLinkVisibility(
-        /^(planning-presentation|confidence)$/i,
-        this.ceremony?.type == 'planning'
-      );
 
       this.activeItem =
         (this.$route.params.item && String(this.$route.params.item)) || '';
@@ -189,6 +185,14 @@ export default defineComponent({
       }
       this.showCreateDiscussionTooltip =
         !this.goalIsCreated || !this.objectiveIsCreated;
+      this.convoStore.setLinkVisibility(
+        /^(planning-presentation|confidence)$/i,
+        this.ceremony?.type == 'planning'
+      );
+      this.convoStore.setLinkVisibility(
+        /^(review-presentation)$/i,
+        this.ceremony?.type == 'review'
+      );
     },
     async actOn(action: ActionItem) {
       const discussion = await discussionStore.withKey(this.activeItem);
@@ -221,6 +225,13 @@ export default defineComponent({
       } else if (action.key == 'planning-presentation' && this.iteration) {
         TheDialogs.emit({
           type: 'playPlanningPresentation',
+          arg: {
+            iteration: this.iteration,
+          },
+        });
+      } else if (action.key == 'review-presentation' && this.iteration) {
+        TheDialogs.emit({
+          type: 'playReviewPresentation',
           arg: {
             iteration: this.iteration,
           },

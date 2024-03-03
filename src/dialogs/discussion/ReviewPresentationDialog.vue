@@ -34,36 +34,12 @@
           <div class="q-mt-md text-h2 text-center text-bold">
             {{ activeStore.activeProject.name }}
           </div>
-          <div class="q-mt-md text-h6 text-center">
-            {{ iteration.name }}
+          <div class="q-mt-md text-h6 text-center text-capitalize">
+            {{ iteration.name }} {{ review?.type }}
           </div>
-          <div class="q-mt-md text-center">
-            <q-icon name="today" />
-            {{ date.formatDate(iteration.start, 'MMM DD') }} to
-            {{ date.formatDate(iteration.end, 'MMM DD') }}
-          </div>
-        </q-carousel-slide>
-        <q-carousel-slide name="members" class="column no-wrap flex-center">
-          <q-icon name="diversity_3" size="50px" />
-          <div class="q-mt-md text-center text-bold text-h6">
-            {{ activeStore.activeProject?.name }} Moderators
-          </div>
-          <div class="q-mt-md text-center">
-            <recent-active-members
-              :profiles="moderators"
-              :max-count="4"
-              sizes="lg"
-            />
-          </div>
-          <div class="q-mt-md text-center text-bold text-h6">
-            {{ activeStore.activeProject?.name }} Team
-          </div>
-          <div class="q-mt-md text-center">
-            <recent-active-members
-              :profiles="members"
-              :max-count="15"
-              sizes="lg"
-            />
+          <div class="q-mt-md text-center" v-if="review">
+            <q-icon name="time" />
+            {{ date.formatDate(review.start, 'MMM DD') }}
           </div>
         </q-carousel-slide>
         <q-carousel-slide
@@ -76,7 +52,8 @@
           <div class="q-mt-md full-width">
             <q-banner
               rounded
-              class="q-my-xs text-center text-h6 bg-accent full-width"
+              class="q-my-xs text-center text-h6 full-width"
+              :class="item.doneDate ? 'bg-positive' : 'bg-negative'"
               v-for="item in goals"
               :key="item.key"
             >
@@ -88,22 +65,21 @@
                 sizes="sm"
               />
 
-              <template #action
-                ><q-btn
-                  icon="thumb_up_alt"
-                  size="sm"
-                  flat
-                  dense
-                  round
-                  @click="
-                    TheDialogs.emit({
-                      type: 'agreeOnItemReadiness',
-                      arg: {
-                        item,
-                      },
-                    })
-                  "
-              /></template>
+              <template #action>
+                <q-icon
+                  v-if="!item.doneDate"
+                  name="sentiment_very_dissatisfied"
+                  size="xl"
+                >
+                  <q-tooltip>Not Done</q-tooltip>
+                </q-icon>
+                <q-icon v-else name="check" size="xl">
+                  <q-tooltip
+                    >Done on
+                    {{ date.formatDate(item.doneDate, 'MMM DD') }}</q-tooltip
+                  >
+                </q-icon>
+              </template>
             </q-banner>
           </div>
         </q-carousel-slide>
@@ -122,6 +98,7 @@
           <q-banner
             rounded
             class="q-my-xs text-center text-h6 bg-accent full-width"
+            :class="item.doneDate ? 'bg-positive' : 'bg-negative'"
             v-for="item in slide.objectives"
             :key="item.key"
           >
@@ -132,22 +109,21 @@
                 sizes="sm"
               />
             </div>
-            <template #action
-              ><q-btn
-                icon="thumb_up_alt"
-                size="sm"
-                flat
-                dense
-                round
-                @click="
-                  TheDialogs.emit({
-                    type: 'agreeOnItemReadiness',
-                    arg: {
-                      item,
-                    },
-                  })
-                "
-            /></template>
+            <template #action>
+              <q-icon
+                v-if="!item.doneDate"
+                name="sentiment_very_dissatisfied"
+                size="xl"
+              >
+                <q-tooltip>Not Done</q-tooltip>
+              </q-icon>
+              <q-icon v-else name="check" size="xl">
+                <q-tooltip
+                  >Done on
+                  {{ date.formatDate(item.doneDate, 'MMM DD') }}</q-tooltip
+                >
+              </q-icon>
+            </template>
           </q-banner>
         </q-carousel-slide>
         <q-carousel-slide
@@ -165,6 +141,7 @@
           <q-banner
             rounded
             class="q-my-xs text-center text-h6 bg-accent full-width"
+            :class="item.doneDate ? 'bg-positive' : 'bg-negative'"
             v-for="item in slide.stories"
             :key="item.key"
           >
@@ -184,22 +161,21 @@
                 sizes="sm"
               />
             </div>
-            <template #action
-              ><q-btn
-                icon="thumb_up_alt"
-                size="sm"
-                flat
-                dense
-                round
-                @click="
-                  TheDialogs.emit({
-                    type: 'agreeOnItemReadiness',
-                    arg: {
-                      item,
-                    },
-                  })
-                "
-            /></template>
+            <template #action>
+              <q-icon
+                v-if="!item.doneDate"
+                name="sentiment_very_dissatisfied"
+                size="xl"
+              >
+                <q-tooltip>Not Done</q-tooltip>
+              </q-icon>
+              <q-icon v-else name="check" size="xl">
+                <q-tooltip
+                  >Done on
+                  {{ date.formatDate(item.doneDate, 'MMM DD') }}</q-tooltip
+                >
+              </q-icon>
+            </template>
           </q-banner>
         </q-carousel-slide>
         <q-carousel-slide name="burn-down">
@@ -219,7 +195,7 @@
           <q-banner
             rounded
             class="q-my-xs text-center text-h6 full-width"
-            :class="item.resolution ? 'bg-accent' : 'bg-negative'"
+            :class="item.resolution ? 'bg-positive' : 'bg-negative'"
             v-for="item in slide.roadblocks"
             :key="item.key"
           >
@@ -267,12 +243,20 @@
                 <q-separator />
                 <div class="text-h6">Completed</div>
                 <div class="text-h4 text-bold">{{ completedPoints }}</div>
-                <q-icon name="thumb_up" />
               </div>
-              <div v-if="planning?.confidence">
+              <div
+                v-if="!review?.totalCompleted && activeStore.canUserModerate"
+              >
                 <q-separator />
-                <div class="text-h6">Team Confidence Vote</div>
-                <div class="text-h4">{{ planning?.confidence }}</div>
+                <q-btn
+                  icon="handshake"
+                  class="q-mt-xl"
+                  size="xl"
+                  flat
+                  round
+                  dense
+                  @click="acceptSprintResult"
+                />
               </div>
             </div>
           </div>
@@ -303,16 +287,18 @@ import {
   IIteration,
   IObjective,
   IPlanningCeremony,
+  IReviewCeremony,
   IRoadBlock,
   IStory,
 } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
-import { date } from 'quasar';
+import { date, useQuasar } from 'quasar';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { entityKey } from 'src/entities/base.entity';
 import BurnDownPage from 'src/modules/iteration/BurnDownPage.vue';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
+import { TheWorkflows } from 'src/workflows/the-workflows';
 const showPresentation = ref(false);
 const slide = ref('sprint');
 const fullscreen = ref(false);
@@ -320,18 +306,13 @@ const iteration = ref<IIteration>();
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
 const planning = ref<IPlanningCeremony>();
+const review = ref<IReviewCeremony>();
 const totalPoints = ref(0);
 const completedPoints = ref(0);
 function membersAgreed(item: DiscussionItem) {
   const awareness = item.awareness || {};
   return activeStore.activeMembers.filter((m) => awareness[m.key] == 'agree');
 }
-const members = computed(() => {
-  return [...activeStore.activeMembers];
-});
-const moderators = computed(() => {
-  return [...activeStore.administrators, ...activeStore.moderators];
-});
 const goals = computed(() => {
   return discussionStore.discussions.filter(
     (d) =>
@@ -424,27 +405,78 @@ TheDialogs.on({
     planning.value = ceremonyStore.ceremonies.find(
       (c) => c.type == 'planning' && c.iterationKey == iteration.value?.key
     ) as IPlanningCeremony;
-    const planned = discussionStore.discussions.filter(
-      (d) => d.iteration && entityKey(d.iteration) == e.iteration?.key
-    );
-
-    totalPoints.value =
-      planning.value.totalCommitted ||
-      planned.reduce((prev, curr) => {
-        return prev + Number(curr.complexity || 0);
-      }, 0);
-    completedPoints.value = planned
-      .filter(
-        (d) =>
-          d.doneDate &&
-          date.getDateDiff(d.doneDate, sprint.start, 'days') >= 0 &&
-          date.getDateDiff(sprint.end, d.doneDate, 'days') >= 0
-      )
-      .reduce((prev, curr) => {
-        return prev + Number(curr.complexity || 0);
-      }, 0);
+    review.value = ceremonyStore.ceremonies.find(
+      (c) => c.type == 'review' && c.iterationKey == iteration.value?.key
+    ) as IReviewCeremony;
+    if (
+      review.value.totalCompleted &&
+      typeof review.value.targetMissed == 'number'
+    ) {
+      completedPoints.value = review.value.totalCompleted;
+      totalPoints.value =
+        planning.value.totalCommitted ||
+        review.value.targetMissed + completedPoints.value;
+    } else {
+      const planned = discussionStore.discussions.filter(
+        (d) => d.iteration && entityKey(d.iteration) == e.iteration?.key
+      );
+      totalPoints.value =
+        planning.value.totalCommitted ||
+        planned.reduce((prev, curr) => {
+          return prev + Number(curr.complexity || 0);
+        }, 0);
+      completedPoints.value = planned
+        .filter(
+          (d) =>
+            d.doneDate &&
+            date.getDateDiff(d.doneDate, sprint.start, 'days') >= 0 &&
+            date.getDateDiff(sprint.end, d.doneDate, 'days') >= 0
+        )
+        .reduce((prev, curr) => {
+          return prev + Number(curr.complexity || 0);
+        }, 0);
+    }
     slide.value = 'sprint';
     showPresentation.value = true;
   },
 });
+const $q = useQuasar();
+function acceptSprintResult() {
+  if (!review.value) return;
+  const completed = completedPoints.value;
+  const committed = planning.value?.totalCommitted || totalPoints.value;
+  const missed = committed - completedPoints.value;
+  $q.notify({
+    message: 'Should we proceed to accept the result?',
+    caption: `Completed: ${completed}, Missed: ${missed}`,
+    position: 'center',
+    timeout: 0,
+    group: false,
+    color: 'primary',
+    actions: [
+      {
+        label: 'Accept',
+        color: 'white',
+        handler: async () => {
+          if (!review.value) return;
+          review.value = await TheWorkflows.emitPromised<IReviewCeremony>({
+            type: 'acceptSprintResult',
+            arg: {
+              review: { ...review.value },
+              completed: completed,
+              missed: missed,
+            },
+          });
+        },
+      },
+      {
+        icon: 'cancel',
+        color: 'white',
+        handler: () => {
+          /* ... */
+        },
+      },
+    ],
+  });
+}
 </script>

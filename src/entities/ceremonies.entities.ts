@@ -18,7 +18,9 @@ export interface IPlanningCeremony extends IBaseCeremony {
 }
 export interface IReviewCeremony extends IBaseCeremony {
   type: 'review'
+  dateReviewed?: string;
   targetMissed?: number;
+  totalCompleted?: number;
 }
 export interface IScrumCeremony extends IBaseCeremony {
   type: 'scrum'

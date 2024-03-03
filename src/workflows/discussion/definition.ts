@@ -1,4 +1,4 @@
-import { Convo, DiscussionItem, DiscussionReport, IBoardColumn, ICeremony, IProfile, IQuestion, IResponse } from 'src/entities';
+import { Convo, DiscussionItem, DiscussionReport, IBoardColumn, ICeremony, IProfile, IQuestion, IResponse, IReviewCeremony } from 'src/entities';
 import { Struct } from 'src/structs';
 export enum TaskActionError {
   notReady,
@@ -35,6 +35,13 @@ export type Discussion =
   | Struct<'assessCeremony', {
     ceremony: ICeremony,
     done?: (report?: DiscussionReport[]) => void
+    error?: ErrorCallback;
+  }>
+  | Struct<'acceptSprintResult', {
+    review: IReviewCeremony,
+    completed: number;
+    missed: number;
+    done?: (review: IReviewCeremony) => void
     error?: ErrorCallback;
   }>
   | Struct<'voteForComplexity', {

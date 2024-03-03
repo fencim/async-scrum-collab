@@ -36,7 +36,7 @@
         />
       </div>
     </template>
-    <slot></slot>
+    <slot />
   </q-chat-message>
 </template>
 

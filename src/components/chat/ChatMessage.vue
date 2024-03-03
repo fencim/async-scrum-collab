@@ -1,8 +1,6 @@
 <template>
   <base-chat-message :msg="msg" :curr-user="currUser" @reply-to="onReply">
-    <div style="min-width: 120px">
-      {{ msg.message }}
-    </div>
+    <div style="min-width: 120px"><span v-html="msg.message"></span></div>
   </base-chat-message>
 </template>
 
