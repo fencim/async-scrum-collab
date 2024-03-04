@@ -14,9 +14,12 @@ export const useIterationStore = defineStore(
   } as IIterationState),
   actions: {
     async ofProject(key: string) {
+      if (!this.iterations.find(i => i.projectKey == key)) {
+        this.iterations = [];
+      }
       iterationResource.streamWith({ projectKey: key })
         .pipe(map(stream => {
-          return stream.map(i => ({
+          return stream?.map(i => ({
             ...i,
             start: date.formatDate(i.start, 'MMM D, YYYY'),
             end: date.formatDate(i.end, 'MMM D, YYYY')
@@ -26,7 +29,7 @@ export const useIterationStore = defineStore(
         }))
         .subscribe({
           next: (stream) => {
-            this.iterations = stream;
+            this.iterations = stream || [];
             // if (this.activeIteration) {
             //   this.selectIteration(key, this.activeIteration.key);
             // }

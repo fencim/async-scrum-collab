@@ -39,6 +39,7 @@ export const useConvoStore = defineStore('convo', {
       this.streams[topic] = stream;
       stream.subscribe({
         next: async (convo) => {
+          if (!convo) return;
           const profileStore = useProfilesStore();
           const list = [...convo].sort((a, b) => ((new Date(a.date).getTime()) - (new Date(b.date).getTime())));
           const mapped = await (Promise.all(list.map(async (m) => {

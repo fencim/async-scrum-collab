@@ -62,10 +62,14 @@ export const useDiscussionStore = defineStore('discussion', {
       return this.discussions.filter(d => keys.includes(d.key));
     },
     ofProject(projectKey: string) {
+      if (!this.discussions.find(c => c.projectKey == projectKey)) {
+        this.discussions = [];
+      }
       return discussionResource.streamWith({
         projectKey
       })
         .pipe(switchMap(list => {
+          if (!list) return [];
           const profileStore = useProfilesStore();
           const iterationStore = useIterationStore();
           return from(Promise.all(list.map(async (m) => {
@@ -88,7 +92,7 @@ export const useDiscussionStore = defineStore('discussion', {
         }))
         .subscribe({
           next: (stream) => {
-            this.discussions = stream;
+            this.discussions = stream || [];
           },
         });
     },

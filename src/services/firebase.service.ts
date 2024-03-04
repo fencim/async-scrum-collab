@@ -263,6 +263,10 @@ class FirebaseService {
           const records = snapshot.docs.map((doc) => {
             return { ...doc.data(), id: doc.id } as unknown as T;
           });
+          if (snapshot.metadata.fromCache) {
+            subscriber.next();
+            return;
+          }
           const lastVisible = snapshot.docs[snapshot.docs.length - 1];
           if (options) {
             options.firstVisible = snapshot.docs[0];
@@ -283,7 +287,7 @@ class FirebaseService {
     modelName: ModelName,
     filter: { [field: string]: string } = {},
     options?: QueryOptions
-  ): Promise<Models[]> {
+  ): Promise<Models[] | undefined> {
     const { queryRef, collectionRef } = this.getQueryFromFilter(
       modelName,
       filter,
@@ -291,7 +295,7 @@ class FirebaseService {
     );
     const docsRef = await getDocs(queryRef || collectionRef);
     if (docsRef.empty) {
-      return [];
+      return !docsRef.metadata.fromCache ? [] : undefined;
     } else {
       if (options) {
         options.size = docsRef.size;

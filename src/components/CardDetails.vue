@@ -232,7 +232,9 @@ function describeDiscussion(item: DiscussionItem | string): string {
       <div class="q-px-sm">
         <q-badge v-if="task.priority" class="q-mr-xs" dense color="primary">{{
           task.priority
-        }}</q-badge>
+        }}
+          <q-tooltip>Priority</q-tooltip>
+        </q-badge>
         <due-date-chip-comp :task="task" />
       </div>
       <q-btn

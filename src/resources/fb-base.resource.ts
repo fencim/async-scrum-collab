@@ -23,7 +23,7 @@ export abstract class FbBaseResource<T extends (IBaseEntity & { key: string })> 
     if (!filters || typeof filters !== 'object') return !!a;
     const conditions = Object.keys(filters);
     let $eval = true;
-    for (const condition in conditions) {
+    for (const condition of conditions) {
       if (!/ /.test(condition)) {
         const op1 = filters[condition];
         const op2 = (a as unknown as Record<string, string>)[condition];

@@ -31,15 +31,18 @@ export const useCeremonyStore = defineStore('ceremony', {
       }
     },
     async ofProject(project: string) {
+      if (!this.ceremonies.find(c => c.projectKey == project)) {
+        this.ceremonies = [];
+      }
       ceremonyResource.streamWith({
         projectKey: project
       }).pipe(map(stream => {
-        return stream.sort((a, b) => {
+        return stream?.sort((a, b) => {
           return date.getDateDiff(a.start, b.start, 'hours');
         })
       })).subscribe({
         next: ((stream) => {
-          this.ceremonies = stream;
+          this.ceremonies = stream || [];
           if (this.activeCeremony) {
             this.setActiveCeremony(stream.find(c => c.key == this.activeCeremony?.key));
           }

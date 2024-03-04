@@ -14,6 +14,7 @@
         </div>
       </q-date>
     </q-popup-proxy>
+    <q-tooltip>Due Date</q-tooltip>
   </q-chip>
 </template>
 <script lang="ts" setup>

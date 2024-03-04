@@ -1,6 +1,5 @@
 import { useConvoStore } from 'src/stores/convo.store';
 import { TheWorkflows } from '../the-workflows';
-import { entityKey } from 'src/entities/base.entity';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useActiveStore } from 'src/stores/active.store';
 

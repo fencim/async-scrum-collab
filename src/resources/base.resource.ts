@@ -1161,9 +1161,12 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
               filters
             );
             return updated || Promise.all(list.map(async (d) => (await this.getDoc(this.getKeyOf(d)) as IDocStore<T>)));
-          } else {
+          } else if (list) {
             return this.saveEachTo(list, 'synced');
+          } else {
+            return list;
           }
+
         })
       );
     activeStream = merge(offline, online);
@@ -1178,6 +1181,6 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
     }
   ): Observable<T[]> {
     return this.streamDocWith(filters, options)
-      .pipe(map(docs => docs.map(d => d.data)));
+      .pipe(map(docs => docs?.map(d => d.data)));
   }
 }

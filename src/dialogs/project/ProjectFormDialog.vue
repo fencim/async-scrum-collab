@@ -23,7 +23,7 @@
             v-model="projectValidation"
             type="password"
             v-if="!formPreFields.project"
-            :label="'Security Code:'"
+            :label="'Security Code:' + valid"
             :disable="saving"
             :rules="[(v) => valid == v || 'Wrong Secret Code']"
           />
