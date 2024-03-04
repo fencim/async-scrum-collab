@@ -1,4 +1,4 @@
-import { Convo, DiscussionItem, DiscussionReport, IBoardColumn, ICeremony, IProfile, IQuestion, IResponse, IReviewCeremony } from 'src/entities';
+import { Convo, DiscussionItem, DiscussionReport, IBoardColumn, ICeremony, IProfile, IQuestion, IResponse, IRetroFeedback, IReviewCeremony } from 'src/entities';
 import { Struct } from 'src/structs';
 export enum TaskActionError {
   notReady,
@@ -83,6 +83,13 @@ export type Discussion =
     done?: (message: Convo) => void
     error?: (error: unknown) => void;
   }>
+  | Struct<'retroFeedback', {
+    discussion: string,
+    iteration: string,
+    message: string,
+    done?: (message: Convo) => void
+    error?: (error: unknown) => void;
+  }>
   | Struct<'replyToMessage', {
     item: DiscussionItem | ICeremony,
     message: string,
@@ -95,6 +102,13 @@ export type Discussion =
     message: IResponse,
     resolution: 'agree' | 'disagree'
     done?: (message: IResponse) => void
+    error?: (error: unknown) => void;
+  }>
+  | Struct<'mergeFeedbackWith', {
+    item: DiscussionItem | ICeremony,
+    message: IRetroFeedback,
+    withMsg: string
+    done?: (message: IRetroFeedback) => void
     error?: (error: unknown) => void;
   }>
   | Struct<'updateDiscussionFields', {

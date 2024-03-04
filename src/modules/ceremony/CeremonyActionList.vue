@@ -57,14 +57,14 @@
           :self="'center left'"
           class="text-subtitle1"
           v-model="showCreateDiscussionTooltip"
-          v-else-if="!goalIsCreated && ceremony.type == 'planning'"
+          v-else-if="!goalIsCreated && ceremony?.type == 'planning'"
           >Create Iteration goals first!</q-tooltip
         >
         <q-tooltip
           :self="'center left'"
           class="text-subtitle1"
           v-model="showCreateDiscussionTooltip"
-          v-else-if="ceremony.type == 'planning'"
+          v-else-if="ceremony?.type == 'planning'"
           >Create at least one iteration objective!</q-tooltip
         >
         <q-tooltip
@@ -72,7 +72,7 @@
           class="text-subtitle1 text-capitalize"
           v-model="showCreateDiscussionTooltip"
           v-else
-          >Create {{ ceremony.type }} Discussion Item</q-tooltip
+          >Create {{ ceremony?.type }} Discussion Item</q-tooltip
         >
       </q-item>
     </q-list>

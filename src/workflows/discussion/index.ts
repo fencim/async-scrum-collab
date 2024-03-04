@@ -13,3 +13,5 @@ import './vote-for-confidence.workflow';
 import './reset-confidence-voting.workflow';
 import './assess-ceremony.workflow';
 import './accept-sprint-result.workflow';
+import './retro-feedback.workflow';
+import './merge-feedback-with.workflow';

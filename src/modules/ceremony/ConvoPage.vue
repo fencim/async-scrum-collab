@@ -49,6 +49,13 @@
           "
           :ref-msg="convoStore.getConvo(m.ref, activeIteration)"
         />
+        <chat-retro-feedback-message
+          v-else-if="m.type == 'retro-feedback'"
+          :msg="m"
+          :item="discussion || ceremony"
+          @reply-to="replyTo = m"
+          :curr-user="profileStore.presentUser?.key"
+        />
       </div>
       <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
     </q-infinite-scroll>
@@ -70,6 +77,7 @@ import ChatMessage from 'src/components/chat/ChatMessage.vue';
 import ChatVoteMessage from 'src/components/chat/ChatVoteMessage.vue';
 import ChatQuestionMessage from 'src/components/chat/ChatQuestionMessage.vue';
 import ChatResponseMessage from 'src/components/chat/ChatResponseMessage.vue';
+import ChatRetroFeedbackMessage from 'src/components/chat/ChatRetroFeedbackMessage.vue';
 import ChatMessageForm from 'src/components/chat/ChatMessageForm.vue';
 import {
   IIteration,
@@ -145,10 +153,15 @@ onUpdated(async () => {
   await nextTick();
   scrollToBottom();
 });
+
 const messages = computed(() => {
   const convo = convoStore.convo[activeIteration.value ?? ''] || [];
   if (discussion.value) {
-    return convo.filter((m) => m.discussion == discussion.value?.key);
+    const msgs = convo.filter((m) => m.discussion == discussion.value?.key);
+    if (ceremony.value?.type == 'retro') {
+      return msgs.filter((m) => m.type != 'retro-feedback' || !m.groupWith);
+    }
+    return msgs;
   }
   if (ceremony.value?.type == 'planning') {
     return convo.filter((m) => m.discussion == `${iteration.value?.key}plan`);
@@ -200,6 +213,15 @@ async function sendMessage() {
         done: () => {
           replyTo.value = undefined;
         },
+      },
+    });
+  } else if (message.value && ceremony.value?.type == 'retro') {
+    await TheWorkflows.emitPromised({
+      type: 'retroFeedback',
+      arg: {
+        discussion: activeItem.value || activeCeremony.value,
+        iteration: activeIteration.value,
+        message: message.value,
       },
     });
   } else if (message.value) {
