@@ -48,6 +48,11 @@
       name="self_improvement"
       size="lg"
     />
+    <q-icon
+      v-else-if="item.type == 'action-item'"
+      name="rocket_launch"
+      size="lg"
+    />
     <span v-else>
       {{ formatKey(item.key) }}
     </span>

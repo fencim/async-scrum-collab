@@ -57,15 +57,22 @@
           :self="'center left'"
           class="text-subtitle1"
           v-model="showCreateDiscussionTooltip"
-          v-else-if="!goalIsCreated"
+          v-else-if="!goalIsCreated && ceremony.type == 'planning'"
           >Create Iteration goals first!</q-tooltip
         >
         <q-tooltip
           :self="'center left'"
           class="text-subtitle1"
           v-model="showCreateDiscussionTooltip"
-          v-else
+          v-else-if="ceremony.type == 'planning'"
           >Create at least one iteration objective!</q-tooltip
+        >
+        <q-tooltip
+          :self="'center left'"
+          class="text-subtitle1 text-capitalize"
+          v-model="showCreateDiscussionTooltip"
+          v-else
+          >Create {{ ceremony.type }} Discussion Item</q-tooltip
         >
       </q-item>
     </q-list>
@@ -76,7 +83,13 @@
 import { defineComponent } from 'vue';
 import EssentialLink from 'src/components/EssentialLink.vue';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
-import { DiscussionItem, ICeremony, IIteration, IProject } from 'src/entities';
+import {
+  DiscussionItem,
+  ICeremony,
+  IIteration,
+  IProject,
+  RetroItem,
+} from 'src/entities';
 import { useProjectStore } from 'src/stores/projects.store';
 import { useIterationStore } from 'src/stores/iterations.store';
 import { convoBus } from './convo-bus';
@@ -334,6 +347,42 @@ export default defineComponent({
         });
       }
     },
+    async newRetroDiscussion() {
+      if (!this.iteration) return;
+      const discussing = discussionStore.discussions.filter(
+        (d) => d.ceremonyKey == this.ceremony?.key
+      );
+      let discussionType: RetroItem['type'] | undefined;
+      if (!discussing.find((d) => d.type == 'went-well')) {
+        discussionType = 'went-well';
+      } else if (!discussing.find((d) => d.type == 'went-wrong')) {
+        discussionType = 'went-wrong';
+      } else if (!discussing.find((d) => d.type == 'to-improve')) {
+        discussionType = 'to-improve';
+      } else if (!discussing.find((d) => d.type == 'action-item')) {
+        discussionType = 'action-item';
+      }
+      if (discussionType) {
+        TheDialogs.emit({
+          type: 'newTask',
+          arg: {
+            iteration: this.iteration,
+            type: discussionType,
+            done: (item) => {
+              this.$router.replace({
+                name: 'convo',
+                params: {
+                  project: this.activeProject,
+                  iteration: this.activeIteration,
+                  ceremony: this.activeCeremony,
+                  item: item.key,
+                },
+              });
+            },
+          },
+        });
+      }
+    },
     newScrumDiscussion() {
       const existing = discussionStore.discussions.find(
         (d) =>
@@ -395,6 +444,8 @@ export default defineComponent({
         this.newPlanningDiscussion();
       } else if (this.ceremony?.type == 'scrum') {
         this.newScrumDiscussion();
+      } else if (this.ceremony?.type == 'retro') {
+        this.newRetroDiscussion();
       }
     },
   },
