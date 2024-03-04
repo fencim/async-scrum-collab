@@ -86,8 +86,8 @@ export const useProjectStore = defineStore('projectStore', {
         }
       })
       await projectResource.updatePropertiesFrom(theProject.key, {
-        [toBe]: destination,
-        [from]: source
+        [toBe]: [...(new Set(destination))],
+        [from]: [...(new Set(source))]
       }, [toBe, from], (() => {
         //
       })

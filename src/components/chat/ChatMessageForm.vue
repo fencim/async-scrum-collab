@@ -11,14 +11,14 @@
             @update:model-value="onType"
             rounded
             @keydown.enter.prevent="sendMessage"
-            :toolbar="[]"
+            :toolbar="[['header']]"
             :definitions="{}"
             dense
             flat
             class="input-box"
             placeholder="Message"
           >
-            <template v-slot:label>
+            <template #header>
               <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
                 <img :src="replyTo?.from.avatar" />
               </q-avatar>
@@ -34,7 +34,6 @@
                   name="question_mark"
                   v-if="replyTo?.type == 'question'"
               /></span>
-              <span v-else>Why disagree?</span>
             </template>
           </q-editor>
         </q-toolbar-title>
@@ -87,7 +86,7 @@ export default defineComponent({
 
 <style scoped>
 .input-box {
-  height: 40px;
+  height: 70px;
   font-size: 16px;
 }
 </style>

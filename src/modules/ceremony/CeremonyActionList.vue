@@ -127,10 +127,24 @@ export default defineComponent({
       return ceremonyStore.activeCeremonyProgress;
     },
     goalIsCreated() {
-      return discussionStore.discussions.find((d) => d.type == 'goal');
+      const iteration = this.iteration;
+      return discussionStore.discussions.find(
+        (d) =>
+          d.type == 'goal' &&
+          d.iteration &&
+          iteration &&
+          entityKey(d.iteration) == entityKey(iteration)
+      );
     },
     objectiveIsCreated() {
-      return discussionStore.discussions.find((d) => d.type == 'objective');
+      const iteration = this.iteration;
+      return discussionStore.discussions.find(
+        (d) =>
+          d.type == 'objective' &&
+          d.iteration &&
+          iteration &&
+          entityKey(d.iteration) == entityKey(iteration)
+      );
     },
   },
   methods: {
