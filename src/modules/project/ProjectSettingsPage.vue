@@ -517,7 +517,7 @@ export default defineComponent({
       }
     },
     selectPending(profile: IProfile) {
-      if (this.activeStore.canUserModerate) return;
+      if (!this.activeStore.canUserModerate) return;
       if (!this.selectedPending.find((m) => m.key == profile.key)) {
         this.selectedPending.push(profile);
       }
