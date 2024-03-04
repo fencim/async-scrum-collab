@@ -137,7 +137,9 @@ async function init() {
   project.value = projectStore.activeProject;
   activeIteration.value =
     ($route.params.iteration && String($route.params.iteration)) || '';
-  iteration.value = iterationStore.activeIteration;
+  iteration.value =
+    iterationStore.activeIteration ||
+    (await iterationStore.getIteration(activeIteration.value));
   activeCeremony.value =
     ($route.params.ceremony && String($route.params.ceremony)) || '';
   ceremony.value = await ceremonyStore.withKey(
