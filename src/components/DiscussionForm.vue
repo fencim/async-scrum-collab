@@ -159,13 +159,9 @@ const theDiscussion = ref<DiscussionItem>(
       status: props.status || props.refItem?.status || '',
       assignedTo: props.assignedTo,
       key: '',
-      awareness: {},
       description: '',
     } as DiscussionItem)
 );
-if (profileStore.theUser && theDiscussion.value.type == 'scrum') {
-  theDiscussion.value.awareness[profileStore.theUser.key] = 'agree';
-}
 
 onMounted(async () => {
   const route = useRoute();

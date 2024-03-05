@@ -56,6 +56,13 @@
           @reply-to="replyTo = m"
           :curr-user="profileStore.presentUser?.key"
         />
+        <chat-reaction-message
+          v-else-if="m.type == 'reaction'"
+          :msg="m"
+          :item="discussion || ceremony"
+          @reply-to="replyTo = m"
+          :curr-user="profileStore.presentUser?.key"
+        />
       </div>
       <div id="end-of-messages" class="text-center text-grey">&nbsp;</div>
     </q-infinite-scroll>
@@ -77,6 +84,7 @@ import ChatMessage from 'src/components/chat/ChatMessage.vue';
 import ChatVoteMessage from 'src/components/chat/ChatVoteMessage.vue';
 import ChatQuestionMessage from 'src/components/chat/ChatQuestionMessage.vue';
 import ChatResponseMessage from 'src/components/chat/ChatResponseMessage.vue';
+import ChatReactionMessage from 'src/components/chat/ChatReactionMessage.vue';
 import ChatRetroFeedbackMessage from 'src/components/chat/ChatRetroFeedbackMessage.vue';
 import ChatMessageForm from 'src/components/chat/ChatMessageForm.vue';
 import {

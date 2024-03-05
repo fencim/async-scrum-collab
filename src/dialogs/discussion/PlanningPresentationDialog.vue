@@ -319,19 +319,27 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { entityKey } from 'src/entities/base.entity';
 import BurnDownPage from 'src/modules/iteration/BurnDownPage.vue';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
+import { useConvoStore } from 'src/stores/convo.store';
 const showPresentation = ref(false);
 const slide = ref('sprint');
 const fullscreen = ref(false);
 const iteration = ref<IIteration>();
 const activeStore = useActiveStore();
 const discussionStore = useDiscussionStore();
+const convoStore = useConvoStore();
 const planning = ref<IPlanningCeremony>();
 const totalPoints = ref(0);
 const teamVelocity = ref(0);
 const completedPoints = ref(0);
 function membersAgreed(item: DiscussionItem) {
-  const awareness = item.awareness || {};
-  return activeStore.activeMembers.filter((m) => awareness[m.key] == 'agree');
+  if (!iteration.value) return [];
+  const convo = convoStore.convo[entityKey(iteration.value)] || [];
+  const reaction = convo.filter(
+    (c) =>
+      c.discussion == item.key && c.type == 'reaction' && c.reaction == 'agree'
+  );
+  const agreed = [...new Set(reaction.map((m) => entityKey(m.from)))];
+  return activeStore.activeMembers.filter((m) => agreed.includes(m.key));
 }
 const members = computed(() => {
   return [...activeStore.activeMembers];

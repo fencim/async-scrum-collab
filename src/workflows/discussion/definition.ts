@@ -70,9 +70,10 @@ export type Discussion =
     done?: (message: IQuestion) => void
     error?: (error: unknown) => void;
   }>
-  | Struct<'confirmDisagreement', {
+  | Struct<'confirmAgreement', {
     item: DiscussionItem,
     message: string,
+    reaction: 'agree' | 'disagree',
     done?: (message: IQuestion) => void
     error?: (error: unknown) => void;
   }>

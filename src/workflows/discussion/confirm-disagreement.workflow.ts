@@ -3,17 +3,14 @@ import { TheWorkflows } from '../the-workflows';
 import { entityKey } from 'src/entities/base.entity';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { IQuestion } from 'src/entities';
-import { useDiscussionStore } from 'src/stores/discussions.store';
-
 TheWorkflows.on({
-  type: 'confirmDisagreement',
+  type: 'confirmAgreement',
   permissions: ['admin', 'moderator', 'member'],
   loggable: 'operation',
   async cb(e) {
-    const { item, message, done, error } = e;
+    const { item, message, reaction, done, error } = e;
     const convoStore = useConvoStore();
     const profileStore = useProfilesStore();
-    const discussionStore = useDiscussionStore();
     if (item.iteration) {
       const question = await convoStore.sendMessage(
         item.projectKey,
@@ -21,14 +18,14 @@ TheWorkflows.on({
         item.key,
         profileStore.presentUser?.key || '',
         {
-          type: 'question',
-          message: 'I disagree because ' + message,
+          type: 'reaction',
+          reaction: reaction,
+          message: message ||
+            reaction == 'disagree' ? 'I disagree on the readiness of this item'
+            : 'I agree on the readiness of this item',
         }
       );
       if (profileStore.presentUser) {
-        item.awareness = item.awareness || {};
-        item.awareness[profileStore.presentUser.key] = 'disagree';
-        await discussionStore.updateDiscussion(item.key, ['awareness'], item);
         TheWorkflows.emit({
           type: 'assessDiscussion',
           arg: {

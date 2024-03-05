@@ -73,11 +73,10 @@ export default defineComponent({
       this.$emit('sendMessage');
     },
     onType(e: string | number | null) {
-      if (typeof e == 'string' && e && /\?$/.test(e)) {
-        this.$emit('update:askingQuestion', true);
-      } else {
-        this.$emit('update:askingQuestion', false);
-      }
+      this.$emit(
+        'update:askingQuestion',
+        typeof e == 'string' && e && /.+\?/.test(e)
+      );
       this.$emit('update:message', e);
     },
   },

@@ -6,7 +6,7 @@ import {
   ICeremony,
   IQuestion, ISprintBoardColumn, IVote,
   PlanningItem, IProfile,
-  IBoardColumn, DiscussionReport, IRoadBlock, IScrumReport
+  IBoardColumn, DiscussionReport, IRoadBlock, IScrumReport, IReaction
 } from 'src/entities';
 import { discussionResource } from 'src/resources/discussions.resource';
 import { useCeremonyStore } from './ceremonies.store';
@@ -141,7 +141,6 @@ export const useDiscussionStore = defineStore('discussion', {
         ...discussion,
         iteration: discussion.iteration && entityKey(discussion.iteration) || discussion.iteration,
         assignedTo: discussion.assignedTo && entityKey(discussion.assignedTo) || discussion.assignedTo,
-        awareness: { ...discussion.awareness },
         ceremonyKey: discussion.ceremonyKey || '',
         assignees: (discussion.assignees || []).map(a => typeof a == 'object' ? a.key : a)
       })) as DiscussionItem;
@@ -209,6 +208,9 @@ export const useDiscussionStore = defineStore('discussion', {
       const votes = convo.filter(c =>
         (c.type == 'vote')
         && members.includes(entityKey(c.from || ''))) as IVote[];
+      const reactions = convo.filter(c =>
+        (c.type == 'reaction')
+        && members.includes(entityKey(c.from || ''))) as IReaction[];
       const lastIndex = votes.findLastIndex((v) => v.vote == '0');
       if (lastIndex >= 0) {
         votes.splice(0, lastIndex + 1);
@@ -218,12 +220,10 @@ export const useDiscussionStore = defineStore('discussion', {
         { ...p, [entityKey(c.from)]: c.vote }),
         {} as { [v: string]: string });
 
-      const awareness = Object.values(item.awareness || {});
-      const agreement = awareness.filter(agreement => agreement == 'agree');
+      const agreement = [...new Set(reactions.filter(r => r.reaction == 'agree').map(m => entityKey(m.from)))];
 
       factors.push(this.completenessOfItem(item));
-      const awarenessProgress = Object.keys(item.awareness || {})
-        .filter(a => members.find(m => a == m)).length;
+      const awarenessProgress = [...new Set(reactions.map(m => entityKey(m.from)))].length;
       factors.push(this.logFactor(awarenessProgress, members.length, 'awareness'));
       if (PlanningTypes.includes(item.type as PlanningItem['type'])) {
         factors.push(this.logFactor(Object.values(vCast).length, members.length, 'votes'));

@@ -41,7 +41,7 @@ export interface IVote extends IMessage {
 }
 export interface IReaction extends IMessage {
   type: 'reaction'
-  reaction: 'approve' | string;
+  reaction: 'agree' | 'disagree' | 'love';
 }
 
 export interface IRetroFeedback extends IMessage {
@@ -49,5 +49,5 @@ export interface IRetroFeedback extends IMessage {
   groupWith?: string;
 }
 
-export type Convo = IInfo | IQuestion | IResponse | IPoll | IVote | IRetroFeedback;
+export type Convo = IInfo | IQuestion | IResponse | IPoll | IVote | IRetroFeedback | IReaction;
 export type ConvoList = Convo[];

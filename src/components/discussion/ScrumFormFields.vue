@@ -40,7 +40,6 @@ function enterNewRoadblock() {
     ceremonyKey: '',
     description: '',
     label: '#',
-    awareness: {},
     key: '',
     type: 'roadblock',
   };

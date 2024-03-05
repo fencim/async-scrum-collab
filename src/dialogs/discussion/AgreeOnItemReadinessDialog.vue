@@ -4,62 +4,33 @@ import { DiscussionItem } from 'src/entities';
 
 import { TheDialogs } from '../the-dialogs';
 import { useDiscussionStore } from 'src/stores/discussions.store';
-import { useProfilesStore } from 'src/stores/profiles.store';
-import { useConvoStore } from 'src/stores/convo.store';
-import { entityKey } from 'src/entities/base.entity';
 import { TheWorkflows } from 'src/workflows/the-workflows';
 
 const discussionStore = useDiscussionStore();
-const profileStore = useProfilesStore();
-const convoStore = useConvoStore();
 const discussion = ref<DiscussionItem>();
 const isDialogShown = ref(false);
 async function agreeOnItem() {
   if (!discussion.value) return;
-  if (discussion.value && profileStore.presentUser) {
-    discussion.value.awareness = discussion.value.awareness || {};
-    discussion.value.awareness[profileStore.presentUser.key] = 'agree';
-    await TheWorkflows.emitPromised({
-      type: 'updateDiscussionFields',
-      arg: {
-        payload: discussion.value,
-      },
-    });
-  }
-  await convoStore.sendMessage(
-    discussion.value.projectKey,
-    entityKey(discussion.value.iteration || ''),
-    discussion.value.key,
-    profileStore.presentUser?.key || '',
-    {
-      type: 'message',
+  await TheWorkflows.emitPromised({
+    type: 'confirmAgreement',
+    arg: {
+      item: discussion.value,
+      reaction: 'agree',
       message: 'I agree this discussion item is ready',
-    }
-  );
+    },
+  });
   isDialogShown.value = false;
 }
 async function disagreeOnItem() {
   if (!discussion.value) return;
-  if (discussion.value && profileStore.presentUser) {
-    discussion.value.awareness = discussion.value.awareness || {};
-    discussion.value.awareness[profileStore.presentUser.key] = 'disagree';
-    await TheWorkflows.emitPromised({
-      type: 'updateDiscussionFields',
-      arg: {
-        payload: discussion.value,
-      },
-    });
-  }
-  await convoStore.sendMessage(
-    discussion.value.projectKey,
-    entityKey(discussion.value.iteration || ''),
-    discussion.value.key,
-    profileStore.presentUser?.key || '',
-    {
-      type: 'message',
+  await TheWorkflows.emitPromised({
+    type: 'confirmAgreement',
+    arg: {
+      item: discussion.value,
+      reaction: 'disagree',
       message: 'I disagree, this discussion item is not yet ready',
-    }
-  );
+    },
+  });
   isDialogShown.value = false;
 }
 TheDialogs.on({

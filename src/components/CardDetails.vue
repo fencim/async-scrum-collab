@@ -6,6 +6,7 @@ import {
   IVote,
   Convo,
   IProfile,
+  IReaction,
 } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 import { useActiveStore } from 'src/stores/active.store';
@@ -22,43 +23,50 @@ import { discussionDetailsTabs } from './discussion/details';
 import { discussionDetailsSections } from './discussion/sections';
 import TaskComplexityComp from 'src/modules/task-board/cards/TaskComplexityComp.vue';
 import CompletedDateChipComp from 'src/modules/task-board/cards/CompletedDateChipComp.vue';
+
+const convoStore = useConvoStore();
 const props = defineProps({
   item: {
     required: true,
     type: Object as PropType<DiscussionItem>,
   },
 });
-const convos = ref<Convo[]>([]);
+const convos = computed(() => {
+  const iteration = props.item.iteration && entityKey(props.item.iteration);
+  if (!iteration) return [];
+  return (convoStore.convo[entityKey(iteration)] || []).filter(
+    (c) => c.discussion == props.item.key
+  );
+  return [] as Convo[];
+});
 const task = ref<DiscussionItem>(props.item);
 const tab = ref('progress');
 const splitterModel = ref(20);
 onMounted(async () => {
   const discussionStore = useDiscussionStore();
-  const convoStore = useConvoStore();
+
   task.value = (await discussionStore.getUpdated(props.item.key)) || task.value;
-  if (props.item.iteration) {
-    convos.value = await convoStore.ofDiscussion(
-      entityKey(props.item.iteration),
-      props.item.key
-    );
-  }
 });
 
 const activeStore = useActiveStore();
 const membersAgreed = computed(() => {
-  const awareness = props.item.awareness || {};
-  return activeStore.activeMembers.filter((m) => awareness[m.key] == 'agree');
+  const agreed = convos.value
+    .filter((c) => c.type == 'reaction' && c.reaction == 'agree')
+    .map((m) => entityKey(m.from));
+  return activeStore.activeMembers.filter((m) => agreed.includes(m.key));
 });
 const membersDisagreed = computed(() => {
-  const awareness = props.item.awareness || {};
-  return activeStore.activeMembers.filter(
-    (m) => awareness[m.key] == 'disagree'
-  );
+  const disagreed = convos.value
+    .filter((c) => c.type == 'reaction' && c.reaction == 'disagree')
+    .map((m) => entityKey(m.from));
+
+  return activeStore.activeMembers.filter((m) => disagreed.includes(m.key));
 });
 const membersPending = computed(() => {
-  const awareness = props.item.awareness || {};
-  const awareMembers = Object.keys(awareness);
-  return activeStore.activeMembers.filter((m) => !awareMembers.includes(m.key));
+  const reacted = convos.value
+    .filter((c) => c.type == 'reaction')
+    .map((m) => entityKey(m.from));
+  return activeStore.activeMembers.filter((m) => !reacted.includes(m.key));
 });
 
 const votesPending = computed(() => {
@@ -230,9 +238,8 @@ function describeDiscussion(item: DiscussionItem | string): string {
       />
 
       <div class="q-px-sm">
-        <q-badge v-if="task.priority" class="q-mr-xs" dense color="primary">{{
-          task.priority
-        }}
+        <q-badge v-if="task.priority" class="q-mr-xs" dense color="primary"
+          >{{ task.priority }}
           <q-tooltip>Priority</q-tooltip>
         </q-badge>
         <due-date-chip-comp :task="task" />

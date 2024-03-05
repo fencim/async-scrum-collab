@@ -7,7 +7,6 @@ export interface IDiscussion extends IBaseEntity {
   key: string;
   projectKey: string;
   ceremonyKey: string;
-  awareness: { [profileKey: string]: string };
   complexity?: number;
   //board
   iteration?: string | IIteration;

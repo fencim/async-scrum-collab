@@ -124,9 +124,6 @@ export const useConvoStore = defineStore('convo', {
             p.push('view');
           } else if (r.factor == 'votes' && r.progress < 1) {
             p.push('agree');
-          } else if (r.factor == 'agreement' && discItem.awareness && discItem.awareness[presentUser.key] != 'agree'
-          ) {
-            p.push('agree');
           }
           return p;
         }, [] as string[]);
