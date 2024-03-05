@@ -34,7 +34,7 @@ export const useDiscussionStore = defineStore('discussion', {
         key: 'product-backlog',
         name: 'Product Backlog',
         tasks: this.discussions
-          .filter(d => d.projectKey == project?.key && (['story', 'task', 'roadblock'] as string[]).includes(d.type)) as PlanningItem[]
+          .filter(d => d.projectKey == project?.key && (['story', 'task', 'roadblock', 'goal', 'objective'] as string[]).includes(d.type)) as PlanningItem[]
       };
     },
   },
