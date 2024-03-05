@@ -15,12 +15,23 @@
             :definitions="{}"
             dense
             flat
-            class="input-box"
+            :class="replyTo ? 'input-box-reply' : 'input-box'"
             placeholder="Message"
           >
             <template #header>
-              <q-avatar size="sm" v-if="typeof replyTo?.from == 'object'">
-                <img :src="replyTo?.from.avatar" />
+              <q-avatar
+                color="info"
+                size="sm"
+                v-if="typeof replyTo?.from == 'object'"
+              >
+                <q-img
+                  v-if="replyTo?.from.avatar"
+                  :src="replyTo?.from.avatar"
+                  fit="cover"
+                />
+                <span v-else class="text-uppercase">{{
+                  initials(replyTo?.from.name)
+                }}</span>
               </q-avatar>
               <q-avatar size="sm" v-else-if="confirmDisagreement">
                 <q-icon name="thumb_down_alt" />
@@ -34,6 +45,14 @@
                   name="question_mark"
                   v-if="replyTo?.type == 'question'"
               /></span>
+              <q-btn
+                icon="close"
+                v-if="replyTo"
+                dense
+                round
+                size="xs"
+                @click="$emit('cancel:reply')"
+              />
             </template>
           </q-editor>
         </q-toolbar-title>
@@ -67,7 +86,12 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['sendMessage', 'update:message', 'update:askingQuestion'],
+  emits: [
+    'sendMessage',
+    'update:message',
+    'update:askingQuestion',
+    'cancel:reply',
+  ],
   methods: {
     sendMessage() {
       this.$emit('sendMessage');
@@ -79,13 +103,21 @@ export default defineComponent({
       );
       this.$emit('update:message', e);
     },
+    initials(name?: string) {
+      const m = (name || 'U N').match(/\b\w/g);
+      return `${m && m[0]}${m && m[1]}`;
+    },
   },
 });
 </script>
 
 <style scoped>
-.input-box {
+.input-box-reply {
   height: 70px;
+  font-size: 16px;
+}
+.input-box {
+  height: 30px;
   font-size: 16px;
 }
 </style>

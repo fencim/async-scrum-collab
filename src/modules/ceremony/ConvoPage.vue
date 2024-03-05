@@ -71,6 +71,7 @@
       :message="message"
       :asking-question="askingQuestion"
       :reply-to="replyTo"
+      @cancel:reply="replyTo = undefined"
       @send-message="sendMessage"
       @update:message="(e) => (message = e)"
       @update:asking-question="(e) => (askingQuestion = e)"

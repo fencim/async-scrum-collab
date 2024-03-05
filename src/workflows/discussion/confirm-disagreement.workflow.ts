@@ -20,9 +20,9 @@ TheWorkflows.on({
         {
           type: 'reaction',
           reaction: reaction,
-          message: message ||
-            reaction == 'disagree' ? 'I disagree on the readiness of this item'
-            : 'I agree on the readiness of this item',
+          message: message ? message :
+            (reaction == 'disagree' ? 'I disagree on the readiness of this item'
+              : 'I agree on the readiness of this item'),
         }
       );
       if (profileStore.presentUser) {

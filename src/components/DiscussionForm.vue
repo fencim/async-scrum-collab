@@ -115,7 +115,6 @@ import { useActiveStore } from 'src/stores/active.store';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
-import { useProfilesStore } from 'src/stores/profiles.store';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import GoalFormFields from './discussion/GoalFormFields.vue';
@@ -127,7 +126,6 @@ import { TheWorkflows } from 'src/workflows/the-workflows';
 import RoadblockFormFields from './discussion/RoadblockFormFields.vue';
 
 const activeStore = useActiveStore();
-const profileStore = useProfilesStore();
 const iterationStore = useIterationStore();
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();

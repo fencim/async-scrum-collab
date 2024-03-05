@@ -6,7 +6,6 @@ import {
   IVote,
   Convo,
   IProfile,
-  IReaction,
 } from 'src/entities';
 import { entityKey } from 'src/entities/base.entity';
 import { useActiveStore } from 'src/stores/active.store';
