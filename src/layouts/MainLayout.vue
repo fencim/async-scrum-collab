@@ -50,6 +50,7 @@
       <VoteForConfidenceDialog />
       <ReviewPresentationDialog />
       <CeremonyDetailsDialog />
+      <CeremonyFormDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -70,6 +71,7 @@ import VoteForConfidenceDialog from 'src/dialogs/discussion/VoteForConfidenceDia
 import PlanningPresentationDialog from 'src/dialogs/discussion/PlanningPresentationDialog.vue';
 import ReviewPresentationDialog from 'src/dialogs/discussion/ReviewPresentationDialog.vue';
 import CeremonyDetailsDialog from 'src/dialogs/discussion/CeremonyDetailsDialog.vue';
+import CeremonyFormDialog from 'src/dialogs/iteration/CeremonyFormDialog.vue';
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);

@@ -1,4 +1,4 @@
-import { CeremonyType, IIteration } from 'src/entities';
+import { CeremonyType, ICeremony, IIteration } from 'src/entities';
 import { Struct } from 'src/structs';
 export type Schedule = {
   key: string;
@@ -19,4 +19,9 @@ export type Iteration =
   | Struct<'updateIteration', {
     iteration: IIteration,
     done?: (iteration: IIteration) => void
+  }>
+  | Struct<'updateCeremony', {
+    ceremony: ICeremony,
+    done?: (ceremony: ICeremony) => void,
+    error?: ErrorCallback
   }>;

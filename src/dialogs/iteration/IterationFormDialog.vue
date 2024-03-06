@@ -134,11 +134,11 @@ const ceremonies = computed<Schedule[]>(() => {
       desc: 'Planning',
     },
     {
-      key: theIteration.value.key + 'reivew',
+      key: theIteration.value.key + 'review',
       check: true,
       start: new Date(end),
       end: new Date(end),
-      desc: 'Reivew',
+      desc: 'Review',
       type: 'review',
     },
     {
@@ -201,7 +201,7 @@ async function init() {
     theIteration.value.start = date.formatDate(dateNow, 'YYYY/MM/DD');
     dateNow.setDate(dateNow.getDate() + 11);
     theIteration.value.end = date.formatDate(dateNow, 'YYYY/MM/DD');
-  } else if (iterationStore.activeIteration) {
+  } else {
     theIteration.value = { ...iterationPreFields.value.iteration };
   }
   range.value = {

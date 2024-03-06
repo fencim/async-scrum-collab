@@ -38,6 +38,7 @@
               </q-avatar>
               &nbsp;
               <span
+                style="max-width: 200px"
                 v-if="replyTo && !confirmDisagreement"
                 class="text-weight-bold text-deep-orange"
                 >{{ replyTo?.message

@@ -1,4 +1,4 @@
-import { IIteration } from 'src/entities';
+import { ICeremony, IIteration } from 'src/entities';
 import { Struct } from 'src/structs';
 
 export type Iterations =
@@ -9,4 +9,8 @@ export type Iterations =
   | Struct<'editIteration', {
     iteration: IIteration;
     done?: (iteration: IIteration) => void;
+  }>
+  | Struct<'editCeremony', {
+    ceremony: ICeremony;
+    done?: (ceremony: ICeremony) => void;
   }>;

@@ -75,8 +75,13 @@
           dense
           round
           align="right"
-          :to="
-            '/' + c.projectKey + '/' + c.iterationKey + '/' + c.key + '/edit'
+          @click="
+            TheDialogs.emit({
+              type: 'editCeremony',
+              arg: {
+                ceremony: c,
+              },
+            })
           "
         />
 
@@ -95,44 +100,27 @@
   </q-page>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { date } from 'quasar';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { DiscussionItem, ICeremony } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
-import { defineComponent } from 'vue';
+import { ref } from 'vue';
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
 const iterationStore = useIterationStore();
+const activeProject = ref('');
+const discussions = ref([] as DiscussionItem[]);
 
-export default defineComponent({
-  name: 'DailyTimelinePage',
-  components: {},
-  data() {
-    return {
-      date,
-      activeProject: '',
-      discussions: [] as DiscussionItem[],
-    };
-  },
-  setup() {
-    return {
-      iterationStore,
-      discussionStore,
-      ceremonyStore,
-    };
-  },
-  methods: {
-    discussionFromList(list: string[]) {
-      return list
-        .map((key) => this.discussions.find((d) => d.key == key))
-        .filter((d) => d) as DiscussionItem[];
-    },
-    isCurrentlyHappening(ceremony: ICeremony) {
-      return date.isBetweenDates(new Date(), ceremony.start, ceremony.end);
-    },
-  },
-});
+function discussionFromList(list: string[]) {
+  return list
+    .map((key) => discussions.value.find((d) => d.key == key))
+    .filter((d) => d) as DiscussionItem[];
+}
+function isCurrentlyHappening(ceremony: ICeremony) {
+  return date.isBetweenDates(new Date(), ceremony.start, ceremony.end);
+}
 </script>
 <style></style>
