@@ -11,7 +11,7 @@
             @update:model-value="onType"
             rounded
             @keydown.enter.prevent="sendMessage"
-            :toolbar="[['header']]"
+            :toolbar="replyTo ? [['header']] : []"
             :definitions="{}"
             dense
             flat
@@ -117,7 +117,7 @@ export default defineComponent({
   font-size: 16px;
 }
 .input-box {
-  height: 30px;
+  height: 35px;
   font-size: 16px;
 }
 </style>
