@@ -1,7 +1,7 @@
 {
-  "name": "scrum",
+  "name": "async-scrum-collab",
   "version": "0.0.1",
-  "description": "Async Scrum",
+  "description": "Async Scrum Collab",
   "productName": "Scrum",
   "author": "Lucman Abdulrachman <lucman.abdulrachman@gmail.com>",
   "private": true,

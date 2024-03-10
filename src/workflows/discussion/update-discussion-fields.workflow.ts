@@ -19,9 +19,9 @@ TheWorkflows.on({
         return (old[field] as string[]).map(a => entityKey(a)).sort().join(',') !==
           (e.payload[field] as string[]).map(a => entityKey(a)).sort().join(',')
       } else if ((typeof e.payload[field] == 'object' && e.payload[field]) || typeof old[field] == 'object') {
-        if ((e.payload[field] as { key: string }).key || (old[field] as { key: string }).key)
+        if ((e.payload[field] as ({ key: string } | undefined))?.key || (old[field] as ({ key: string } | undefined))?.key)
           return entityKey(old[field] as string) !== entityKey(e.payload[field] as string);
-        else {
+        else if (typeof e.payload[field] === typeof old[field]) {
           const a = e.payload[field] as unknown as Record<string, string>;
           const b = old[field] as unknown as Record<string, string>;
           return !Object.keys(a).reduce((p, c) => {
