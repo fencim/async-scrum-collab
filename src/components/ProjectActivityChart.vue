@@ -55,7 +55,15 @@ onMounted(() => {
 
 const xAxis = (() => {
   return workDays.map((d) => {
-    return date.formatDate(d, 'ddd');
+    const cs = ceremonyStore.ceremonies
+      .filter(
+        (c) =>
+          c.projectKey == props.project.key &&
+          date.getDateDiff(c.start, d, 'days') == 0
+      )
+      .map((c) => c.type)
+      .join(' ');
+    return `[${cs}] ${date.formatDate(d, 'ddd')}`;
   });
 })();
 function profileActivities(profileKey: string) {
@@ -92,7 +100,9 @@ const chartOptions = computed<EChartsOption>(() => {
     tooltip: {
       trigger: 'axis',
     },
-    series: props.project.members.map((m) => {
+    series: [
+      ...new Set([...props.project.members, ...props.project.moderators]),
+    ].map((m) => {
       const user = profileStore.profiles.find((p) => p.key == m);
       return {
         type: 'line',
