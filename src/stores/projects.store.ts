@@ -142,15 +142,7 @@ export const useProjectStore = defineStore('projectStore', {
       if (!project.pending?.find(m => m == memberKey) && !project.members?.find(m => m == memberKey)) {
         await projectResource.updatePropertiesFrom(project.key, {
           pending: (project.pending || []).concat([memberKey])
-        }, ['pending'], (e) => {
-          if (e.status == 'synced') {
-            logsResource.setData('', {
-              type: 'project-join',
-              projectKey: project.key,
-
-            })
-          }
-        });
+        }, ['pending']);
 
       }
       return project;

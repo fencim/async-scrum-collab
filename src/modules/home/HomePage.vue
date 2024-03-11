@@ -10,10 +10,12 @@
             <q-card-section
               horizontal
               @click="
-                $router.replace({
-                  name: 'projectHome',
-                  params: { project: props.row.key },
-                })
+                hasJoined(props.row)
+                  ? $router.replace({
+                      name: 'projectHome',
+                      params: { project: props.row.key },
+                    })
+                  : joinProject(props.row.key)
               "
             >
               <q-card-section>
