@@ -104,18 +104,31 @@ export default defineComponent({
       );
     },
     async joinProject(projectKey: string) {
-      if (profilesStore.presentUser) {
-        await projectStore.joinProject(
-          projectKey,
-          profilesStore.presentUser?.key
-        );
-        await this.$router.replace({
-          name: 'projectHome',
-          params: {
-            project: projectKey,
+      const proj = projectStore.projects.find((p) => p.key == projectKey);
+      this.$q.notify({
+        position: 'center',
+        message: `Join (${projectKey}) ${proj?.name || ''}?`,
+        actions: [
+          {
+            label: 'Proceed',
+            icon: 'login',
+            handler: async () => {
+              if (profilesStore.presentUser) {
+                await projectStore.joinProject(
+                  projectKey,
+                  profilesStore.presentUser?.key
+                );
+                await this.$router.replace({
+                  name: 'projectHome',
+                  params: {
+                    project: projectKey,
+                  },
+                });
+              }
+            },
           },
-        });
-      }
+        ],
+      });
     },
   },
 });
