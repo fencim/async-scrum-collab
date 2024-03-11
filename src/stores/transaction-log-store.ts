@@ -26,12 +26,13 @@ export const useTransactionLogsStore = defineStore('transactionLogs', {
       };
       return (await logResource.findAllFrom(filter));
     },
-    streamTransactionsOn(targetDate: string) {
-      const from = date.formatDate(targetDate, 'YYYY-MM-DD 00:00');
-      const until = date.formatDate(targetDate, 'YYYY-MM-DD 23:59');
+    streamTransactionsOn(project: string, startDate: string, endDate: string) {
+      const from = date.formatDate(startDate, 'YYYY-MM-DD 00:00');
+      const until = date.formatDate(endDate, 'YYYY-MM-DD 23:59');
       const filter = {
         'date >=': from,
-        'date <=': until
+        'date <=': until,
+        project
       };
       return (logResource.streamWith(filter));
     }

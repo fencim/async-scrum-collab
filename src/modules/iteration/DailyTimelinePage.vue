@@ -1,5 +1,10 @@
 <template>
   <q-page class="justify-evenly q-pa-sm">
+    <ProjectActivityChart
+      v-if="project && iterationStore.activeIteration"
+      :project="project"
+      :iteration="iterationStore.activeIteration"
+    />
     <q-timeline layout="loose" :side="'left'">
       <q-timeline-entry
         :color="
@@ -103,17 +108,20 @@
 <script lang="ts" setup>
 import { date } from 'quasar';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import ProjectActivityChart from 'src/components/ProjectActivityChart.vue';
 import { DiscussionItem, ICeremony } from 'src/entities';
 import { useCeremonyStore } from 'src/stores/ceremonies.store';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { useIterationStore } from 'src/stores/iterations.store';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useProjectStore } from 'src/stores/projects.store';
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
 const iterationStore = useIterationStore();
+const projectStore = useProjectStore();
 const activeProject = ref('');
 const discussions = ref([] as DiscussionItem[]);
-
+const project = computed(() => projectStore.activeProject);
 function discussionFromList(list: string[]) {
   return list
     .map((key) => discussions.value.find((d) => d.key == key))
