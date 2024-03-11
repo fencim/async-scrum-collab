@@ -16,8 +16,8 @@ TheWorkflows.on({
     const props = editables.filter((field) => {
       if (/^(id|key)$/i.test(field) || field.startsWith('*')) return false;
       if (Array.isArray(old[field]) && Array.isArray(e.payload[field])) {
-        return (old[field] as string[]).map(a => entityKey(a)).sort().join(',') !==
-          (e.payload[field] as string[]).map(a => entityKey(a)).sort().join(',')
+        return (old[field] as string[]).map(a => entityKey(a) || JSON.stringify(a)).sort().join(',') !==
+          (e.payload[field] as string[]).map(a => entityKey(a) || JSON.stringify(a)).sort().join(',')
       } else if ((typeof e.payload[field] == 'object' && e.payload[field]) || typeof old[field] == 'object') {
         if ((e.payload[field] as ({ key: string } | undefined))?.key || (old[field] as ({ key: string } | undefined))?.key)
           return entityKey(old[field] as string) !== entityKey(e.payload[field] as string);

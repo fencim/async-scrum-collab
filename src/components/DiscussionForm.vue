@@ -246,7 +246,7 @@ async function submitDiscussion(createAnother?: boolean) {
     TheWorkflows.emit({
       type: 'updateDiscussionFields',
       arg: {
-        payload: theDiscussion.value,
+        payload: JSON.parse(JSON.stringify(theDiscussion.value)),
         done(discussion) {
           saving.value = false;
           $emit('closeForm', discussion);

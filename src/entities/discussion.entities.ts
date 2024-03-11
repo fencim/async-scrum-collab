@@ -47,9 +47,9 @@ export interface TechnicalTask extends IDiscussion {
   description: string;
 }
 export interface IAcceptanceCriteria {
-  given: string;
-  when: string;
-  then: string;
+  given: string[];
+  when: string[];
+  then: string[];
 }
 export interface IFeature extends IDiscussion {
   type: 'Feature';
