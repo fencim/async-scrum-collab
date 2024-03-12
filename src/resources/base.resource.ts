@@ -1160,7 +1160,7 @@ export abstract class BaseResource<T extends IBaseResourceModel> {
               list,
               filters
             );
-            return updated || Promise.all(list.map(async (d) => (await this.getDoc(this.getKeyOf(d)) as IDocStore<T>)));
+            return updated || list && Promise.all(list.map(async (d) => (await this.getDoc(this.getKeyOf(d)) as IDocStore<T>)));
           } else if (list) {
             return this.saveEachTo(list, 'synced');
           } else {
