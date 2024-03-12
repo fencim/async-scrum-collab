@@ -14,6 +14,11 @@ export type Discussions =
     done?: (item: DiscussionItem) => void,
     error?: ErrorCallback;
   }>
+  | Struct<'deleteTaskDialog', {
+    item: DiscussionItem,
+    done?: (item: DiscussionItem) => void,
+    error?: ErrorCallback;
+  }>
   | Struct<'newSubTask', {
     ref: DiscussionItem,
     done?: (item: DiscussionItem) => void,

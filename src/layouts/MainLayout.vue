@@ -51,6 +51,8 @@
       <ReviewPresentationDialog />
       <CeremonyDetailsDialog />
       <CeremonyFormDialog />
+      <ConfirmToDeleteDiscussionDialog />
+      <ConfirmToDeleteIterationDialog />
     </q-page-container>
   </q-layout>
 </template>
@@ -72,6 +74,8 @@ import PlanningPresentationDialog from 'src/dialogs/discussion/PlanningPresentat
 import ReviewPresentationDialog from 'src/dialogs/discussion/ReviewPresentationDialog.vue';
 import CeremonyDetailsDialog from 'src/dialogs/discussion/CeremonyDetailsDialog.vue';
 import CeremonyFormDialog from 'src/dialogs/iteration/CeremonyFormDialog.vue';
+import ConfirmToDeleteDiscussionDialog from 'src/dialogs/discussion/ConfirmToDeleteDiscussionDialog.vue';
+import ConfirmToDeleteIterationDialog from 'src/dialogs/iteration/ConfirmToDeleteIterationDialog.vue';
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);

@@ -1,7 +1,7 @@
 <template>
   <q-timeline color="secondary">
     <q-timeline-entry
-      heading
+      :heading="isCurrent(iteration)"
       class="q-pa-sm q-ma-sm rounded-borders"
       :class="isCurrent(iteration) ? 'bg-grey-8' : 'bg-grey-10'"
     >
@@ -30,6 +30,7 @@
         }}
         days)
         <q-btn
+          v-if="activeStore.canUserModerate"
           round
           dense
           icon="edit"
@@ -43,84 +44,103 @@
             })
           "
         />
-      </div>
-    </q-timeline-entry>
-    <q-timeline-entry
-      v-for="c in ceremonies"
-      :key="c.key"
-      :title="(isCurrentlyHappening(c) ? '(NOW) ' : '') + c.type.toUpperCase()"
-      :subtitle="`${date.formatDate(
-        c.start,
-        'MMM DD, YYYY hh:mm A'
-      )} - ${date.formatDate(c.end, 'hh:mm A')} (${date.getDateDiff(
-        c.end,
-        c.start,
-        'hours'
-      )} hours)`"
-      :class="isCurrentlyHappening(c) ? 'bg-teal-7 rounded-borders' : ''"
-    >
-      <div>
-        <q-circular-progress
-          v-for="i in discussionFromList(c.discussions)"
-          :key="i?.key"
-          :value="(i?.progress || 0) * 100"
-          show-value
-          font-size="12px"
-          class="text-white q-ma-sm text-uppercase cursor-pointer"
-          size="40px"
-          :thickness="0.15"
-          color="grey"
-          track-color="transparent"
+        <q-btn
+          v-if="activeStore.canUserModerate"
+          round
+          dense
+          icon="delete"
+          class="float-right"
           @click="
-            $router.replace({
-              name: 'convo',
-              params: {
-                project,
-                iteration: iteration.key,
-                ceremony: c.key,
-                item: i.key,
+            TheDialogs.emit({
+              type: 'deleteIterationDialog',
+              arg: {
+                iteration,
               },
             })
           "
-        >
-          {{ formatKey(i.key) }}
-          <q-badge v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
-          <q-tooltip class="q-pa-none q-ma-none">
-            <q-card
-              style="min-width: 250px"
-              class="list-group-item q-ma-none q-pa-none board-card no-shadow"
-              :class="i.type + '-card'"
-            >
-              <component
-                :is="getComponent(i as PlanningItem)"
-                :task="i"
-                :no-action="true"
-              />
-            </q-card>
-          </q-tooltip>
-        </q-circular-progress>
+        />
       </div>
-      <q-btn
-        :to="{
-          name: 'ceremony',
-          params: {
-            project,
-            iteration: c.iterationKey,
-            ceremony: c.key,
-          },
-        }"
-        >Open</q-btn
-      >
-      <q-linear-progress
-        :color="
-          (c.progress || 0) < 1 && date.getDateDiff(new Date(), c.end) > 0
-            ? 'red'
-            : 'blue'
-        "
-        instant-feedback
-        :value="c.progress"
-      />
     </q-timeline-entry>
+    <template v-if="isCurrent(iteration)">
+      <q-timeline-entry
+        v-for="c in ceremonies"
+        :key="c.key"
+        :title="
+          (isCurrentlyHappening(c) ? '(NOW) ' : '') + c.type.toUpperCase()
+        "
+        :subtitle="`${date.formatDate(
+          c.start,
+          'MMM DD, YYYY hh:mm A'
+        )} - ${date.formatDate(c.end, 'hh:mm A')} (${date.getDateDiff(
+          c.end,
+          c.start,
+          'hours'
+        )} hours)`"
+        :class="isCurrentlyHappening(c) ? 'bg-teal-7 rounded-borders' : ''"
+      >
+        <div>
+          <q-circular-progress
+            v-for="i in discussionFromList(c.discussions)"
+            :key="i?.key"
+            :value="(i?.progress || 0) * 100"
+            show-value
+            font-size="12px"
+            class="text-white q-ma-sm text-uppercase cursor-pointer"
+            size="40px"
+            :thickness="0.15"
+            color="grey"
+            track-color="transparent"
+            @click="
+              $router.replace({
+                name: 'convo',
+                params: {
+                  project,
+                  iteration: iteration.key,
+                  ceremony: c.key,
+                  item: i.key,
+                },
+              })
+            "
+          >
+            {{ formatKey(i.key) }}
+            <q-badge v-if="i?.unread" floating>{{ i?.unread }}</q-badge>
+            <q-tooltip class="q-pa-none q-ma-none">
+              <q-card
+                style="min-width: 250px"
+                class="list-group-item q-ma-none q-pa-none board-card no-shadow"
+                :class="i.type + '-card'"
+              >
+                <component
+                  :is="getComponent(i as PlanningItem)"
+                  :task="i"
+                  :no-action="true"
+                />
+              </q-card>
+            </q-tooltip>
+          </q-circular-progress>
+        </div>
+        <q-btn
+          :to="{
+            name: 'ceremony',
+            params: {
+              project,
+              iteration: c.iterationKey,
+              ceremony: c.key,
+            },
+          }"
+          >Open</q-btn
+        >
+        <q-linear-progress
+          :color="
+            (c.progress || 0) < 1 && date.getDateDiff(new Date(), c.end) > 0
+              ? 'red'
+              : 'blue'
+          "
+          instant-feedback
+          :value="c.progress"
+        />
+      </q-timeline-entry>
+    </template>
   </q-timeline>
 </template>
 
@@ -138,9 +158,11 @@ import { useDiscussionStore } from 'src/stores/discussions.store';
 import { computed, PropType } from 'vue';
 import { getComponent } from '../task-board/card-components';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { useActiveStore } from 'src/stores/active.store';
 
 const ceremonyStore = useCeremonyStore();
 const discussionStore = useDiscussionStore();
+const activeStore = useActiveStore();
 const props = defineProps({
   project: {
     type: String,

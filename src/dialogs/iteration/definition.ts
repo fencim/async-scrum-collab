@@ -10,6 +10,11 @@ export type Iterations =
     iteration: IIteration;
     done?: (iteration: IIteration) => void;
   }>
+  | Struct<'deleteIterationDialog', {
+    iteration: IIteration;
+    done?: VoidCallback;
+    error?: ErrorCallback;
+  }>
   | Struct<'editCeremony', {
     ceremony: ICeremony;
     done?: (ceremony: ICeremony) => void;

@@ -63,6 +63,9 @@ export const useIterationStore = defineStore(
         this.iterations.splice(index, 1, iteration);
       }
       return iteration;
+    },
+    deleteIteration(iteration: IIteration) {
+      return iterationResource.deleteData(iteration.key);
     }
   }
 });

@@ -15,3 +15,4 @@ import './assess-ceremony.workflow';
 import './accept-sprint-result.workflow';
 import './retro-feedback.workflow';
 import './merge-feedback-with.workflow';
+import './delete-issue.workflow';

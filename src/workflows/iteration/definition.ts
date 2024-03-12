@@ -20,6 +20,11 @@ export type Iteration =
     iteration: IIteration,
     done?: (iteration: IIteration) => void
   }>
+  | Struct<'deleteIteration', {
+    iteration: IIteration,
+    done?: VoidCallback,
+    error?: ErrorCallback
+  }>
   | Struct<'updateCeremony', {
     ceremony: ICeremony,
     done?: (ceremony: ICeremony) => void,

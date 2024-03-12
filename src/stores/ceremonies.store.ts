@@ -168,6 +168,9 @@ export const useCeremonyStore = defineStore('ceremony', {
         };
       }
     },
+    deleteCeremony(ceremony: ICeremony) {
+      return ceremonyResource.deleteData(ceremony.key);
+    }
   },
 
 });

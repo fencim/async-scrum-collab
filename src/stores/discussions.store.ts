@@ -411,6 +411,9 @@ export const useDiscussionStore = defineStore('discussion', {
         return reports;
       }
       return items.filter(d => d.ceremonyKey == ceremony.key);
+    },
+    deleteDiscussion(discussion: DiscussionItem) {
+      return discussionResource.deleteData(discussion.key);
     }
   }
 });

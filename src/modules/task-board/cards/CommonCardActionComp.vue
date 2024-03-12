@@ -96,6 +96,22 @@ function getIterations() {
     ><q-tooltip>Edit</q-tooltip></q-btn
   >
   <q-btn
+    v-if="activeStore.canUserModerate"
+    @click="
+      TheDialogs.emit({
+        type: 'deleteTaskDialog',
+        arg: {
+          item: task,
+        },
+      })
+    "
+    v-close-popup
+    round
+    icon="delete"
+    size="sm"
+    ><q-tooltip>Delete</q-tooltip></q-btn
+  >
+  <q-btn
     :to="{
       name: 'convo',
       params: {

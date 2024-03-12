@@ -13,6 +13,11 @@ export type Discussion =
     done?: (issue: DiscussionItem) => void
     error?: (error: TaskActionError) => void;
   }>
+  | Struct<'deleteIssue', {
+    issue: DiscussionItem,
+    done?: VoidCallback;
+    error?: ErrorCallback;
+  }>
   | Struct<'assignTask', {
     issue: DiscussionItem,
     profile: IProfile,
