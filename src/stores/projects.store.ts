@@ -85,13 +85,14 @@ export const useProjectStore = defineStore('projectStore', {
           destination.push(profile.key);
         }
       })
-      await projectResource.updatePropertiesFrom(theProject.key, {
+      const doc = await projectResource.updatePropertiesFrom(theProject.key, {
         [toBe]: [...(new Set(destination))],
         [from]: [...(new Set(source))]
       }, [toBe, from], (() => {
         //
       })
       );
+      return doc?.data;
     },
     async saveProject(newProject: IProject, icon?: File) {
 

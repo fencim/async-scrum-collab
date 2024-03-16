@@ -58,7 +58,11 @@
                 icon="settings"
                 class="rounded"
                 :to="{ name: 'settings', params: { project: props.row.key } }"
-              />
+              >
+                <q-badge floating v-if="props.row.pending?.length">{{
+                  props.row.pending?.length
+                }}</q-badge>
+              </q-btn>
             </q-card-actions>
           </q-card>
         </div>

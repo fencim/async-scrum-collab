@@ -205,10 +205,10 @@
       <q-slider
         class="q-px-xl"
         label-always
-        v-model="issueReadynesss"
+        v-model="issueReadiness"
         markers
         :marker-labels="(val) => (val == 0 ? '0%' : val == 1 ? '100%' : ' ')"
-        :label-value="(issueReadynesss * 100).toFixed(0) + '%'"
+        :label-value="(issueReadiness * 100).toFixed(0) + '%'"
         :step="0.05"
         switch-label-side
         :min="0"
@@ -435,7 +435,7 @@ export default defineComponent({
       confirmClose: false,
       editColumn: false,
       confirmDeleteCol: false,
-      issueReadynesss: 0,
+      issueReadiness: 0,
       saving: false,
       columnsSaved: true,
       taskboardColumns: [] as IBoardColumn[],
@@ -450,7 +450,7 @@ export default defineComponent({
     },
     settingsSaved() {
       const ready = activeStore.activeProject?.discussionReadiness || 0;
-      return this.columnsSaved && ready == this.issueReadynesss;
+      return this.columnsSaved && ready == this.issueReadiness;
     },
   },
   mounted() {
@@ -479,7 +479,7 @@ export default defineComponent({
       ];
       this.columnsSaved = false;
     }
-    this.issueReadynesss = activeStore.activeProject?.discussionReadiness || 0;
+    this.issueReadiness = activeStore.activeProject?.discussionReadiness || 0;
   },
 
   methods: {
@@ -555,121 +555,121 @@ export default defineComponent({
     async adminsToMembers() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedAdmins,
         'members',
         'admins'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async adminsToModerators() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedAdmins,
         'moderators',
         'admins'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async moderatorsToAdmins() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedModerators,
         'admins',
         'moderators'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async moderatorsToMembers() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedModerators,
         'members',
         'moderators'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async pendingToMembers() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedPending,
         'members',
         'pending'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async pendingToGuest() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedPending,
         'guests',
         'pending'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async membersToModerators() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedMembers,
         'moderators',
         'members'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async membersToGuests() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedMembers,
         'guests',
         'members'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async guestsToMembers() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedGuests,
         'members',
         'guests'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async guestsToPending() {
       if (!this.activeStore.canUserModerate) return;
       if (!activeStore.activeProject) return;
-      await projectStore.setProjectMember(
+      const updated = await projectStore.setProjectMember(
         activeStore.activeProject,
         this.selectedGuests,
         'pending',
         'guests'
       );
-      await activeStore.selectProject(activeStore.activeProject);
+      await activeStore.selectProject(updated ?? activeStore.activeProject);
       this.resetSelected();
     },
     async disableProject() {
@@ -768,7 +768,7 @@ export default defineComponent({
         this.columnsSaved = true;
       }
       if (
-        activeStore.activeProject.discussionReadiness !== this.issueReadynesss
+        activeStore.activeProject.discussionReadiness !== this.issueReadiness
       ) {
         //save readiness here
         TheWorkflows.emit({
@@ -776,7 +776,7 @@ export default defineComponent({
           arg: {
             project: activeStore.activeProject,
             settings: 'discussionReadiness',
-            value: this.issueReadynesss,
+            value: this.issueReadiness,
             done: () => {
               this.saving = false;
             },
