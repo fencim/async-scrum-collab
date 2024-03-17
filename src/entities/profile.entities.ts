@@ -7,4 +7,5 @@ export interface IProfile extends IBaseEntity {
   email?: string;
   emailVerified?: boolean;
   activeProject?: string;
+  projects?: [];
 }

@@ -2,6 +2,7 @@ import { register } from 'register-service-worker';
 import { Notify } from 'quasar';
 import { mdiCached } from '@quasar/extras/mdi-v6';
 import { firebaseService } from 'src/services/firebase.service';
+import { ILoggable, IProfile } from 'src/entities';
 declare let window: any;
 
 // The ready(), registered(), cached(), updatefound() and updated()
@@ -16,9 +17,8 @@ register(process.env.SERVICE_WORKER_FILE, {
   // registrationOptions: { scope: './' },
 
   ready(/* registration */) {
-    console.log('Service worker is active.')
     firebaseService.authenticate().then((user) => {
-      console.log('SW is ready with  ', user)
+      console.log(user && 'SW is ready with a user' || 'no user is signed-in')
     });
   },
 
@@ -72,11 +72,44 @@ register(process.env.SERVICE_WORKER_FILE, {
     // console.error('Error during service worker registration:', err)
   },
 });
+const sent: Record<string, boolean> = {};
 async function listenToNotification(registration: ServiceWorkerRegistration) {
   if (!('Notification' in window)) return;
   if (Notification.permission == 'granted') {
-    registration.showNotification('Async Scrum Collab', {
-      body: 'Running'
-    })
+    const user = firebaseService.auth();
+    const profile = user && (await firebaseService.get('profiles', user.uid) as { projects?: string[] });
+    if (user && profile?.projects?.length) {
+      const date = new Date();
+      const pad = (n: number, l = 2) => String(n).padStart(l, '0')
+      const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+      firebaseService.streamWith<ILoggable>('logs', {
+        'date >=': today,
+        'operator !=': user.uid,
+        'project in': profile.projects
+      }).subscribe({
+        next(logs) {
+          logs.forEach(async log => {
+            if (sent[log.key] || !registration.active) return;
+            const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
+            const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
+            registration.showNotification('ASC:' + log.type, {
+              body: operator?.name,
+              icon: operator?.avatar,
+              vibrate: 1,
+              silent: false,
+              data: log.data,
+            })
+            sent[log.key] = true;
+          })
+        },
+      })
+    } else {
+      registration.showNotification('ASC: No projects', {
+        body: (user?.displayName || 'User') + ' has no projects involvement',
+        icon: user?.photoURL || undefined,
+        vibrate: 1,
+        silent: false,
+      })
+    }
   }
 }

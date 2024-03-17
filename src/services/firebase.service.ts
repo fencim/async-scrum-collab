@@ -246,7 +246,7 @@ class FirebaseService {
   }
   streamWith<T>(
     modelName: ModelName,
-    filter: { [field: string]: string } = {}, options?: QueryOptions
+    filter: { [field: string]: string | string[] } = {}, options?: QueryOptions
   ) {
     const { queryRef, collectionRef } = this.getQueryFromFilter(
       modelName,
@@ -330,7 +330,7 @@ class FirebaseService {
   }
   private getQueryFromFilter(
     modelName: ModelName,
-    filter: { [field: string]: string },
+    filter: { [field: string]: string | string[] },
     options?: QueryOptions
   ) {
     const collectionRef = collections[modelName]();
