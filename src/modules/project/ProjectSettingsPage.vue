@@ -1,251 +1,297 @@
 <template>
-  <q-page class="justify-evenly q-pa-sm">
+  <q-page class="justify-evenly q-pa-sm" v-if="activeStore.activeProject">
     <q-chip size="xl" icon="settings"> Project Setting </q-chip>
     <q-separator />
-    <q-chip size="lg" icon="group"> Project Members </q-chip>
-    <div class="row">
-      <q-card class="col q-ma-sm">
-        <q-card-section
-          >Admins ({{ activeStore.administrators.length }})</q-card-section
-        >
-        <q-card-section>
-          <recent-active-members
-            :max-count="15"
-            :profiles="activeStore.administrators"
-            @click-profile="selectAdmin"
-          />
-        </q-card-section>
-        <q-card-section v-if="selectedAdmins.length" class="bg-primary">
-          <recent-active-members
-            :max-count="15"
-            :profiles="selectedAdmins"
-            @click-profile="unSelectAdmin"
-          />
-        </q-card-section>
-        <q-card-actions v-if="selectedAdmins.length">
-          <q-btn @click="adminsToMembers">As Member</q-btn>
-          <q-btn @click="adminsToModerators">As Moderator</q-btn>
-        </q-card-actions>
-      </q-card>
-      <q-card class="col q-ma-sm">
-        <q-card-section
-          >Moderators ({{ activeStore.moderators.length }})</q-card-section
-        >
-        <q-card-section>
-          <recent-active-members
-            :max-count="15"
-            :profiles="activeStore.moderators"
-            @click-profile="selectModerator"
-          />
-        </q-card-section>
-        <q-card-section v-if="selectedModerators.length" class="bg-primary">
-          <recent-active-members
-            :max-count="15"
-            :profiles="selectedModerators"
-            @click-profile="unSelectModerator"
-          />
-        </q-card-section>
-        <q-card-actions v-if="selectedModerators.length">
-          <q-btn @click="moderatorsToMembers">As Member</q-btn>
-          <q-btn @click="moderatorsToAdmins">As Admin</q-btn>
-        </q-card-actions>
-      </q-card>
-    </div>
-    <div class="row">
-      <q-card class="col q-ma-sm">
-        <q-card-section>Pending ({{ pending.length }})</q-card-section>
-        <q-card-section>
-          <recent-active-members
-            :profiles="pending"
-            :max-count="15"
-            @click-profile="selectPending"
-          />
-        </q-card-section>
-        <q-card-section v-if="selectedPending.length" class="bg-primary">
-          <recent-active-members
-            :profiles="selectedPending"
-            :max-count="15"
-            @click-profile="unSelectPending"
-          />
-        </q-card-section>
-        <q-card-actions v-if="selectedPending.length">
-          <q-btn @click="pendingToMembers">As Member</q-btn>
-          <q-btn @click="pendingToGuest">As Guest</q-btn>
-        </q-card-actions>
-      </q-card>
-      <q-card class="col q-ma-sm">
-        <q-card-section
-          >Members ({{ activeStore.activeMembers.length }})</q-card-section
-        >
-        <q-card-section>
-          <recent-active-members
-            :profiles="activeStore.activeMembers"
-            :max-count="15"
-            @click-profile="selectMember"
-          />
-        </q-card-section>
-        <q-card-section v-if="selectedMembers.length" class="bg-primary">
-          <recent-active-members
-            :profiles="selectedMembers"
-            :max-count="15"
-            @click-profile="unSelectMember"
-          />
-        </q-card-section>
-        <q-card-actions v-if="selectedMembers.length">
-          <q-btn @click="membersToModerators">As Moderator</q-btn>
-          <q-btn @click="membersToGuests">As Guest</q-btn>
-        </q-card-actions>
-      </q-card>
-      <q-card class="col q-ma-sm">
-        <q-card-section
-          >Guests ({{ activeStore.guests.length }})</q-card-section
-        >
-        <q-card-section>
-          <recent-active-members
-            :max-count="15"
-            :profiles="activeStore.guests"
-            @click-profile="selectGuest"
-          />
-        </q-card-section>
-        <q-card-section v-if="selectedGuests.length" class="bg-primary">
-          <recent-active-members
-            :profiles="selectedGuests"
-            :max-count="15"
-            @click-profile="unSelectGuest"
-          />
-        </q-card-section>
-        <q-card-actions v-if="selectedGuests.length">
-          <q-btn @click="guestsToMembers">As Member</q-btn>
-          <q-btn @click="guestsToPending">As Pending</q-btn>
-        </q-card-actions>
-      </q-card>
-    </div>
-    <q-separator />
-    <q-chip size="lg" icon="view_column">Taskboard</q-chip>
-    <div class="row">
-      <q-chip
-        size="md"
-        class="col-12"
-        icon="view_week"
-        clickable
-        @click="
-          TheDialogs.emit({
-            type: 'scrumGuide',
-            arg: {
-              keyword: 'individuals',
-            },
-          })
-        "
-        >Status Columns</q-chip
-      >
-      <draggable
-        :list="taskboardColumns"
-        item-key="key"
-        @change="columnsSaved = false"
-      >
-        <template #footer
-          ><q-btn
-            icon="add"
-            color="primary"
-            class="q-pr-md"
-            rounded
-            dense
-            @click="createNewCol()"
-            >New Column</q-btn
-          ></template
-        >
-        <template #item="{ element, index }">
-          <q-chip
-            class="non-selectable"
-            :style="{
-              'background-color':
-                element.color ||
-                (element.doneState
-                  ? 'positive'
-                  : index == 0
-                  ? 'accent'
-                  : 'secondary'),
-            }"
-            :color="
-              element.color ||
-              (element.doneState
-                ? 'positive'
-                : index == 0
-                ? 'accent'
-                : 'secondary')
-            "
-          >
-            <icon-picker
-              :icon="element.icon || 'done'"
-              :title="element.name"
-              editable
-              @update:icon="(v) => (element.icon = v)"
-            />
-            {{ element.name }}
-            &nbsp;
+    <q-stepper v-model="part" vertical header-nav>
+      <q-step name="general" title="General" icon="info">
+        <q-card class="cursor-pointer">
+          <q-card-section class="text-center">
+            <strong>{{ activeStore.activeProject.name }}</strong>
+          </q-card-section>
+          <q-card-section horizontal>
+            <q-card-section>
+              <q-btn round size="lg" dense>
+                <q-avatar size="xl">
+                  <q-img
+                    v-if="activeStore.activeProject.icon"
+                    :src="activeStore.activeProject.icon"
+                  />
+                  <q-img
+                    v-else
+                    src="img:icons/For-Presentation-150x150.png"
+                    style="border: 5px solid gray; border-radius: 50px"
+                  />
+                </q-avatar>
+              </q-btn>
+            </q-card-section>
+            <q-card-section class="text-subtitle1 q-pa-sm">
+              {{ activeStore.activeProject.description }}
+            </q-card-section>
+          </q-card-section>
+          <q-card-actions>
             <q-btn
-              dense
-              size="sm"
-              round
+              v-if="activeStore.canUserModerate"
               icon="edit"
-              @click="editBoardColumn(element)"
-            ></q-btn>
-          </q-chip>
-        </template>
-      </draggable>
-    </div>
+              class="rounded"
+              @click="
+                TheDialogs.emit({
+                  type: 'editProject',
+                  arg: {
+                    project: activeStore.activeProject,
+                  },
+                })
+              "
+            />
+          </q-card-actions>
+        </q-card>
+      </q-step>
+      <q-step name="members" title="Project Members" icon="group">
+        <div class="row">
+          <q-card class="col q-ma-sm">
+            <q-card-section
+              >Admins ({{ activeStore.administrators.length }})</q-card-section
+            >
+            <q-card-section>
+              <recent-active-members
+                :max-count="15"
+                :profiles="activeStore.administrators"
+                @click-profile="selectAdmin"
+              />
+            </q-card-section>
+            <q-card-section v-if="selectedAdmins.length" class="bg-primary">
+              <recent-active-members
+                :max-count="15"
+                :profiles="selectedAdmins"
+                @click-profile="unSelectAdmin"
+              />
+            </q-card-section>
+            <q-card-actions v-if="selectedAdmins.length">
+              <q-btn @click="adminsToMembers">As Member</q-btn>
+              <q-btn @click="adminsToModerators">As Moderator</q-btn>
+            </q-card-actions>
+          </q-card>
+          <q-card class="col q-ma-sm">
+            <q-card-section
+              >Moderators ({{ activeStore.moderators.length }})</q-card-section
+            >
+            <q-card-section>
+              <recent-active-members
+                :max-count="15"
+                :profiles="activeStore.moderators"
+                @click-profile="selectModerator"
+              />
+            </q-card-section>
+            <q-card-section v-if="selectedModerators.length" class="bg-primary">
+              <recent-active-members
+                :max-count="15"
+                :profiles="selectedModerators"
+                @click-profile="unSelectModerator"
+              />
+            </q-card-section>
+            <q-card-actions v-if="selectedModerators.length">
+              <q-btn @click="moderatorsToMembers">As Member</q-btn>
+              <q-btn @click="moderatorsToAdmins">As Admin</q-btn>
+            </q-card-actions>
+          </q-card>
+        </div>
+        <div class="row">
+          <q-card class="col q-ma-sm">
+            <q-card-section>Pending ({{ pending.length }})</q-card-section>
+            <q-card-section>
+              <recent-active-members
+                :profiles="pending"
+                :max-count="15"
+                @click-profile="selectPending"
+              />
+            </q-card-section>
+            <q-card-section v-if="selectedPending.length" class="bg-primary">
+              <recent-active-members
+                :profiles="selectedPending"
+                :max-count="15"
+                @click-profile="unSelectPending"
+              />
+            </q-card-section>
+            <q-card-actions v-if="selectedPending.length">
+              <q-btn @click="pendingToMembers">As Member</q-btn>
+              <q-btn @click="pendingToGuest">As Guest</q-btn>
+            </q-card-actions>
+          </q-card>
+          <q-card class="col q-ma-sm">
+            <q-card-section
+              >Members ({{ activeStore.activeMembers.length }})</q-card-section
+            >
+            <q-card-section>
+              <recent-active-members
+                :profiles="activeStore.activeMembers"
+                :max-count="15"
+                @click-profile="selectMember"
+              />
+            </q-card-section>
+            <q-card-section v-if="selectedMembers.length" class="bg-primary">
+              <recent-active-members
+                :profiles="selectedMembers"
+                :max-count="15"
+                @click-profile="unSelectMember"
+              />
+            </q-card-section>
+            <q-card-actions v-if="selectedMembers.length">
+              <q-btn @click="membersToModerators">As Moderator</q-btn>
+              <q-btn @click="membersToGuests">As Guest</q-btn>
+            </q-card-actions>
+          </q-card>
+          <q-card class="col q-ma-sm">
+            <q-card-section
+              >Guests ({{ activeStore.guests.length }})</q-card-section
+            >
+            <q-card-section>
+              <recent-active-members
+                :max-count="15"
+                :profiles="activeStore.guests"
+                @click-profile="selectGuest"
+              />
+            </q-card-section>
+            <q-card-section v-if="selectedGuests.length" class="bg-primary">
+              <recent-active-members
+                :profiles="selectedGuests"
+                :max-count="15"
+                @click-profile="unSelectGuest"
+              />
+            </q-card-section>
+            <q-card-actions v-if="selectedGuests.length">
+              <q-btn @click="guestsToMembers">As Member</q-btn>
+              <q-btn @click="guestsToPending">As Pending</q-btn>
+            </q-card-actions>
+          </q-card>
+        </div>
+      </q-step>
+      <q-step name="taskboard" title="Taskboard" icon="view_column">
+        <div class="row">
+          <q-chip
+            size="md"
+            class="col-12"
+            icon="view_week"
+            clickable
+            @click="
+              TheDialogs.emit({
+                type: 'scrumGuide',
+                arg: {
+                  keyword: 'individuals',
+                },
+              })
+            "
+            >Status Columns</q-chip
+          >
+          <draggable
+            :list="taskboardColumns"
+            item-key="key"
+            @change="columnsSaved = false"
+          >
+            <template #footer
+              ><q-btn
+                icon="add"
+                color="primary"
+                class="q-pr-md"
+                rounded
+                dense
+                @click="createNewCol()"
+                >New Column</q-btn
+              ></template
+            >
+            <template #item="{ element, index }">
+              <q-chip
+                class="non-selectable"
+                :style="{
+                  'background-color':
+                    element.color ||
+                    (element.doneState
+                      ? 'positive'
+                      : index == 0
+                      ? 'accent'
+                      : 'secondary'),
+                }"
+                :color="
+                  element.color ||
+                  (element.doneState
+                    ? 'positive'
+                    : index == 0
+                    ? 'accent'
+                    : 'secondary')
+                "
+              >
+                <icon-picker
+                  :icon="element.icon || 'done'"
+                  :title="element.name"
+                  editable
+                  @update:icon="(v) => (element.icon = v)"
+                />
+                {{ element.name }}
+                &nbsp;
+                <q-btn
+                  dense
+                  size="sm"
+                  round
+                  icon="edit"
+                  @click="editBoardColumn(element)"
+                ></q-btn>
+              </q-chip>
+            </template>
+          </draggable>
+        </div>
+        <q-chip size="md" class="col-12" icon="checklist"
+          >Discussion Ready for Work
+          <q-tooltip>
+            <MarkdownPreview :source="md" />
+          </q-tooltip>
+        </q-chip>
+        <q-slider
+          class="q-px-xl"
+          label-always
+          v-model="issueReadiness"
+          markers
+          :marker-labels="(val) => (val == 0 ? '0%' : val == 1 ? '100%' : ' ')"
+          :label-value="(issueReadiness * 100).toFixed(0) + '%'"
+          :step="0.05"
+          switch-label-side
+          :min="0"
+          :max="1"
+        ></q-slider>
+      </q-step>
+      <q-step name="status" title="Project Status" icon="display_settings">
+        <q-chip size="lg" icon="display_settings" class="text-capitalize">{{
+          activeStore.activeProject?.status
+        }}</q-chip>
+        <div class="row q-my-md">
+          <q-btn
+            color="negative"
+            :disable="activeStore.activeProject?.status != 'active'"
+            rounded
+            @click="confirmClose = true"
+            icon="phonelink_erase"
+            >Close Project</q-btn
+          >
+          <q-separator />
+          <q-btn
+            color="primary"
+            v-if="activeStore.activeProject?.status != 'active'"
+            rounded
+            @click="activateProject"
+            icon="auto_fix_normal"
+            >Activate Project</q-btn
+          >
+          <q-separator />
+          <q-btn
+            :disable="activeStore.activeProject?.status == 'disabled'"
+            rounded
+            @click="confirmDisable = true"
+            icon="disabled_by_default"
+          >
+            Disable Project</q-btn
+          >
+        </div>
+      </q-step>
+    </q-stepper>
     <q-separator />
-    <div v-if="activeStore.activeProject" class="row">
-      <q-chip size="md" class="col-12" icon="checklist"
-        >Discussion Ready for Work
-        <q-tooltip>
-          <MarkdownPreview :source="md" />
-        </q-tooltip>
-      </q-chip>
-      <q-slider
-        class="q-px-xl"
-        label-always
-        v-model="issueReadiness"
-        markers
-        :marker-labels="(val) => (val == 0 ? '0%' : val == 1 ? '100%' : ' ')"
-        :label-value="(issueReadiness * 100).toFixed(0) + '%'"
-        :step="0.05"
-        switch-label-side
-        :min="0"
-        :max="1"
-      ></q-slider>
-    </div>
-    <q-separator />
-    <q-chip size="lg" icon="display_settings"
-      >Project Status : {{ activeStore.activeProject?.status }}</q-chip
-    >
     <div class="row q-my-md">
-      <q-btn
-        color="negative"
-        :disable="activeStore.activeProject?.status != 'active'"
-        rounded
-        @click="confirmClose = true"
-        icon="phonelink_erase"
-        >Close Project</q-btn
-      >
-      <q-separator />
-      <q-btn
-        color="primary"
-        v-if="activeStore.activeProject?.status != 'active'"
-        rounded
-        @click="activateProject"
-        icon="auto_fix_normal"
-        >Activate Project</q-btn
-      >
-      <q-separator />
-      <q-btn
-        :disable="activeStore.activeProject?.status == 'disabled'"
-        rounded
-        @click="confirmDisable = true"
-        icon="disabled_by_default"
-      >
-        Disable Project</q-btn
-      >
       <q-space class="col" />
       <q-btn
         rounded
@@ -424,6 +470,7 @@ export default defineComponent({
   data() {
     const defaultNewBoardCol = createNewBoardCol();
     return {
+      part: 'general',
       activeStore,
       TheDialogs,
       selectedAdmins: [] as IProfile[],

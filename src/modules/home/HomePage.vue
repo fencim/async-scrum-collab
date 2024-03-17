@@ -42,19 +42,6 @@
               >
               <q-btn
                 v-if="isAdminOf(props.row)"
-                icon="edit"
-                class="rounded"
-                @click="
-                  TheDialogs.emit({
-                    type: 'editProject',
-                    arg: {
-                      project: props.row,
-                    },
-                  })
-                "
-              />
-              <q-btn
-                v-if="isAdminOf(props.row)"
                 icon="settings"
                 class="rounded"
                 :to="{ name: 'settings', params: { project: props.row.key } }"

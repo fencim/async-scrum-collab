@@ -26,7 +26,7 @@ export default [
   }, {
     name: 'settings',
     meta: { actions: true },
-    path: 'settings', components: {
+    path: 'settings/:part?', components: {
       default: () => Promise.resolve(ProjectSettingsPage),
       header: () => Promise.resolve(ProjectToolBar),
       actions: () => Promise.resolve(ProjectActionList)
