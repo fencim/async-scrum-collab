@@ -75,14 +75,8 @@ register(process.env.SERVICE_WORKER_FILE, {
 async function listenToNotification(registration: ServiceWorkerRegistration) {
   if (!('Notification' in window)) return;
   if (Notification.permission == 'granted') {
-    const cb = (payload: object) => {
-      // Customize notification here
-      const notificationTitle = 'Background Message Title';
-      const notificationOptions = {
-        body: 'Test',
-        icon: '/icons/asc-icon.png'
-      };
-      registration.showNotification(notificationTitle, notificationOptions);
+    registration.showNotification('Async Scrum Collab', {
+      body: 'Running'
     })
   }
 }
