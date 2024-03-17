@@ -1,7 +1,7 @@
 import { register } from 'register-service-worker';
-import { Notify } from 'quasar'
-import { mdiCached } from '@quasar/extras/mdi-v6'
-
+import { Notify } from 'quasar';
+import { mdiCached } from '@quasar/extras/mdi-v6';
+import { firebaseService } from 'src/services/firebase.service';
 declare let window: any;
 
 // The ready(), registered(), cached(), updatefound() and updated()
@@ -16,19 +16,23 @@ register(process.env.SERVICE_WORKER_FILE, {
   // registrationOptions: { scope: './' },
 
   ready(/* registration */) {
-    // console.log('Service worker is active.')
+    console.log('Service worker is active.')
+    firebaseService.authenticate().then((user) => {
+      console.log('SW is ready with  ', user)
+    });
   },
 
-  registered(/* registration */) {
+  registered(registration) {
     // console.log('Service worker has been registered.')
+    listenToNotification(registration);
   },
 
   cached(/* registration */) {
-    // console.log('Content has been cached for offline use.')
+    console.log('Content has been cached for offline use.')
   },
 
   updatefound(/* registration */) {
-    // console.log('New content is downloading.')
+    console.log('New content is downloading.')
   },
 
   updated(/* registration */) {
@@ -68,3 +72,17 @@ register(process.env.SERVICE_WORKER_FILE, {
     // console.error('Error during service worker registration:', err)
   },
 });
+async function listenToNotification(registration: ServiceWorkerRegistration) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission == 'granted') {
+    const cb = (payload: object) => {
+      // Customize notification here
+      const notificationTitle = 'Background Message Title';
+      const notificationOptions = {
+        body: 'Test',
+        icon: '/icons/asc-icon.png'
+      };
+      registration.showNotification(notificationTitle, notificationOptions);
+    })
+  }
+}

@@ -46,6 +46,12 @@ const app = defineComponent({
   setup() {
     const $q = useQuasar();
     $q.dark.set(true);
+    if (
+      ($q.platform.is.android || $q.platform.is.ios) &&
+      !['granted', 'denied'].includes(Notification.permission)
+    ) {
+      Notification.requestPermission();
+    }
   },
   async mounted() {
     await import('src/workflows');
