@@ -40,7 +40,10 @@ listenToNotification();
 self.addEventListener('online', () => {
   firebaseService.authenticate();
 })
-
+self.addEventListener('notificationclick', (e) => {
+  console.log('notification click', e.notification);
+  self.postMessage(e.notification.data);
+})
 const sent: Record<string, boolean> = {};
 async function listenToNotification() {
   if (Notification.permission == 'granted') {
@@ -66,23 +69,20 @@ async function listenToNotification() {
             if (sent[log.key] || log.operator === user.uid) return;
             const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
             const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
-            const notification = new Notification('ASC:' + log.type, {
+            await self.registration.showNotification('ASC:' + log.type, {
               body: operator?.name,
               icon: (location?.origin || '') + '/icons/asc-icon.png',
               badge: operator?.avatar,
               silent: false,
-              data: log.data,
+              data: log,
               tag: log.key
             });
-            notification.addEventListener('click', (e) => {
-              self.postMessage((e as NotificationEvent)?.notification);
-            })
             sent[log.key] = true;
           })
         },
       })
     } else {
-      new Notification('ASC: No projects', {
+      await self.registration.showNotification('ASC: No projects', {
         body: (user?.displayName || 'User') + ' has no project involvement',
         icon: (location?.origin || '') + '/icons/asc-icon.png',
         tag: 'no-projects:' + today,
