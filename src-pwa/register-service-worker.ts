@@ -18,9 +18,7 @@ register(process.env.SERVICE_WORKER_FILE, {
   // registrationOptions: { scope: './' },
 
   ready(/* registration */) {
-    firebaseService.authenticate().then((user) => {
-      console.log(user && 'SW is ready with a user' || 'no user is signed-in')
-    });
+    console.log('sw ready')
   },
 
   registered(registration) {
@@ -77,6 +75,7 @@ const sent: Record<string, boolean> = {};
 async function listenToNotification(registration: ServiceWorkerRegistration) {
   if (!('Notification' in window)) return;
   if (Notification.permission == 'granted') {
+    await firebaseService.authenticate();
     const user = firebaseService.auth();
     let projects: string[] = [];
     const profile = user && (await firebaseService.get('profiles', user.uid) as { projects?: string[] });
