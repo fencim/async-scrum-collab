@@ -54,7 +54,10 @@ self.addEventListener('notificationclick', (event) => {
       })
       .then((clientList) => {
         for (const client of clientList) {
-          if (client.url === '/' && 'focus' in client) return client.focus();
+          if ('focus' in client) {
+            client.postMessage(event.notification.data);
+            return client.focus()
+          };
         }
         self.clients.openWindow('/');
       }),
