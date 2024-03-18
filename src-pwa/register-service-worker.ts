@@ -4,7 +4,7 @@ import { mdiCached } from '@quasar/extras/mdi-v6';
 import { firebaseService } from 'src/services/firebase.service';
 import { ILoggable, IProfile } from 'src/entities';
 declare let window: any;
-
+const ctx = self;
 register(process.env.SERVICE_WORKER_FILE, {
   // The registrationOptions object will be passed as the second argument
   // to ServiceWorkerContainer.register()
@@ -101,7 +101,8 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
               tag: log.key
             });
             notification.addEventListener('click', (e) => {
-              console.log('click notification', e);
+              console.log('noti click');
+              ctx.postMessage(e);
             })
             sent[log.key] = true;
           })
