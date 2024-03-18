@@ -84,10 +84,10 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
     } else if (user) {
       projects = (await firebaseService.findAll('projects', { 'members array-contains': user.uid }) || [])?.map(p => p.key as string);
     }
+    const date = new Date();
+    const pad = (n: number, l = 2) => String(n).padStart(l, '0')
+    const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
     if (user && projects?.length) {
-      const date = new Date();
-      const pad = (n: number, l = 2) => String(n).padStart(l, '0')
-      const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
       firebaseService.streamWith<ILoggable>('logs', {
         'date >=': today,
         //'operator !=': user.uid,
@@ -109,23 +109,33 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
             (await registration.getNotifications({
               tag: log.key
             })).forEach(n => {
-              n.onclick = () => {
+              n.addEventListener('click', () => {
                 ctx.postMessage(log);
-              }
+              })
             });
             sent[log.key] = true;
           })
         },
       })
     } else {
-      registration.showNotification('ASC: No projects', {
+      await registration.showNotification('ASC: No projects', {
         body: (user?.displayName || 'User') + ' has no project involvement',
         icon: (location?.origin || '') + '/icons/asc-icon.png',
-        tag: 'no-projects',
+        tag: 'no-projects:' + today,
         badge: user?.photoURL || undefined,
         vibrate: 1,
         silent: false,
-      })
+      });
+
+      (await registration.getNotifications({
+        tag: 'no-projects:' + today
+      })).forEach(n => {
+        n.addEventListener('click', () => {
+          ctx.postMessage({
+            data: (user?.displayName || 'User') + ' has no project involvement'
+          });
+        })
+      });
     }
   }
 }
