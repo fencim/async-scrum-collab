@@ -59,7 +59,7 @@ const app = defineComponent({
         console.log('Message from  Worker', e.data);
       });
       window.addEventListener('message', (e) => {
-        console.log('window message', e);
+        console.log('window message', e.data);
       });
     }
   },
