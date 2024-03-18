@@ -7,6 +7,8 @@
 declare const self: ServiceWorkerGlobalScope &
   typeof globalThis & { skipWaiting: () => void };
 
+import { ILoggable, IProfile } from 'src/entities';
+import { firebaseService } from 'src/services/firebase.service';
 import { clientsClaim } from 'workbox-core';
 import {
   precacheAndRoute,
@@ -32,4 +34,61 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
       { denylist: [/sw\.js$/, /workbox-(.)*\.js$/] }
     )
   );
+}
+self.addEventListener('activate', () => {
+  listenToNotification();
+})
+
+const sent: Record<string, boolean> = {};
+async function listenToNotification() {
+  if (Notification.permission == 'granted') {
+    await firebaseService.authenticate();
+    const user = firebaseService.auth();
+    let projects: string[] = [];
+    const profile = user && (await firebaseService.get('profiles', user.uid) as { projects?: string[] });
+    if (profile?.projects) {
+      projects = profile.projects;
+    } else if (user) {
+      projects = (await firebaseService.findAll('projects', { 'members array-contains': user.uid }) || [])?.map(p => p.key as string);
+    }
+    const date = new Date();
+    const pad = (n: number, l = 2) => String(n).padStart(l, '0')
+    const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+    if (user && projects?.length) {
+      firebaseService.streamWith<ILoggable>('logs', {
+        'date >=': today,
+        'project in': projects
+      }).subscribe({
+        next(logs) {
+          logs.forEach(async log => {
+            if (sent[log.key] || log.operator === user.uid) return;
+            const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
+            const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
+            const notification = new Notification('ASC:' + log.type, {
+              body: operator?.name,
+              icon: (location?.origin || '') + '/icons/asc-icon.png',
+              badge: operator?.avatar,
+              silent: false,
+              data: log.data,
+              tag: log.key
+            });
+            notification.addEventListener('click', (e) => {
+              self.postMessage((e as NotificationEvent)?.notification);
+            })
+            sent[log.key] = true;
+          })
+        },
+      })
+    } else {
+      new Notification('ASC: No projects', {
+        body: (user?.displayName || 'User') + ' has no project involvement',
+        icon: (location?.origin || '') + '/icons/asc-icon.png',
+        tag: 'no-projects:' + today,
+        badge: user?.photoURL || undefined,
+        vibrate: 1,
+        silent: false,
+      });
+
+    }
+  }
 }
