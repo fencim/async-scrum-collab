@@ -4,27 +4,7 @@ import { mdiCached } from '@quasar/extras/mdi-v6';
 import { firebaseService } from 'src/services/firebase.service';
 import { ILoggable, IProfile } from 'src/entities';
 declare let window: any;
-declare let clients: Clients;
-self.addEventListener('notificationclick', (event) => {
-  const e = event as NotificationEvent;
-  console.log('On notification click: ', e.notification.tag);
-  e.notification.close();
 
-  // This looks to see if the current is already open and
-  // focuses if it is
-  e.waitUntil(
-    clients
-      .matchAll({
-        type: 'window',
-      })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if (client.url === '/' && 'focus' in client) return client.focus();
-        }
-        if (clients.openWindow) return clients.openWindow('/');
-      }),
-  );
-});
 register(process.env.SERVICE_WORKER_FILE, {
   // The registrationOptions object will be passed as the second argument
   // to ServiceWorkerContainer.register()
@@ -105,7 +85,6 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
     if (user && projects?.length) {
       firebaseService.streamWith<ILoggable>('logs', {
         'date >=': today,
-        //'operator !=': user.uid,
         'project in': projects
       }).subscribe({
         next(logs) {
@@ -119,8 +98,17 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
               badge: operator?.avatar,
               silent: false,
               data: log.data,
-              tag: log.key
+              tag: log.key,
+              actions: [{
+                action: 'open',
+                title: 'Open'
+              }]
             });
+            (await registration.getNotifications({ tag: log.key })).forEach(list => {
+              list.onclick = (e) => {
+                console.log('click notification', e);
+              }
+            })
             sent[log.key] = true;
           })
         },
