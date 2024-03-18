@@ -40,9 +40,25 @@ listenToNotification();
 self.addEventListener('online', () => {
   firebaseService.authenticate();
 })
-self.addEventListener('notificationclick', (e) => {
-  console.log('notification click', e.notification);
-  self.postMessage(e.notification.data);
+self.addEventListener('notificationclick', (event) => {
+  console.log('notification click', event.notification);
+
+  event.notification.close();
+
+  // This looks to see if the current is already open and
+  // focuses if it is
+  event.waitUntil(
+    self.clients
+      .matchAll({
+        type: 'window',
+      })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url === '/' && 'focus' in client) return client.focus();
+        }
+        self.clients.openWindow('/');
+      }),
+  );
 })
 const sent: Record<string, boolean> = {};
 async function listenToNotification() {
