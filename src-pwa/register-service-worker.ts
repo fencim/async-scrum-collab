@@ -101,8 +101,7 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
               tag: log.key
             });
             notification.addEventListener('click', (e) => {
-              console.log('noti click');
-              ctx.postMessage(e);
+              ctx.postMessage((e as NotificationEvent)?.notification);
             })
             sent[log.key] = true;
           })
