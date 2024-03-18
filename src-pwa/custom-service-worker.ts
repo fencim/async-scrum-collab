@@ -35,8 +35,10 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
     )
   );
 }
-self.addEventListener('activate', () => {
-  listenToNotification();
+
+listenToNotification();
+self.addEventListener('online', () => {
+  firebaseService.authenticate();
 })
 
 const sent: Record<string, boolean> = {};
