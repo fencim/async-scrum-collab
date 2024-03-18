@@ -6,8 +6,6 @@ name: Deploy to Firebase Hosting on merge
   push:
     branches:
       - master
-env:
-  SERVICE_WORKER_FILE: src-pwa/custom-service-worker.ts
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
