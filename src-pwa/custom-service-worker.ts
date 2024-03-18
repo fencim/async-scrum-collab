@@ -16,6 +16,7 @@ import {
   createHandlerBoundToURL,
 } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { translateLogToNotification } from './notification.translator';
 
 self.skipWaiting();
 clientsClaim();
@@ -41,10 +42,7 @@ self.addEventListener('online', () => {
   firebaseService.authenticate();
 })
 self.addEventListener('notificationclick', (event) => {
-  console.log('notification click', event.notification);
-
   event.notification.close();
-
   // This looks to see if the current is already open and
   // focuses if it is
   event.waitUntil(
@@ -86,12 +84,11 @@ async function listenToNotification() {
         next(logs) {
           logs.forEach(async log => {
             if (sent[log.key] || log.operator === user.uid) return;
-            const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
-            const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
-            await self.registration.showNotification('ASC:' + log.type, {
-              body: operator?.name,
+            const { badge, body, title } = await translateLogToNotification(log);
+            await self.registration.showNotification(title, {
+              body: body,
               icon: (location?.origin || '') + '/icons/asc-icon.png',
-              badge: operator?.avatar,
+              badge: badge,
               silent: false,
               data: log,
               tag: log.key
@@ -106,7 +103,6 @@ async function listenToNotification() {
         icon: (location?.origin || '') + '/icons/asc-icon.png',
         tag: 'no-projects:' + today,
         badge: user?.photoURL || undefined,
-        vibrate: 1,
         silent: false,
       });
 

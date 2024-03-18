@@ -58,9 +58,6 @@ const app = defineComponent({
       navigator.serviceWorker.addEventListener('message', (e) => {
         console.log('Message from  Worker', e.data);
       });
-      window.addEventListener('message', (e) => {
-        console.log('window message', e.data);
-      });
     }
   },
   async mounted() {
