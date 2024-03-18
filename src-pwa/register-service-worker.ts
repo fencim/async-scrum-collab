@@ -92,7 +92,7 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
             if (sent[log.key] || !registration.active || log.operator === user.uid) return;
             const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
             const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
-            await registration.showNotification('ASC:' + log.type, {
+            const notification = new Notification('ASC:' + log.type, {
               body: operator?.name,
               icon: (location?.origin || '') + '/icons/asc-icon.png',
               badge: operator?.avatar,
@@ -102,12 +102,9 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
               actions: [{
                 action: 'open',
                 title: 'Open'
-              }]
-            });
-            (await registration.getNotifications({ tag: log.key })).forEach(list => {
-              list.onclick = (e) => {
-                console.log('click notification', e);
-              }
+              }]);
+            notification.addEventListener('click', (e) => {
+              console.log('click notification', e);
             })
             sent[log.key] = true;
           })
