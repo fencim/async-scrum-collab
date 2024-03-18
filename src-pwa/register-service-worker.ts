@@ -98,11 +98,7 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
               badge: operator?.avatar,
               silent: false,
               data: log.data,
-              tag: log.key,
-              actions: [{
-                action: 'open',
-                title: 'Open'
-              }]
+              tag: log.key
             });
             notification.addEventListener('click', (e) => {
               console.log('click notification', e);
