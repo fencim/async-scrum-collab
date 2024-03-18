@@ -4,12 +4,27 @@ import { mdiCached } from '@quasar/extras/mdi-v6';
 import { firebaseService } from 'src/services/firebase.service';
 import { ILoggable, IProfile } from 'src/entities';
 declare let window: any;
+declare let clients: Clients;
+self.addEventListener('notificationclick', (event) => {
+  const e = event as NotificationEvent;
+  console.log('On notification click: ', e.notification.tag);
+  e.notification.close();
 
-// The ready(), registered(), cached(), updatefound() and updated()
-// events passes a ServiceWorkerRegistration instance in their arguments.
-// ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
-const ctx: Worker = self as any;
-
+  // This looks to see if the current is already open and
+  // focuses if it is
+  e.waitUntil(
+    clients
+      .matchAll({
+        type: 'window',
+      })
+      .then((clientList) => {
+        for (const client of clientList) {
+          if (client.url === '/' && 'focus' in client) return client.focus();
+        }
+        if (clients.openWindow) return clients.openWindow('/');
+      }),
+  );
+});
 register(process.env.SERVICE_WORKER_FILE, {
   // The registrationOptions object will be passed as the second argument
   // to ServiceWorkerContainer.register()
@@ -106,13 +121,6 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
               data: log.data,
               tag: log.key
             });
-            (await registration.getNotifications({
-              tag: log.key
-            })).forEach(n => {
-              n.addEventListener('click', () => {
-                ctx.postMessage(log);
-              })
-            });
             sent[log.key] = true;
           })
         },
@@ -127,15 +135,6 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
         silent: false,
       });
 
-      (await registration.getNotifications({
-        tag: 'no-projects:' + today
-      })).forEach(n => {
-        n.addEventListener('click', () => {
-          ctx.postMessage({
-            data: (user?.displayName || 'User') + ' has no project involvement'
-          });
-        })
-      });
     }
   }
 }
