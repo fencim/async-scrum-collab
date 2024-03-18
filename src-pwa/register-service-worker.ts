@@ -90,12 +90,12 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
       const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
       firebaseService.streamWith<ILoggable>('logs', {
         'date >=': today,
-        'operator !=': user.uid,
+        //'operator !=': user.uid,
         'project in': projects
       }).subscribe({
         next(logs) {
           logs.forEach(async log => {
-            if (sent[log.key] || !registration.active) return;
+            if (sent[log.key] || !registration.active || log.operator === user.uid) return;
             const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
             const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
             await registration.showNotification('ASC:' + log.type, {
