@@ -77,7 +77,13 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
   if (!('Notification' in window)) return;
   if (Notification.permission == 'granted') {
     const user = firebaseService.auth();
+    let projects: string[] = [];
     const profile = user && (await firebaseService.get('profiles', user.uid) as { projects?: string[] });
+    if (profile?.projects) {
+      projects = profile.projects;
+    } else if (user) {
+      projects = (await firebaseService.findAll('projects', { 'members array-contains': user.uid }) || [])?.map(p => p.key as string);
+    }
     if (user && profile?.projects?.length) {
       const date = new Date();
       const pad = (n: number, l = 2) => String(n).padStart(l, '0')
@@ -85,7 +91,7 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
       firebaseService.streamWith<ILoggable>('logs', {
         'date >=': today,
         'operator !=': user.uid,
-        'project in': profile.projects
+        'project in': projects
       }).subscribe({
         next(logs) {
           logs.forEach(async log => {
@@ -94,10 +100,11 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
             const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
             registration.showNotification('ASC:' + log.type, {
               body: operator?.name,
-              icon: operator?.avatar,
-              vibrate: 1,
+              icon: (location?.origin || '') + '/icons/asc-icon.png',
+              badge: operator?.avatar,
               silent: false,
               data: log.data,
+              tag: log.key
             })
             sent[log.key] = true;
           })
@@ -105,8 +112,9 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
       })
     } else {
       registration.showNotification('ASC: No projects', {
-        body: (user?.displayName || 'User') + ' has no projects involvement',
-        icon: user?.photoURL || undefined,
+        body: (user?.displayName || 'User') + ' has no project involvement',
+        icon: (location?.origin || '') + '/icons/asc-icon.png',
+        badge: user?.photoURL || undefined,
         vibrate: 1,
         silent: false,
       })

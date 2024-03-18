@@ -335,7 +335,7 @@ class FirebaseService {
   ) {
     const collectionRef = collections[modelName]();
     const { limits } = options ?? {};
-    const supOps = /(.*) (==|<|<=|>=|!=|in)$/;
+    const supOps = /(.*) (==|<|<=|>=|!=|in|array-contains)$/;
     const conditions: QueryConstraint[] = Object.keys(filter)
       .filter((f) => typeof filter[f] !== 'undefined')
       .map((f) => {

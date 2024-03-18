@@ -47,7 +47,9 @@ const app = defineComponent({
     const $q = useQuasar();
     $q.dark.set(true);
     if (
-      ($q.platform.is.android || $q.platform.is.ios) &&
+      ($q.platform.is.android ||
+        $q.platform.is.ios ||
+        typeof Notification != 'undefined') &&
       !['granted', 'denied'].includes(Notification.permission)
     ) {
       Notification.requestPermission();
