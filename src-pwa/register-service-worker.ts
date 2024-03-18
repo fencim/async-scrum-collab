@@ -8,6 +8,7 @@ declare let window: any;
 // The ready(), registered(), cached(), updatefound() and updated()
 // events passes a ServiceWorkerRegistration instance in their arguments.
 // ServiceWorkerRegistration: https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration
+const ctx: Worker = self as any;
 
 register(process.env.SERVICE_WORKER_FILE, {
   // The registrationOptions object will be passed as the second argument
@@ -98,14 +99,21 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
             if (sent[log.key] || !registration.active) return;
             const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
             const operator = await firebaseService.get('profiles', opKey) as (IProfile | undefined);
-            registration.showNotification('ASC:' + log.type, {
+            await registration.showNotification('ASC:' + log.type, {
               body: operator?.name,
               icon: (location?.origin || '') + '/icons/asc-icon.png',
               badge: operator?.avatar,
               silent: false,
               data: log.data,
               tag: log.key
-            })
+            });
+            (await registration.getNotifications({
+              tag: log.key
+            })).forEach(n => {
+              n.onclick = () => {
+                ctx.postMessage(log);
+              }
+            });
             sent[log.key] = true;
           })
         },
@@ -114,6 +122,7 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
       registration.showNotification('ASC: No projects', {
         body: (user?.displayName || 'User') + ' has no project involvement',
         icon: (location?.origin || '') + '/icons/asc-icon.png',
+        tag: 'no-projects',
         badge: user?.photoURL || undefined,
         vibrate: 1,
         silent: false,

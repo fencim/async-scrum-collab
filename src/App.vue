@@ -54,6 +54,11 @@ const app = defineComponent({
     ) {
       Notification.requestPermission();
     }
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener('message', (e) => {
+        console.log('Message from  Worker', e.data);
+      });
+    }
   },
   async mounted() {
     await import('src/workflows');
