@@ -84,7 +84,7 @@ async function listenToNotification(registration: ServiceWorkerRegistration) {
     } else if (user) {
       projects = (await firebaseService.findAll('projects', { 'members array-contains': user.uid }) || [])?.map(p => p.key as string);
     }
-    if (user && profile?.projects?.length) {
+    if (user && projects?.length) {
       const date = new Date();
       const pad = (n: number, l = 2) => String(n).padStart(l, '0')
       const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
