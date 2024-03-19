@@ -71,12 +71,16 @@ async function listenToNotification() {
     await firebaseService.authenticate();
     const user = firebaseService.auth();
     let projects: string[] = [];
-    const profile = user && (await firebaseService.get('profiles', user.uid) as { projects?: string[] });
+    const profile = user && (await firebaseService.get('profiles', user.uid) as IProfile);
     if (profile?.projects) {
       projects = profile.projects;
     } else if (user) {
-      projects = (await firebaseService.findAll('projects', { 'members array-contains': user.uid }) || [])?.map(p => p.key as string);
+      projects = (await firebaseService.findAll('projects', { 'members array-contains': user.uid }) || []).map(p => p.key as string);
+      projects.push(...((await firebaseService.findAll('projects', { 'admins array-contains': user.uid }) || []).map(p => p.key as string)));
+      projects.push(...((await firebaseService.findAll('projects', { 'moderators array-contains': user.uid }) || []).map(p => p.key as string)));
+      projects = [...new Set(projects)];
     }
+
     const date = new Date();
     const pad = (n: number, l = 2) => String(n).padStart(l, '0')
     const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
