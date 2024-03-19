@@ -82,15 +82,17 @@ import ConfirmToDeleteIterationDialog from 'src/dialogs/iteration/ConfirmToDelet
 import { entityKey } from 'src/entities/base.entity';
 import { Project } from 'src/workflows/project/definition';
 import { useQuasar } from 'quasar';
+import { useDiscussionStore } from 'src/stores/discussions.store';
 
 type WorkflowStructs = Iteration | Discussion | Project;
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);
+const profileStore = useProfilesStore();
+const projectStore = useProjectStore();
+const discussionStore = useDiscussionStore();
 
 onMounted(async () => {
-  const profileStore = useProfilesStore();
-  const projectStore = useProjectStore();
   await profileStore.init();
   await projectStore.init();
   evalDrawers();
@@ -172,6 +174,34 @@ if (navigator.serviceWorker) {
               },
             });
           }
+          break;
+        case 'retroFeedback':
+        case 'sendMessage':
+          {
+            const item = discussionStore.discussions.find(
+              (d) => d.key == operation.arg.discussion
+            );
+            $router.replace({
+              name: 'convo',
+              params: {
+                project: entityKey(log.project),
+                iteration: operation.arg.iteration,
+                ceremony: item?.ceremonyKey || operation.arg.iteration + 'plan',
+                item: operation.arg.discussion,
+              },
+            });
+          }
+          break;
+        case 'voteForConfidence':
+        case 'resetConfidenceVoting':
+          $router.replace({
+            name: 'convo',
+            params: {
+              project: entityKey(log.project),
+              iteration: operation.arg.ceremony.iterationKey,
+              ceremony: operation.arg.ceremony.key,
+            },
+          });
           break;
         default:
           $q.notify({
