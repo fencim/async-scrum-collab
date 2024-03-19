@@ -112,6 +112,7 @@ if (navigator.serviceWorker) {
   navigator.serviceWorker.addEventListener('message', async (e) => {
     if (!e.data) return;
     const log = e.data as ILoggable;
+    profileStore.setLastReadNotification(log);
     const type = log.type as WorkflowStructs['type'];
     if (log.kind == 'operation') {
       const operation = {

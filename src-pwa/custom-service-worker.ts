@@ -17,6 +17,7 @@ import {
 } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { translateLogToNotification } from './notification.translator';
+import { sessionResource } from 'src/resources/session.resource';
 
 self.skipWaiting();
 clientsClaim();
@@ -80,8 +81,8 @@ async function listenToNotification() {
       projects.push(...((await firebaseService.findAll('projects', { 'moderators array-contains': user.uid }) || []).map(p => p.key as string)));
       projects = [...new Set(projects)];
     }
-
-    const date = new Date();
+    const lastRead = (await sessionResource.getData('lastRead')) as (ILoggable | undefined);
+    const date = lastRead ? new Date(lastRead.date) : new Date();
     const pad = (n: number, l = 2) => String(n).padStart(l, '0')
     const today = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
     if (user && projects?.length) {

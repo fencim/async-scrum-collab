@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { IProfile } from 'src/entities';
+import { IProfile, ILoggable } from 'src/entities';
 import { convoResource, discussionResource, iterationResource, mediaResource, profileResource, projectResource } from 'src/resources';
 import { AccessStatus, firebaseService } from 'src/services/firebase.service';
 import { sessionResource } from 'src/resources/session.resource';
@@ -184,5 +184,8 @@ export const useProfilesStore = defineStore('Profiles', {
       }
       return user;
     },
+    async setLastReadNotification(log: ILoggable) {
+      await sessionResource.setData('lastRead', log);
+    }
   }
 });
