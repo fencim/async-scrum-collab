@@ -83,6 +83,7 @@ import { entityKey } from 'src/entities/base.entity';
 import { Project } from 'src/workflows/project/definition';
 import { useQuasar } from 'quasar';
 import { useDiscussionStore } from 'src/stores/discussions.store';
+import { TheDialogs } from 'src/dialogs/the-dialogs';
 
 type WorkflowStructs = Iteration | Discussion | Project;
 
@@ -108,7 +109,7 @@ function evalDrawers() {
   leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
 }
 if (navigator.serviceWorker) {
-  navigator.serviceWorker.addEventListener('message', (e) => {
+  navigator.serviceWorker.addEventListener('message', async (e) => {
     if (!e.data) return;
     const log = e.data as ILoggable;
     const type = log.type as WorkflowStructs['type'];
@@ -128,7 +129,7 @@ if (navigator.serviceWorker) {
             const iterationKey =
               operation.arg.item.iteration &&
               entityKey(operation.arg.item.iteration);
-            $router.replace({
+            await $router.replace({
               name: 'convo',
               params: {
                 project: entityKey(log.project),
@@ -137,6 +138,10 @@ if (navigator.serviceWorker) {
                   operation.arg.item.ceremonyKey || iterationKey + 'plan',
                 item: entityKey(operation.arg.item),
               },
+            });
+            TheDialogs.emit({
+              type: 'viewTask',
+              arg: operation.arg.item,
             });
           }
           break;
