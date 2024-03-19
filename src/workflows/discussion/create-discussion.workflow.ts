@@ -29,7 +29,7 @@ TheWorkflows.on({
       TheWorkflows.emit({
         type: 'assignTask',
         arg: {
-          issue: result,
+          item: result,
           profile: theUser,
           done,
           error

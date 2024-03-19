@@ -61,7 +61,10 @@
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { onMounted, onUpdated, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { DiscussionItem, ICeremony, ILoggable } from 'src/entities';
+import { Iteration } from 'src/workflows/iteration/definition';
+import { Discussion } from 'src/workflows/discussion/definition';
 import DiscussionFormDialog from 'src/dialogs/discussion/DiscussionFormDialog.vue';
 import DiscussionDetailsDialog from 'src/dialogs/discussion/DiscussionDetailsDialog.vue';
 import IterationFormDialog from 'src/dialogs/iteration/IterationFormDialog.vue';
@@ -76,6 +79,11 @@ import CeremonyDetailsDialog from 'src/dialogs/discussion/CeremonyDetailsDialog.
 import CeremonyFormDialog from 'src/dialogs/iteration/CeremonyFormDialog.vue';
 import ConfirmToDeleteDiscussionDialog from 'src/dialogs/discussion/ConfirmToDeleteDiscussionDialog.vue';
 import ConfirmToDeleteIterationDialog from 'src/dialogs/iteration/ConfirmToDeleteIterationDialog.vue';
+import { entityKey } from 'src/entities/base.entity';
+import { Project } from 'src/workflows/project/definition';
+import { useQuasar } from 'quasar';
+
+type WorkflowStructs = Iteration | Discussion | Project;
 
 const leftDrawerOpen = ref(false);
 const rightDrawerOpen = ref(false);
@@ -91,8 +99,88 @@ onUpdated(() => {
   evalDrawers();
 });
 const $route = useRoute();
+const $router = useRouter();
+const $q = useQuasar();
 function evalDrawers() {
   rightDrawerOpen.value = !!($route.meta && $route.meta.actions);
   leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
+}
+if (navigator.serviceWorker) {
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (!e.data) return;
+    const log = e.data as ILoggable;
+    const type = log.type as WorkflowStructs['type'];
+    if (log.kind == 'operation') {
+      const operation = {
+        type: type,
+        arg: log.data,
+      } as WorkflowStructs;
+      switch (operation.type) {
+        case 'moveIssue':
+        case 'assignTask':
+        case 'createDiscussion':
+        case 'voteForComplexity':
+        case 'confirmAgreement':
+        case 'updateDiscussionFields':
+          {
+            const iterationKey =
+              operation.arg.item.iteration &&
+              entityKey(operation.arg.item.iteration);
+            $router.replace({
+              name: 'convo',
+              params: {
+                project: entityKey(log.project),
+                iteration: iterationKey,
+                ceremony:
+                  operation.arg.item.ceremonyKey || iterationKey + 'plan',
+                item: entityKey(operation.arg.item),
+              },
+            });
+          }
+          break;
+        case 'mergeFeedbackWith': {
+          {
+            const iterationKey =
+              (operation.arg.item as ICeremony).iterationKey ??
+              entityKey((operation.arg.item as DiscussionItem).iteration || '');
+            const itemKey =
+              (operation.arg.item as ICeremony).key ??
+              entityKey((operation.arg.item as DiscussionItem).key || '');
+            const ceremonyKey =
+              (operation.arg.item as ICeremony).key ??
+              ((operation.arg.item as DiscussionItem).ceremonyKey || '');
+            $router.replace({
+              name: 'convo',
+              params: {
+                project: entityKey(log.project),
+                iteration: iterationKey,
+                ceremony: ceremonyKey || iterationKey + 'plan',
+                item: ceremonyKey == itemKey ? undefined : itemKey,
+              },
+            });
+          }
+          break;
+        }
+        case 'updateProject':
+        case 'updateProjectSettings':
+        case 'createProject':
+          {
+            $router.replace({
+              name: 'settings',
+              params: {
+                project: entityKey(log.project),
+              },
+            });
+          }
+          break;
+        default:
+          $q.notify({
+            caption: type,
+            message: entityKey(log.project),
+          });
+          break;
+      }
+    }
+  });
 }
 </script>

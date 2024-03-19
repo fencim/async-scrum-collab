@@ -8,7 +8,7 @@ TheWorkflows.on({
   permissions: ['admin', 'moderator'],
   loggable: 'operation',
   async cb(e) {
-    const { issue, done, error } = e;
+    const { item: issue, done, error } = e;
     try {
       await discussionStore.deleteDiscussion(issue);
       done && done();

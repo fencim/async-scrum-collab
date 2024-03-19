@@ -7,19 +7,19 @@ export enum TaskActionError {
 }
 export type Discussion =
   | Struct<'moveIssue', {
-    issue: DiscussionItem,
+    item: DiscussionItem,
     column?: IBoardColumn,
     iterationKey?: string,
     done?: (issue: DiscussionItem) => void
     error?: (error: TaskActionError) => void;
   }>
   | Struct<'deleteIssue', {
-    issue: DiscussionItem,
+    item: DiscussionItem,
     done?: VoidCallback;
     error?: ErrorCallback;
   }>
   | Struct<'assignTask', {
-    issue: DiscussionItem,
+    item: DiscussionItem,
     profile: IProfile,
     done?: (issue: DiscussionItem) => void;
     error?: ErrorCallback;
@@ -118,7 +118,7 @@ export type Discussion =
     error?: (error: unknown) => void;
   }>
   | Struct<'updateDiscussionFields', {
-    payload: DiscussionItem,
+    item: DiscussionItem,
     done?: (discussion: DiscussionItem) => void;
     error?: ErrorCallback;
   }>

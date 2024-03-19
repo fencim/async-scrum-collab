@@ -8,30 +8,30 @@ TheWorkflows.on({
   loggable: 'operation',
   async cb(e) {
     const discussionStore = useDiscussionStore();
-    const old = await discussionStore.getUpdated(e.payload.key);
+    const old = await discussionStore.getUpdated(e.item.key);
     if (!old) return;
     type RecordType = typeof old;
     type FieldType = keyof RecordType;
-    const editables: FieldType[] = Object.keys(e.payload) as FieldType[];
+    const editables: FieldType[] = Object.keys(e.item) as FieldType[];
     const props = editables.filter((field) => {
       if (/^(id|key)$/i.test(field) || field.startsWith('*')) return false;
-      if (Array.isArray(old[field]) && Array.isArray(e.payload[field])) {
+      if (Array.isArray(old[field]) && Array.isArray(e.item[field])) {
         return (old[field] as string[]).map(a => entityKey(a) || JSON.stringify(a)).sort().join(',') !==
-          (e.payload[field] as string[]).map(a => entityKey(a) || JSON.stringify(a)).sort().join(',')
-      } else if ((typeof e.payload[field] == 'object' && e.payload[field]) || typeof old[field] == 'object') {
-        if ((e.payload[field] as ({ key: string } | undefined))?.key || (old[field] as ({ key: string } | undefined))?.key)
-          return entityKey(old[field] as string) !== entityKey(e.payload[field] as string);
-        else if (typeof e.payload[field] === typeof old[field]) {
-          const a = e.payload[field] as unknown as Record<string, string>;
+          (e.item[field] as string[]).map(a => entityKey(a) || JSON.stringify(a)).sort().join(',')
+      } else if ((typeof e.item[field] == 'object' && e.item[field]) || typeof old[field] == 'object') {
+        if ((e.item[field] as ({ key: string } | undefined))?.key || (old[field] as ({ key: string } | undefined))?.key)
+          return entityKey(old[field] as string) !== entityKey(e.item[field] as string);
+        else if (typeof e.item[field] === typeof old[field]) {
+          const a = e.item[field] as unknown as Record<string, string>;
           const b = old[field] as unknown as Record<string, string>;
           return !Object.keys(a).reduce((p, c) => {
             return p && (a[c] == b[c])
           }, true);
         }
       }
-      return old[field] !== e.payload[field];
+      return old[field] !== e.item[field];
     });
-    const update = await discussionStore.updateDiscussion(old.key, props, e.payload);
+    const update = await discussionStore.updateDiscussion(old.key, props, e.item);
     if (update) {
       await TheWorkflows.emitPromised({
         type: 'assessDiscussion',

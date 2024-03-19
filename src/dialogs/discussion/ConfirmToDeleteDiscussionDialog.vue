@@ -14,7 +14,7 @@ async function deleteDiscussion() {
   await TheWorkflows.emitPromised({
     type: 'deleteIssue',
     arg: {
-      issue: discussion.value,
+      item: discussion.value,
     },
   });
   isDialogShown.value = false;

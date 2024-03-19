@@ -73,7 +73,7 @@ function getIterations() {
           TheWorkflows.emit({
             type: 'assignTask',
             arg: {
-              issue: task,
+              item: task,
               profile: p,
             },
           })

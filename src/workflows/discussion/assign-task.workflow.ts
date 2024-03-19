@@ -8,7 +8,7 @@ TheWorkflows.on({
   async cb(e) {
     const discussionStore = useDiscussionStore();
     try {
-      const updated = await discussionStore.assignTaskTo(e.issue, e.profile);
+      const updated = await discussionStore.assignTaskTo(e.item, e.profile);
       if (updated) {
         e.done && e.done(updated);
         TheWorkflows.emit({

@@ -53,7 +53,7 @@ function updateCompletedDate(d: string) {
   TheWorkflows.emit({
     type: 'updateDiscussionFields',
     arg: {
-      payload: {
+      item: {
         ...props.task,
         doneDate: d,
       },

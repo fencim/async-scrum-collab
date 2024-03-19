@@ -46,7 +46,7 @@ function updateDueDate(d: string) {
   TheWorkflows.emit({
     type: 'updateDiscussionFields',
     arg: {
-      payload: {
+      item: {
         ...props.task,
         dueDate: d,
       },

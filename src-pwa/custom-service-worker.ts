@@ -57,7 +57,11 @@ self.addEventListener('notificationclick', (event) => {
             return client.focus()
           };
         }
-        self.clients.openWindow('/');
+        self.clients.openWindow('/').then((client) => {
+          setTimeout(() => {
+            client?.postMessage(event.notification.data);
+          }, 1000);
+        });
       }),
   );
 })

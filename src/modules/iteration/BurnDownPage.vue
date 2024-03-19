@@ -327,7 +327,7 @@ function updateDueDate(d: string, task: DiscussionItem) {
   return TheWorkflows.emitPromised({
     type: 'updateDiscussionFields',
     arg: {
-      payload: {
+      item: {
         ...task,
         dueDate: d,
       },
@@ -464,7 +464,7 @@ function describeDiscussion(item: DiscussionItem | string): string {
                     TheWorkflows.emit({
                       type: 'assignTask',
                       arg: {
-                        issue: element,
+                        item: element,
                         profile: p,
                       },
                     })

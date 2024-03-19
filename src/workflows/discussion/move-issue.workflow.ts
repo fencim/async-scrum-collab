@@ -20,7 +20,7 @@ TheWorkflows.on({
   async cb(e) {
     const activeStore = useActiveStore();
     const issueReadiness = activeStore.activeProject?.discussionReadiness || 0;
-    const { issue, column, iterationKey } = e;
+    const { item: issue, column, iterationKey } = e;
     const goIssues = issue.type == 'goal' || issue.type == 'objective';
     const movingFromIteration =
       iterationKey &&
@@ -51,7 +51,7 @@ TheWorkflows.on({
     const updated = await TheWorkflows.emitPromised<DiscussionItem>({
       type: 'updateDiscussionFields',
       arg: {
-        payload: issue
+        item: issue
       }
     });
     e.done && e.done(updated);

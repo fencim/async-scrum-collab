@@ -52,7 +52,7 @@ async function taskMoved(
   TheWorkflows.emit({
     type: 'moveIssue',
     arg: {
-      issue,
+      item: issue,
       column,
       iterationKey,
       done: (updated) => {

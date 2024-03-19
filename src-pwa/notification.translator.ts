@@ -1,9 +1,10 @@
 import { ILoggable, IProfile } from 'src/entities';
 import { Iteration } from 'src/workflows/iteration/definition';
 import { Discussion } from 'src/workflows/discussion/definition';
+import { Project } from 'src/workflows/project/definition';
 import { firebaseService } from 'src/services/firebase.service';
 import { entityKey } from 'src/entities/base.entity';
-export type WorkflowStructs = Iteration | Discussion;
+type WorkflowStructs = Iteration | Discussion | Project;
 
 export async function translateLogToNotification(log: ILoggable) {
   const opKey = typeof log.operator == 'object' ? log.operator.key : log.operator;
@@ -35,7 +36,7 @@ export async function translateLogToNotification(log: ILoggable) {
         body = `${operation.arg.message} (with ${operation.arg.resolution})`;
         break;
       case 'assignTask':
-        title = `${operator?.name || 'User'} assigned ${entityKey(operation.arg.issue.key)}`;
+        title = `${operator?.name || 'User'} assigned ${entityKey(operation.arg.item.key)}`;
         body = `to ${operation.arg.profile.name}`;
         break;
       case 'confirmAgreement':
@@ -56,11 +57,11 @@ export async function translateLogToNotification(log: ILoggable) {
         body = `Start : ${operation.arg.details.start}, End: ${operation.arg.details.end}`;
         break;
       case 'moveIssue':
-        title = `${operator?.name || 'User'} moved issue ${operation.arg.issue.key}`;
+        title = `${operator?.name || 'User'} moved issue ${operation.arg.item.key}`;
         if (operation.arg.column) {
-          body = `From : ${operation.arg.issue.status}, To: ${operation.arg.column}`;
+          body = `From : ${operation.arg.item.status}, To: ${operation.arg.column}`;
         } else if (operation.arg.iterationKey) {
-          body = `From : ${operation.arg.issue.iteration && entityKey(operation.arg.issue.iteration)}, To: ${operation.arg.iterationKey}`;
+          body = `From : ${operation.arg.item.iteration && entityKey(operation.arg.item.iteration)}, To: ${operation.arg.iterationKey}`;
         }
         break;
       case 'voteForComplexity':
@@ -72,8 +73,8 @@ export async function translateLogToNotification(log: ILoggable) {
         body = `Sprint: ${operation.arg.ceremony.iterationKey}`;
         break;
       case 'deleteIssue':
-        title = `${operator?.name || 'User'} deleted item ${operation.arg.issue.key}`;
-        body = `Sprint: ${operation.arg.issue.iteration && entityKey(operation.arg.issue.iteration)}`;
+        title = `${operator?.name || 'User'} deleted item ${operation.arg.item.key}`;
+        body = `Sprint: ${operation.arg.item.iteration && entityKey(operation.arg.item.iteration)}`;
         break;
       case 'deleteIteration':
         title = `${operator?.name || 'User'} deleted sprint ${operation.arg.iteration.key}`;
@@ -90,6 +91,14 @@ export async function translateLogToNotification(log: ILoggable) {
       case 'resetConfidenceVoting':
         title = `${operator?.name || 'User'} reset confidence voting for ${operation.arg.ceremony.key}`;
         body = `from: ${operation.arg.ceremony.confidence})}`;
+        break;
+      case 'updateProject':
+        title = `${operator?.name || 'User'} updated project ${operation.arg.project.name}`;
+        body = `from: ${operation.arg.project.name})}`;
+        break;
+      case 'updateProjectSettings':
+        title = `${operator?.name || 'User'} set project ${operation.arg.settings}`;
+        body = ` ${entityKey(operation.arg.project)}`;
         break;
     }
   }
