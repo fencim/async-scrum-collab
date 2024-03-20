@@ -54,13 +54,21 @@ self.addEventListener('notificationclick', (event) => {
       .then((clientList) => {
         for (const client of clientList) {
           if ('focus' in client) {
-            client.postMessage(event.notification.data);
+            client.postMessage({
+              type: 'notificationClick',
+              data: event.notification.data
+            });
             return client.focus()
           };
         }
         self.clients.openWindow('/').then((client) => {
           setTimeout(() => {
-            client?.postMessage(event.notification.data);
+            if (client) {
+              client.postMessage({
+                type: 'notificationClick',
+                data: event.notification.data
+              });
+            }
           }, 1000);
         });
       }),
@@ -94,6 +102,8 @@ async function listenToNotification() {
           logs.forEach(async log => {
             if (sent[log.key] || log.operator === user.uid) return;
             const { badge, body, title } = await translateLogToNotification(log);
+            const clients = await self.clients.matchAll({ type: 'window' });
+            //if (clients.find(c => c.focused)) return;
             await self.registration.showNotification(title, {
               body: body,
               icon: (location?.origin || '') + '/icons/asc-icon.png',
@@ -102,6 +112,17 @@ async function listenToNotification() {
               data: log,
               tag: log.key
             });
+
+            clients.forEach(client => {
+              client.postMessage({
+                type: 'newNotification',
+                tag: log.key,
+                title,
+                body,
+                icon: badge,
+                data: log
+              });
+            })
             sent[log.key] = true;
           })
         },

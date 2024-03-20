@@ -84,6 +84,7 @@ import { Project } from 'src/workflows/project/definition';
 import { useQuasar } from 'quasar';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
+import { useNotificationStore } from 'src/stores/notification.store';
 
 type WorkflowStructs = Iteration | Discussion | Project;
 
@@ -104,6 +105,7 @@ onUpdated(() => {
 const $route = useRoute();
 const $router = useRouter();
 const $q = useQuasar();
+const notificationStore = useNotificationStore();
 function evalDrawers() {
   rightDrawerOpen.value = !!($route.meta && $route.meta.actions);
   leftDrawerOpen.value = !!($route.meta && $route.meta.menus);
@@ -111,7 +113,30 @@ function evalDrawers() {
 if (navigator.serviceWorker) {
   navigator.serviceWorker.addEventListener('message', async (e) => {
     if (!e.data) return;
-    const log = e.data as ILoggable;
+    const event = e.data as
+      | {
+          type: 'notificationClick';
+          data: ILoggable;
+        }
+      | {
+          type: 'newNotification';
+          body: string;
+          title: string;
+          icon: string;
+          tag: string;
+          data: ILoggable;
+        };
+    const log = event.data;
+    if (event.type == 'newNotification') {
+      notificationStore.newNotification({
+        body: event.body,
+        title: event.title,
+        tag: event.tag,
+        badge: event.icon,
+        log: event.data,
+      });
+      return;
+    }
     profileStore.setLastReadNotification(log);
     const type = log.type as WorkflowStructs['type'];
     if (log.kind == 'operation') {
