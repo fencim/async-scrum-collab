@@ -85,6 +85,7 @@ import { useQuasar } from 'quasar';
 import { useDiscussionStore } from 'src/stores/discussions.store';
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { useNotificationStore } from 'src/stores/notification.store';
+import { convoBus } from 'src/modules/ceremony/convo-bus';
 
 type WorkflowStructs = Iteration | Discussion | Project;
 
@@ -137,111 +138,117 @@ if (navigator.serviceWorker) {
       });
       return;
     }
-    profileStore.setLastReadNotification(log);
-    const type = log.type as WorkflowStructs['type'];
-    if (log.kind == 'operation') {
-      const operation = {
-        type: type,
-        arg: log.data,
-      } as WorkflowStructs;
-      switch (operation.type) {
-        case 'moveIssue':
-        case 'assignTask':
-        case 'createDiscussion':
-        case 'voteForComplexity':
-        case 'confirmAgreement':
-        case 'updateDiscussionFields':
-          {
-            const iterationKey =
-              operation.arg.item.iteration &&
-              entityKey(operation.arg.item.iteration);
-            await $router.replace({
-              name: 'convo',
-              params: {
-                project: entityKey(log.project),
-                iteration: iterationKey,
-                ceremony:
-                  operation.arg.item.ceremonyKey || iterationKey + 'plan',
-                item: entityKey(operation.arg.item),
-              },
-            });
-            TheDialogs.emit({
-              type: 'viewTask',
-              arg: operation.arg.item,
-            });
-          }
-          break;
-        case 'mergeFeedbackWith': {
-          {
-            const iterationKey =
-              (operation.arg.item as ICeremony).iterationKey ??
-              entityKey((operation.arg.item as DiscussionItem).iteration || '');
-            const itemKey =
-              (operation.arg.item as ICeremony).key ??
-              entityKey((operation.arg.item as DiscussionItem).key || '');
-            const ceremonyKey =
-              (operation.arg.item as ICeremony).key ??
-              ((operation.arg.item as DiscussionItem).ceremonyKey || '');
-            $router.replace({
-              name: 'convo',
-              params: {
-                project: entityKey(log.project),
-                iteration: iterationKey,
-                ceremony: ceremonyKey || iterationKey + 'plan',
-                item: ceremonyKey == itemKey ? undefined : itemKey,
-              },
-            });
-          }
-          break;
+    routeNotification(log);
+  });
+}
+convoBus.on('routeNotification', ((log: ILoggable) => {
+  routeNotification(log);
+}) as VoidFunction);
+
+async function routeNotification(log: ILoggable) {
+  profileStore.setLastReadNotification(log);
+  const type = log.type as WorkflowStructs['type'];
+  if (log.kind == 'operation') {
+    const operation = {
+      type: type,
+      arg: log.data,
+    } as WorkflowStructs;
+    switch (operation.type) {
+      case 'moveIssue':
+      case 'assignTask':
+      case 'createDiscussion':
+      case 'voteForComplexity':
+      case 'confirmAgreement':
+      case 'updateDiscussionFields':
+        {
+          const iterationKey =
+            operation.arg.item.iteration &&
+            entityKey(operation.arg.item.iteration);
+          await $router.replace({
+            name: 'convo',
+            params: {
+              project: entityKey(log.project),
+              iteration: iterationKey,
+              ceremony: operation.arg.item.ceremonyKey || iterationKey + 'plan',
+              item: entityKey(operation.arg.item),
+            },
+          });
+          TheDialogs.emit({
+            type: 'viewTask',
+            arg: operation.arg.item,
+          });
         }
-        case 'updateProject':
-        case 'updateProjectSettings':
-        case 'createProject':
-          {
-            $router.replace({
-              name: 'settings',
-              params: {
-                project: entityKey(log.project),
-              },
-            });
-          }
-          break;
-        case 'retroFeedback':
-        case 'sendMessage':
-          {
-            const item = discussionStore.discussions.find(
-              (d) => d.key == operation.arg.discussion
-            );
-            $router.replace({
-              name: 'convo',
-              params: {
-                project: entityKey(log.project),
-                iteration: operation.arg.iteration,
-                ceremony: item?.ceremonyKey || operation.arg.iteration + 'plan',
-                item: operation.arg.discussion,
-              },
-            });
-          }
-          break;
-        case 'voteForConfidence':
-        case 'resetConfidenceVoting':
+        break;
+      case 'mergeFeedbackWith': {
+        {
+          const iterationKey =
+            (operation.arg.item as ICeremony).iterationKey ??
+            entityKey((operation.arg.item as DiscussionItem).iteration || '');
+          const itemKey =
+            (operation.arg.item as ICeremony).key ??
+            entityKey((operation.arg.item as DiscussionItem).key || '');
+          const ceremonyKey =
+            (operation.arg.item as ICeremony).key ??
+            ((operation.arg.item as DiscussionItem).ceremonyKey || '');
           $router.replace({
             name: 'convo',
             params: {
               project: entityKey(log.project),
-              iteration: operation.arg.ceremony.iterationKey,
-              ceremony: operation.arg.ceremony.key,
+              iteration: iterationKey,
+              ceremony: ceremonyKey || iterationKey + 'plan',
+              item: ceremonyKey == itemKey ? undefined : itemKey,
             },
           });
-          break;
-        default:
-          $q.notify({
-            caption: type,
-            message: entityKey(log.project),
-          });
-          break;
+        }
+        break;
       }
+      case 'updateProject':
+      case 'updateProjectSettings':
+      case 'createProject':
+        {
+          $router.replace({
+            name: 'settings',
+            params: {
+              project: entityKey(log.project),
+            },
+          });
+        }
+        break;
+      case 'retroFeedback':
+      case 'sendMessage':
+        {
+          const item = discussionStore.discussions.find(
+            (d) => d.key == operation.arg.discussion
+          );
+          $router.replace({
+            name: 'convo',
+            params: {
+              project: entityKey(log.project),
+              iteration: operation.arg.iteration,
+              ceremony: item?.ceremonyKey || operation.arg.iteration + 'plan',
+              item: operation.arg.discussion,
+            },
+          });
+        }
+        break;
+      case 'voteForConfidence':
+      case 'resetConfidenceVoting':
+        $router.replace({
+          name: 'convo',
+          params: {
+            project: entityKey(log.project),
+            iteration: operation.arg.ceremony.iterationKey,
+            ceremony: operation.arg.ceremony.key,
+          },
+        });
+        break;
+      default:
+        $q.notify({
+          caption: type,
+          message: entityKey(log.project),
+        });
+        break;
     }
-  });
+  }
 }
 </script>

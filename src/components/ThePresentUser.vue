@@ -7,8 +7,8 @@
       />
       <span>{{ initials(profileStore.theUser?.name) }}</span>
     </q-avatar>
-    <q-badge v-if="notificationCount" floating>
-      <q-icon name="notifications_active" /> {{ notificationCount }}
+    <q-badge v-if="notificationCount" floating transparent>
+      <q-icon name="notifications_active" size="xs" />
     </q-badge>
     <q-menu>
       <div class="row no-wrap q-pa-md">
@@ -56,7 +56,13 @@
       </div>
       <q-separator />
       <q-list v-if="notificationCount">
-        <q-item v-for="n in notificationStore.notifications" :key="n.tag">
+        <q-item
+          v-for="n in notificationStore.notifications"
+          :key="n.tag"
+          clickable
+          v-close-popup
+          @click="routeNotification(n)"
+        >
           <q-item-section avatar>
             <q-avatar>
               <q-img :src="n.badge" v-if="n.badge" />
@@ -64,7 +70,8 @@
             </q-avatar>
           </q-item-section>
           <q-item-section>
-            <q-item-label>{{ n.body }}</q-item-label>
+            <q-item-label>{{ n.title }}</q-item-label>
+            <q-item-label caption>{{ n.body }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -74,7 +81,11 @@
 
 <script lang="ts" setup>
 import { TheDialogs } from 'src/dialogs/the-dialogs';
-import { useNotificationStore } from 'src/stores/notification.store';
+import { convoBus } from 'src/modules/ceremony/convo-bus';
+import {
+  NotificationInfo,
+  useNotificationStore,
+} from 'src/stores/notification.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { computed, onMounted } from 'vue';
 const profileStore = useProfilesStore();
@@ -89,5 +100,9 @@ const notificationCount = computed(() => {
 onMounted(() => {
   return notificationStore.load();
 });
+function routeNotification(item: NotificationInfo) {
+  convoBus.emit('routeNotification', item.log);
+  notificationStore.closeNotification(item);
+}
 </script>
 <style></style>

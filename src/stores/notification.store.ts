@@ -39,6 +39,15 @@ export const useNotificationStore = defineStore(
     },
     newNotification(payload: NotificationInfo) {
       this.notifications.push(payload);
+    },
+    async closeNotification(payload: NotificationInfo) {
+      const registration = await navigator.serviceWorker.getRegistration();
+      if (registration) {
+        const list = await registration.getNotifications({
+          tag: payload.tag
+        });
+        list.forEach(n => n.close());
+      }
     }
   }
 });
