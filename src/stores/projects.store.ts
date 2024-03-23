@@ -36,7 +36,7 @@ export const useProjectStore = defineStore('projectStore', {
           }
         },
       })
-      this.projects = (await projectResource.findAllFrom()) || [];
+      this.projects = (await projectResource.findAllFrom(filters)) || [];
     },
     async selectProject(key: string) {
       if (this.activeProject?.key == key) return this.activeProject;
