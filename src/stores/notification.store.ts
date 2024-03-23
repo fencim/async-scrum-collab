@@ -13,6 +13,7 @@ interface INotificationState {
 export const useNotificationStore = defineStore(
   'notification', {
   state: () => ({
+    notifications: []
   } as INotificationState),
   actions: {
     async load() {
