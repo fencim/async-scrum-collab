@@ -7,6 +7,7 @@ import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useActiveStore } from './active.store';
 import { DeferredPromise } from 'src/resources/localbase';
+import { useOnlineUsersStore } from './online-users.store';
 
 
 interface IProjectState {
@@ -51,6 +52,8 @@ export const useProjectStore = defineStore('projectStore', {
           const ceremonyStore = useCeremonyStore();
           await ceremonyStore.ofProject(project.key);
           project.boardColumns = project.boardColumns || [];
+          const onlineUsersStore = useOnlineUsersStore();
+          onlineUsersStore.init(project.key);
         }
         return project;
       } else {

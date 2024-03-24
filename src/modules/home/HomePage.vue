@@ -49,7 +49,13 @@
                 v-if="isAdminOf(props.row)"
                 icon="settings"
                 class="rounded"
-                :to="{ name: 'settings', params: { project: props.row.key } }"
+                :to="{
+                  name: 'settings',
+                  params: {
+                    project: props.row.key,
+                    part: props.row.pending?.length ? 'members' : 'taskboard',
+                  },
+                }"
               >
                 <q-badge floating v-if="props.row.pending?.length">{{
                   props.row.pending?.length

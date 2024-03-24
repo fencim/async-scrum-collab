@@ -6,6 +6,7 @@ import { useDiscussionStore } from './discussions.store';
 import { useIterationStore } from './iterations.store';
 import { useProfilesStore } from './profiles.store';
 import { useProjectStore } from './projects.store';
+import { date } from 'quasar';
 interface IOnlineUsersState {
   onlineUsers: IOnlineUser[];
   activeUser?: IOnlineUser;
@@ -17,8 +18,11 @@ export const useOnlineUsersStore = defineStore('onlineUsersStore', {
   getters: {
   },
   actions: {
-    async init() {
-      onlineUsersResource.streamWith().subscribe({
+    async init(activeProject: string) {
+      this.onlineUsers = [];
+      const dateTime = date.formatDate(new Date(), 'YYYY-MM-DD');
+      const filter = { activeProject, 'lastActivityTime >=': dateTime };
+      onlineUsersResource.streamWith(filter).subscribe({
         next: (users) => {
           this.onlineUsers = [...users];
           if (this.activeUser) {
@@ -26,7 +30,7 @@ export const useOnlineUsersStore = defineStore('onlineUsersStore', {
           }
         },
       })
-      this.onlineUsers = (await onlineUsersResource.findAllFrom()) || [];
+      this.onlineUsers = (await onlineUsersResource.findAllFrom(filter)) || [];
     },
     async selectUser(key: string) {
       if (key) {
@@ -47,7 +51,8 @@ export const useOnlineUsersStore = defineStore('onlineUsersStore', {
       const ceremonyStore = useCeremonyStore();
       const discussionStore = useDiscussionStore();
       active.key = profileStore.theUser?.key || active.key || '';
-      await onlineUsersResource.setData(active.key, {
+      const dateTime = date.formatDate(new Date(), 'YYYY-MM-DD HH:mm:ss.SSS');
+      const result = await onlineUsersResource.setData(active.key, {
         ...active,
         activeProject: projectStore.activeProject?.key || active.activeProject || '',
         activeIteration: iterationStore.activeIteration?.key || active.activeIteration || '',
@@ -56,11 +61,11 @@ export const useOnlineUsersStore = defineStore('onlineUsersStore', {
           active.activeCeremony || '',
         activeDiscussion: discussionStore.activeDiscussion?.key || active.activeDiscussion || '',
         activeConvos: { ...active.activeConvos || {} },
-        lastActivityTime: (new Date()).toISOString(),
+        lastActivityTime: dateTime,
         organization: active.organization || '',
         status: 'active'
       });
-      return active;
+      return result || active;
     },
   }
 });

@@ -139,7 +139,7 @@ resourceSynchronizer.subscribe((info) => {
           type: 'positive',
           icon: 'add_task',
           caption: info.entity,
-          message: 'Successfuly created',
+          message: 'Successfully created',
           position: 'bottom-left',
           timeout,
         });
@@ -178,16 +178,16 @@ resourceSynchronizer.subscribe((info) => {
   }
 });
 
-function syncPercent(sycned: number, total: number) {
-  return !sycned && !total ? 100 : ((sycned / total) * 100).toFixed(0);
+function syncPercent(synced: number, total: number) {
+  return !synced && !total ? 100 : ((synced / total) * 100).toFixed(0);
 }
 
-function syncProgress(sycned: number, total: number) {
-  return sycned / total;
+function syncProgress(synced: number, total: number) {
+  return synced / total;
 }
 
-function syncBuffer(sycned: number, total: number) {
-  return !sycned && !total ? 0.0 : sycned / (total + 0.01);
+function syncBuffer(synced: number, total: number) {
+  return !synced && !total ? 0.0 : synced / (total + 0.01);
 }
 </script>
 

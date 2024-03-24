@@ -9,7 +9,6 @@ TheWorkflows.on({
   async cb(e) {
     const ceremonyStore = useCeremonyStore();
     const { review, completed, missed, done, error } = e;
-
     try {
       review.totalCompleted = completed;
       review.targetMissed = missed;

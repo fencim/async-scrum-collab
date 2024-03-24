@@ -27,8 +27,8 @@
   </q-toolbar>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
+import { ref, computed, onMounted, onUpdated } from 'vue';
 import ThePresentUser from 'components/ThePresentUser.vue';
 import ThePresentProject from 'src/components/ThePresentProject.vue';
 import RecentActiveMembers from 'src/components/RecentActiveMembers.vue';
@@ -36,52 +36,29 @@ import { useProjectStore } from 'src/stores/projects.store';
 import { IProject } from 'src/entities';
 import { useActiveStore } from 'src/stores/active.store';
 import TheSynchronizer from 'src/components/TheSynchronizer.vue';
+import { useRoute } from 'vue-router';
 const projectStore = useProjectStore();
 const activeStore = useActiveStore();
-export default defineComponent({
-  name: 'ProjectToolbar',
+const activeProject = ref('');
+const project = ref<IProject>();
 
-  components: {
-    ThePresentUser,
-    ThePresentProject,
-    RecentActiveMembers,
-    TheSynchronizer,
-  },
-  data() {
-    return {
-      projectStore,
-      activeStore,
-      showToday: true,
-      activeProject: '',
-      project: undefined as IProject | undefined,
-    };
-  },
-  computed: {
-    members() {
-      return [
-        ...activeStore.moderators,
-        ...activeStore.activeMembers,
-        ...activeStore.guests,
-      ].filter(
-        (p, index, self) =>
-          index == self.findIndex((x) => x?.key && x.key === p.key)
-      );
-    },
-  },
-  mounted() {
-    this.init();
-  },
-  updated() {
-    this.init();
-  },
-  methods: {
-    async init() {
-      this.activeProject =
-        (this.$route.params.project && String(this.$route.params.project)) ||
-        '';
-      this.project = projectStore.activeProject;
-    },
-  },
+const members = computed(() => {
+  return [
+    ...activeStore.moderators,
+    ...activeStore.activeMembers,
+    ...activeStore.guests,
+  ].filter(
+    (p, index, self) =>
+      index == self.findIndex((x) => x?.key && x.key === p.key)
+  );
 });
+const $route = useRoute();
+onMounted(init);
+onUpdated(init);
+async function init() {
+  activeProject.value =
+    ($route.params.project && String($route.params.project)) || '';
+  project.value = projectStore.activeProject;
+}
 </script>
 <style></style>

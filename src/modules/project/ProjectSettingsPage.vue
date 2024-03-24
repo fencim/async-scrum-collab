@@ -2,7 +2,17 @@
   <q-page class="justify-evenly q-pa-sm" v-if="activeStore.activeProject">
     <q-chip size="xl" icon="settings"> Project Setting </q-chip>
     <q-separator />
-    <q-stepper v-model="part" vertical header-nav>
+    <q-stepper
+      v-model="part"
+      vertical
+      header-nav
+      @update:model-value="
+        $router.replace({
+          name: 'settings',
+          params: { part, project: activeStore.activeProject?.key },
+        })
+      "
+    >
       <q-step name="general" title="General" icon="info">
         <q-card class="cursor-pointer">
           <q-card-section class="text-center">
@@ -502,7 +512,9 @@ export default defineComponent({
   },
   mounted() {
     this.resetSelected();
-
+    if (typeof this.$route.params?.part == 'string') {
+      this.part = this.$route.params?.part;
+    }
     this.taskboardColumns =
       activeStore.activeProject?.boardColumns?.map((c) => ({ ...c })) || [];
     if (!this.taskboardColumns?.length) {

@@ -9,7 +9,7 @@ export function getCollections(fbStore: Firestore) {
     'discussions': () => collection(fbStore, 'discussions'),
     'convos': () => collection(fbStore, 'convos'),
     'medias': () => collection(fbStore, 'medias'),
-    'online': () => collection(fbStore, 'online-users'),
+    'online': () => collection(fbStore, 'online'),
     'logs': () => collection(fbStore, 'logs')
   };
 }
