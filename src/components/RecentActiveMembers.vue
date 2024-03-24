@@ -13,7 +13,11 @@
       @click="$emit('clickProfile', p)"
     >
       <q-avatar :size="sizes || '32px'">
-        <img v-if="p && p.avatar" :src="p.avatar" />
+        <img
+          v-if="p && p.avatar"
+          :src="p.avatar"
+          oncontextmenu="return false;"
+        />
         <span v-else-if="p?.key == profileStore.presentUser?.key">Me</span>
         <span v-else>{{ initials(p?.name) }}</span>
       </q-avatar>
