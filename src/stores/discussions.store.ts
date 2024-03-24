@@ -40,7 +40,13 @@ export const useDiscussionStore = defineStore('discussion', {
   },
   actions: {
     async getUpdated(key: string) {
-      return discussionResource.getData(key);
+      const m = await discussionResource.getData(key);
+      if (m) {
+        const profileStore = useProfilesStore();
+        m.assignees = await profileStore.selectProjectMembers(m.assignees as string[]);
+        m.assignedTo = (m.assignees as IProfile[]).find(a => a.key == m.assignedTo) || m.assignedTo;
+      }
+      return m;
     },
     getTaskBoard(columns: IBoardColumn[], iterationKey: string) {
       const boardTasks = this.productBacklog.tasks.filter(t =>

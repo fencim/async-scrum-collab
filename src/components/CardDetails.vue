@@ -43,7 +43,6 @@ const tab = ref('progress');
 const splitterModel = ref(20);
 onMounted(async () => {
   const discussionStore = useDiscussionStore();
-
   task.value = (await discussionStore.getUpdated(props.item.key)) || task.value;
 });
 
@@ -157,14 +156,6 @@ function pendingVoteClick(profile: IProfile) {
       type: 'voteForItemComplexity',
       arg: {
         item: props.item,
-        async done() {
-          if (props.item.iteration) {
-            convos.value = await useConvoStore().ofDiscussion(
-              entityKey(props.item.iteration),
-              props.item.key
-            );
-          }
-        },
       },
     });
   }
@@ -235,7 +226,6 @@ function describeDiscussion(item: DiscussionItem | string): string {
         sizes="xs"
         :profiles="getProfiles(task.assignees)"
       />
-
       <div class="q-px-sm">
         <q-badge v-if="task.priority" class="q-mr-xs" dense color="primary"
           >{{ task.priority }}
