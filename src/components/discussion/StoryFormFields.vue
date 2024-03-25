@@ -8,8 +8,14 @@ const props = defineProps<{
 }>();
 const theDiscussion = ref<IStory>(props.value);
 const $emits = defineEmits(['input']);
+const updating = ref(false);
 onUpdated(() => {
-  $emits('input', JSON.parse(JSON.stringify(theDiscussion.value)));
+  if (updating.value) return;
+  updating.value = true;
+  setTimeout(() => {
+    $emits('input', JSON.parse(JSON.stringify(theDiscussion.value)));
+    updating.value = false;
+  }, 300);
 });
 const acceptanceCriteriaColumns = [
   {

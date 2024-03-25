@@ -1,7 +1,7 @@
 <template>
   <base-chat-message :msg="msg" :curr-user="currUser" @reply-to="onReply">
     <div style="min-width: 150px" v-if="msg.type == 'vote'">
-      {{ msg.message }}
+      <span v-html="msg.message"></span>
       <q-badge v-if="revealVotes" class="bg-green">{{ msg.vote }}</q-badge>
     </div>
   </base-chat-message>

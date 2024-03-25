@@ -5,7 +5,7 @@
     @reply-to="$emit('replyTo', msg)"
   >
     <div style="min-width: 150px" v-if="msg.type == 'reaction'">
-      {{ msg.message }}
+      <span v-html="msg.message"></span>
       <q-icon name="thumb_up" v-if="msg.reaction == 'agree'" />
       <q-icon name="thumb_down" v-else-if="msg.reaction == 'disagree'" />
       <q-icon :name="'heart'" v-else />

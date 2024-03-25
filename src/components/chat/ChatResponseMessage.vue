@@ -11,8 +11,7 @@
         <img v-if="r?.from.avatar" :src="r?.from.avatar" />
         <span v-else>{{ initials(r?.from?.name) }}</span>
       </q-avatar>
-      &nbsp;
-      {{ r?.message }}
+      <span v-html="r?.message"></span>
       <q-icon name="question_mark" v-if="r?.type == 'question'" size="sm" />
       <q-icon name="reply" size="sm" />
     </a>

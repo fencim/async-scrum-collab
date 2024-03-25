@@ -6,7 +6,7 @@
   >
     <div style="min-width: 150px">
       <q-icon name="campaign" />
-      {{ msg.message }}
+      <span v-html="msg.message"></span>
       <q-btn flat dense rounded icon="call_merge" v-if="groupWith.length == 0">
         <q-tooltip>Group with ...</q-tooltip>
         <q-popup-proxy transition-show="flip-up" transition-hide="flip-down">
