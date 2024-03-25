@@ -282,6 +282,7 @@ async function routeNotification(log: ILoggable) {
             },
           });
         }
+        break;
       }
       default:
         $q.notify({
