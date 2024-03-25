@@ -62,7 +62,14 @@ import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { DiscussionItem, ICeremony, ILoggable } from 'src/entities';
+import {
+  CeremonyType,
+  CeremonyTypes,
+  DiscussionItem,
+  ICeremony,
+  ILoggable,
+  PlanningTypes,
+} from 'src/entities';
 import { Iteration } from 'src/workflows/iteration/definition';
 import { Discussion } from 'src/workflows/discussion/definition';
 import DiscussionFormDialog from 'src/dialogs/discussion/DiscussionFormDialog.vue';
@@ -242,6 +249,40 @@ async function routeNotification(log: ILoggable) {
           },
         });
         break;
+      case 'resolveQuestionOf':
+      case 'mergeFeedbackWith':
+      case 'askQuestion':
+      case 'replyToMessage': {
+        const ceremony = CeremonyTypes.includes(
+          operation.arg.item.type as CeremonyType
+        )
+          ? (operation.arg.item as ICeremony)
+          : undefined;
+        const item =
+          typeof ceremony == 'undefined'
+            ? (operation.arg.item as DiscussionItem)
+            : undefined;
+        if (ceremony) {
+          $router.replace({
+            name: 'convo',
+            params: {
+              project: entityKey(log.project),
+              iteration: ceremony.iterationKey,
+              ceremony: ceremony.key,
+            },
+          });
+        } else if (item) {
+          $router.replace({
+            name: 'convo',
+            params: {
+              project: entityKey(log.project),
+              iteration: item.iteration && entityKey(item.iteration),
+              ceremony: item.ceremonyKey,
+              item: item.key,
+            },
+          });
+        }
+      }
       default:
         $q.notify({
           caption: type,
