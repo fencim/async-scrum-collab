@@ -7,7 +7,7 @@
       />
       <span>{{ initials(profileStore.theUser?.name) }}</span>
     </q-avatar>
-    <q-badge v-if="notificationCount" floating transparent>
+    <q-badge v-if="notificationCount" floating color="transparent">
       <q-icon name="notifications_active" size="xs" />
     </q-badge>
     <q-menu>
