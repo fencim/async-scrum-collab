@@ -19,7 +19,9 @@
               @click="mergeWith(m.key)"
             >
               <q-item-section avatar><q-icon name="message" /></q-item-section>
-              <q-item-section>{{ m.message }}</q-item-section>
+              <q-item-section>
+                <span v-html="m.message"></span>
+              </q-item-section>
             </q-item>
           </q-list>
         </q-popup-proxy>
@@ -30,7 +32,7 @@
           <q-list>
             <q-item clickable v-close-popup v-for="m in groupWith" :key="m.key">
               <q-item-section avatar><q-icon name="message" /></q-item-section>
-              <q-item-section>{{ m.message }}</q-item-section>
+              <q-item-section> <span v-html="m.message"></span></q-item-section>
             </q-item>
           </q-list>
         </q-popup-proxy>

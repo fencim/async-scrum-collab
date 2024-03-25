@@ -326,7 +326,11 @@ function describeDiscussion(item: DiscussionItem | string): string {
           >
             <recent-active-members sizes="xs" :profiles="[getProfile(q.from)]">
               <template #profileTooltip="{ profile }">
-                <q-tooltip>({{ profile.name }}) {{ q.message }}?</q-tooltip>
+                <q-tooltip
+                  >({{ profile.name }})
+                  <span v-html="q.message.replace(/\?\s*$/, '')"></span
+                  >?</q-tooltip
+                >
               </template>
             </recent-active-members>
           </q-btn>

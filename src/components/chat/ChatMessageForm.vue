@@ -41,10 +41,9 @@
                 style="max-width: 200px"
                 v-if="replyTo && !confirmDisagreement"
                 class="text-weight-bold text-deep-orange"
-                >{{ replyTo?.message
-                }}<q-icon
-                  name="question_mark"
-                  v-if="replyTo?.type == 'question'"
+              >
+                <span v-html="replyTo?.message"></span>
+                <q-icon name="question_mark" v-if="replyTo?.type == 'question'"
               /></span>
               <q-btn
                 icon="close"

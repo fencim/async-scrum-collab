@@ -59,7 +59,7 @@
             </q-btn>
           </q-card-actions>
           <q-card-section>
-            {{ msg.message }}
+            <span v-html="msg.message"></span>
           </q-card-section>
         </q-card-section>
       </q-card>
