@@ -64,12 +64,6 @@
               <q-space />
               <q-btn
                 v-if="hasJoined(props.row)"
-                @click="
-                  $router.replace({
-                    name: 'projectHome',
-                    params: { project: props.row.key },
-                  })
-                "
                 dense
                 round
                 icon="notifications"
@@ -77,6 +71,28 @@
                 <q-badge floating rounded class="text-xs">{{
                   projectNotifications(props.row).length
                 }}</q-badge>
+                <q-menu>
+                  <q-list>
+                    <q-item
+                      v-for="n in projectNotifications(props.row)"
+                      :key="n.tag"
+                      clickable
+                      v-close-popup
+                      @click="routeNotification(n)"
+                    >
+                      <q-item-section avatar>
+                        <q-avatar>
+                          <q-img :src="n.badge" v-if="n.badge" />
+                          <q-icon name="person" v-else />
+                        </q-avatar>
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>{{ n.title }}</q-item-label>
+                        <q-item-label caption>{{ n.body }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
               </q-btn>
               <q-icon v-else name="workspaces_filled" />
             </q-card-actions>
@@ -90,10 +106,14 @@
 <script lang="ts">
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { IProject } from 'src/entities';
-import { useNotificationStore } from 'src/stores/notification.store';
+import {
+  useNotificationStore,
+  NotificationInfo,
+} from 'src/stores/notification.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
+import { convoBus } from '../ceremony/convo-bus';
 const projectStore = useProjectStore();
 const profilesStore = useProfilesStore();
 const notificationStore = useNotificationStore();
@@ -128,6 +148,10 @@ export default defineComponent({
         profilesStore.presentUser?.key &&
         [...project.admins].includes(profilesStore.presentUser?.key)
       );
+    },
+    routeNotification(item: NotificationInfo) {
+      convoBus.emit('routeNotification', item.log);
+      notificationStore.closeNotification(item);
     },
     async joinProject(projectKey: string) {
       const proj = projectStore.projects.find((p) => p.key == projectKey);
