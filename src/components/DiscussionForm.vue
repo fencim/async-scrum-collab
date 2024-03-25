@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-form @submit="submitDiscussion()">
+    <q-form @submit="submitDiscussion(savePlus)">
       <q-toolbar>
         <q-avatar>
           <img src="/icons/favicon-128x128.png" />
@@ -37,7 +37,7 @@
         />
       </q-card-section>
       <q-card-section
-        v-if="PlanningTypes.includes(theDiscussion.type as PlanningItem['type'])"
+        v-if="!refItem && PlanningTypes.includes(theDiscussion.type as PlanningItem['type'])"
         class="row"
       >
         <q-select
@@ -91,10 +91,23 @@
       </q-card-section>
       <q-card-actions :align="'right'">
         <q-btn icon="close" v-close-popup>Cancel</q-btn>
-        <q-btn icon="save" :loading="saving" @click="submitDiscussion(true)"
-          >Save++</q-btn
+        <q-btn
+          v-if="!item?.key"
+          icon="save"
+          @click="savePlus = true"
+          :loading="saving"
+          type="submit"
         >
-        <q-btn icon="save" :loading="saving" type="submit">Save</q-btn>
+          Save ++
+          <q-tooltip>Save {{ type }} and Create Another</q-tooltip>
+        </q-btn>
+        <q-btn
+          icon="save"
+          :loading="saving"
+          @click="savePlus = false"
+          type="submit"
+          >Save {{ type }}</q-btn
+        >
       </q-card-actions>
     </q-form>
   </q-card>
@@ -147,6 +160,7 @@ const activeIteration = ref<IIteration | undefined>();
 const activeCeremonyKey = ref('');
 const activeCeremony = ref<ICeremony | undefined>();
 const saving = ref(false);
+const savePlus = ref(false);
 const theDiscussion = ref<DiscussionItem>(
   props.item ||
     ({

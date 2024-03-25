@@ -12,10 +12,8 @@ const updating = ref(false);
 onUpdated(() => {
   if (updating.value) return;
   updating.value = true;
-  setTimeout(() => {
-    $emits('input', JSON.parse(JSON.stringify(theDiscussion.value)));
-    updating.value = false;
-  }, 300);
+  $emits('input', JSON.parse(JSON.stringify(theDiscussion.value)));
+  updating.value = false;
 });
 const acceptanceCriteriaColumns = [
   {
