@@ -61,6 +61,24 @@
                   props.row.pending?.length
                 }}</q-badge>
               </q-btn>
+              <q-space />
+              <q-btn
+                v-if="hasJoined(props.row)"
+                @click="
+                  $router.replace({
+                    name: 'projectHome',
+                    params: { project: props.row.key },
+                  })
+                "
+                dense
+                round
+                icon="notifications"
+              >
+                <q-badge floating rounded class="text-xs">{{
+                  projectNotifications(props.row).length
+                }}</q-badge>
+              </q-btn>
+              <q-icon v-else name="workspaces_filled" />
             </q-card-actions>
           </q-card>
         </div>
@@ -72,12 +90,13 @@
 <script lang="ts">
 import { TheDialogs } from 'src/dialogs/the-dialogs';
 import { IProject } from 'src/entities';
+import { useNotificationStore } from 'src/stores/notification.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
 import { defineComponent } from 'vue';
 const projectStore = useProjectStore();
 const profilesStore = useProfilesStore();
-
+const notificationStore = useNotificationStore();
 export default defineComponent({
   name: 'IndexPage',
   components: {},
@@ -88,6 +107,11 @@ export default defineComponent({
     };
   },
   methods: {
+    projectNotifications(project: IProject) {
+      return notificationStore.notifications.filter(
+        (n) => n.log?.project == project.key
+      );
+    },
     hasJoined(project: IProject) {
       return (
         profilesStore.presentUser?.key &&
