@@ -68,7 +68,6 @@ import {
   DiscussionItem,
   ICeremony,
   ILoggable,
-  PlanningTypes,
 } from 'src/entities';
 import { Iteration } from 'src/workflows/iteration/definition';
 import { Discussion } from 'src/workflows/discussion/definition';

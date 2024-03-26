@@ -1,7 +1,6 @@
 <script lang="ts" setup>
-import { DiscussionItem, IAcceptanceCriteria, IStory } from 'src/entities';
-import { useDiscussionStore } from 'src/stores/discussions.store';
-import { computed, onUpdated, ref } from 'vue';
+import { IAcceptanceCriteria, IStory } from 'src/entities';
+import { onUpdated, ref } from 'vue';
 
 const props = defineProps<{
   value: IStory;
@@ -12,7 +11,7 @@ const updating = ref(false);
 onUpdated(() => {
   if (updating.value) return;
   updating.value = true;
-  $emits('input', JSON.parse(JSON.stringify(theDiscussion.value)));
+  $emits('input', theDiscussion.value);
   updating.value = false;
 });
 const acceptanceCriteriaColumns = [
@@ -102,14 +101,6 @@ function updateAcceptance() {
     targetACIndex.value = undefined;
   }
 }
-const discussions = computed(() => {
-  const discussionStore = useDiscussionStore();
-  return discussionStore.discussions.filter((d) => d.type == 'task');
-});
-function describeDiscussion(item: DiscussionItem) {
-  const discussionStore = useDiscussionStore();
-  return discussionStore.describeDiscussion(item);
-}
 </script>
 <template>
   <q-input
@@ -168,18 +159,6 @@ function describeDiscussion(item: DiscussionItem) {
       </div>
     </template>
   </q-table>
-  <q-select
-    class="col-12"
-    emit-value
-    label="Tasks"
-    v-if="theDiscussion.key"
-    map-options
-    multiple
-    v-model="theDiscussion.tasks"
-    :options="discussions"
-    :option-label="describeDiscussion"
-    option-value="key"
-  />
   <q-dialog v-model="dialogAcceptance" class="fixed">
     <q-card v-if="theAcceptance">
       <q-card-section class="row">

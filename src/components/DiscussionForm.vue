@@ -53,40 +53,28 @@
         </q-select>
       </q-card-section>
       <q-card-section v-if="theDiscussion.type == 'goal'" class="row">
-        <goal-form-fields
-          :value="theDiscussion"
-          @input="(v) => (theDiscussion = v)"
-        />
+        <goal-form-fields :value="theDiscussion" @input="onUpdateDiscussion" />
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'objective'" class="row">
         <objective-form-fields
           :iteration="iteration"
           :value="theDiscussion"
-          @input="(v) => (theDiscussion = v)"
+          @input="onUpdateDiscussion"
         />
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'story'" class="row">
-        <story-form-fields
-          :value="theDiscussion"
-          @input="(v) => (theDiscussion = v)"
-        />
+        <story-form-fields :value="theDiscussion" @input="onUpdateDiscussion" />
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'task'" class="row">
-        <task-form-fields
-          :value="theDiscussion"
-          @input="(v) => (theDiscussion = v)"
-        />
+        <task-form-fields :value="theDiscussion" @input="onUpdateDiscussion" />
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'scrum'" class="row">
-        <scrum-form-fields
-          :value="theDiscussion"
-          @input="(v) => (theDiscussion = v)"
-        />
+        <scrum-form-fields :value="theDiscussion" @input="onUpdateDiscussion" />
       </q-card-section>
       <q-card-section v-else-if="theDiscussion.type == 'roadblock'" class="row">
         <roadblock-form-fields
           :value="theDiscussion"
-          @input="(v) => (theDiscussion = v)"
+          @input="onUpdateDiscussion"
         />
       </q-card-section>
       <q-card-actions :align="'right'">
@@ -161,6 +149,7 @@ const activeCeremonyKey = ref('');
 const activeCeremony = ref<ICeremony | undefined>();
 const saving = ref(false);
 const savePlus = ref(false);
+const updated = ref<DiscussionItem>();
 const theDiscussion = ref<DiscussionItem>(
   props.item ||
     ({
@@ -221,29 +210,31 @@ function describeDiscussion(item: DiscussionItem) {
 const discussions = computed(() => {
   return discussionStore.discussions;
 });
+function onUpdateDiscussion(update: DiscussionItem) {
+  updated.value = { ...update };
+}
 
 async function submitDiscussion(createAnother?: boolean) {
   saving.value = true;
-  if (!props.item || !theDiscussion.value.key) {
+  const discussion = updated.value ?? theDiscussion.value;
+  if (!props.item || !discussion.key) {
     let counter = discussions.value.length;
     let key: string;
     do {
-      key = activeProjectKey.value + theDiscussion.value.type + counter;
+      key = activeProjectKey.value + discussion.type + counter;
       counter++;
     } while (discussions.value.find((d) => d.key == key));
-    theDiscussion.value.key = key;
-    theDiscussion.value.iteration =
-      theDiscussion.value.iteration || activeIterationKey.value;
-    theDiscussion.value.projectKey = activeProjectKey.value;
-    theDiscussion.value.ceremonyKey =
-      theDiscussion.value.ceremonyKey || activeCeremonyKey.value;
+    discussion.key = key;
+    discussion.iteration = discussion.iteration || activeIterationKey.value;
+    discussion.projectKey = activeProjectKey.value;
+    discussion.ceremonyKey = discussion.ceremonyKey || activeCeremonyKey.value;
     if (props.refItem) {
-      theDiscussion.value.parent = entityKey(props.refItem);
+      discussion.parent = entityKey(props.refItem);
     }
     TheWorkflows.emit({
       type: 'createDiscussion',
       arg: {
-        item: theDiscussion.value,
+        item: JSON.parse(JSON.stringify(discussion)),
         iterationKey: activeIterationKey.value,
         projectKey: activeProjectKey.value,
         done(item) {
@@ -260,7 +251,7 @@ async function submitDiscussion(createAnother?: boolean) {
     TheWorkflows.emit({
       type: 'updateDiscussionFields',
       arg: {
-        item: JSON.parse(JSON.stringify(theDiscussion.value)),
+        item: JSON.parse(JSON.stringify(discussion)),
         done(discussion) {
           saving.value = false;
           $emit('closeForm', discussion);
