@@ -105,6 +105,7 @@ export async function translateLogToNotification(log: ILoggable) {
   return {
     title,
     body,
-    badge
+    badge,
+    date: log.date
   }
 }

@@ -6,7 +6,17 @@
       <div class="text-overline q-px-sm bg-grey-10 rounded-borders">
         {{ project?.description }}
       </div>
-      <recent-active-members v-if="members.length" :profiles="members" />
+      <recent-active-members
+        v-if="members.length"
+        :profiles="members"
+        @click-profile="
+          (profile) =>
+            $router.push({
+              name: 'profile',
+              params: { profile: profile.key },
+            })
+        "
+      />
       <q-chip
         v-else
         color="negative"

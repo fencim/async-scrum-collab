@@ -32,13 +32,23 @@
         <q-separator vertical inset class="q-mx-lg" />
 
         <div class="column items-center">
-          <q-avatar size="72px">
-            <img
-              v-if="profileStore.theUser && profileStore.theUser.avatar"
-              :src="profileStore.theUser.avatar"
-            />
-            <span v-else>{{ initials(profileStore.theUser?.name) }}</span>
-          </q-avatar>
+          <q-btn
+            round
+            :to="{
+              name: 'profile',
+              params: {
+                profile: profileStore.theUser?.key,
+              },
+            }"
+          >
+            <q-avatar size="72px">
+              <img
+                v-if="profileStore.theUser && profileStore.theUser.avatar"
+                :src="profileStore.theUser.avatar"
+              />
+              <span v-else>{{ initials(profileStore.theUser?.name) }}</span>
+            </q-avatar>
+          </q-btn>
 
           <div class="text-subtitle1 q-mt-md q-mb-xs">
             {{ profileStore.theUser?.name }}
@@ -55,7 +65,10 @@
         </div>
       </div>
       <q-separator />
-      <q-list v-if="notificationCount">
+      <q-list
+        :style="'max-width:' + $q.screen.sizes.sm + 'px'"
+        v-if="notificationCount"
+      >
         <q-item
           v-for="n in notificationStore.notifications"
           :key="n.tag"

@@ -32,6 +32,11 @@ export const useOnlineUsersStore = defineStore('onlineUsersStore', {
       })
       this.onlineUsers = (await onlineUsersResource.findAllFrom(filter)) || [];
     },
+    async get(key: string) {
+      return this.onlineUsers.find(p => p.key == key)
+        || await onlineUsersResource.findOne({ key })
+        || await onlineUsersResource.getData(key);
+    },
     async selectUser(key: string) {
       if (key) {
         const user = this.onlineUsers.find(p => p.key == key) || await onlineUsersResource.findOne({ key });

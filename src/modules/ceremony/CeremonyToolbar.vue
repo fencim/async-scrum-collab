@@ -67,6 +67,13 @@
         :profiles="members"
         :max-count="15"
         @ctrl-click="setAsUser"
+        @click-profile="
+          (profile) =>
+            $router.push({
+              name: 'profile',
+              params: { profile: profile.key },
+            })
+        "
       />
       <q-linear-progress :value="progress" />
     </q-toolbar-title>

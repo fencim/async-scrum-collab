@@ -19,6 +19,15 @@ const routes: RouteRecordRaw[] = [
     children: [...authRoutes]
   },
   {
+    path: '/profile',
+    component: () => Promise.resolve(plainLayout),
+    children: [{
+      path: ':profile',
+      name: 'profile',
+      component: () => import('pages/ProfilePage.vue')
+    }]
+  },
+  {
     path: '/',
     component: () => Promise.resolve(mainLayout),
     children: [...homeRoutes],

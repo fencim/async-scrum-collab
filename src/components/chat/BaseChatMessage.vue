@@ -11,9 +11,21 @@
     }}</template>
 
     <template v-slot:avatar>
-      <q-avatar v-if="typeof msg.from == 'object'">
+      <q-avatar class="cursor-pointer" v-if="typeof msg.from == 'object'">
         <q-img v-if="msg.from.avatar" :src="msg.from.avatar" fit="cover" />
         <span v-else class="text-uppercase">{{ initials(msg.from.name) }}</span>
+        <q-menu>
+          <q-btn
+            icon="person"
+            :to="{
+              name: 'profile',
+              params: {
+                profile: msg.from.key,
+              },
+            }"
+            >Profile</q-btn
+          >
+        </q-menu>
       </q-avatar>
     </template>
 

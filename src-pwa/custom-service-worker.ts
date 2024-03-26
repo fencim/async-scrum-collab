@@ -16,7 +16,7 @@ import {
   createHandlerBoundToURL,
 } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { translateLogToNotification } from './notification.translator';
+import { translateLogToNotification } from 'src/notification.translator';
 import { sessionResource } from 'src/resources/session.resource';
 
 self.skipWaiting();
