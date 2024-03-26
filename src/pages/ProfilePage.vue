@@ -180,7 +180,7 @@ onMounted(async () => {
   if (online.value) {
     const logs = await transactionStore.findTransactions({
       operator: online.value.key,
-      project: online.value.activeProject,
+      project: online.value.activeProject || undefined,
     });
     activities.value = await Promise.all(
       logs.map(async (log) => {
