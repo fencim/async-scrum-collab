@@ -68,6 +68,15 @@ export const useProfilesStore = defineStore('Profiles', {
       if (justLoggedIn && this.theUser && this.theUser.key) {
         profileResource.setData(this.theUser.key, this.theUser);
         synchronizerConnection.setUserKey(this.theUser.key);
+        //temporary
+        if (user?.metadata.lastSignInTime) {
+          const lastSignIn = new Date(user?.metadata.lastSignInTime);
+          const fromDate = new Date('2024-03-26');
+          if (lastSignIn < fromDate) {
+            this.signOut();
+            return;
+          }
+        }
       }
       if (this.theUser?.avatar && /^http/.test(this.theUser?.avatar)) {
         mediaResource.cacheHttpUrl(this.theUser.avatar)
