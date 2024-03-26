@@ -66,12 +66,13 @@ export const useConvoStore = defineStore('convo', {
       return deffered.promise;
     },
     async sendMessage(projectKey: string, iteration: string, discussion: string, from: string, convo: Partial<Convo>) {
+      const profileStore = useProfilesStore();
       const msg = {
         ...convo,
         projectKey,
         iteration,
         discussion,
-        date: date.formatDate(new Date()),
+        date: date.formatDate(await profileStore.getSyncedDateTime()),
         from,
       } as Convo;
 

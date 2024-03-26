@@ -9,12 +9,12 @@ const botProfile = { avatar: '/icons/bot2.png', key: 'bot', name: 'Auto Bot' };
 interface IProfileState {
   profiles: IProfile[];
   theUser?: IProfile;
+  timeDiff?: number;
 }
 
 export const useProfilesStore = defineStore('Profiles', {
   state: () => ({
     profiles: [botProfile] as IProfile[],
-    members: [],
     theUser: undefined as IProfile | undefined
   } as IProfileState),
 
@@ -25,6 +25,7 @@ export const useProfilesStore = defineStore('Profiles', {
   },
   actions: {
     async authenticate() {
+
       if (!this.getUser()) {
         await firebaseService.authenticate();
         this.getUser();
@@ -186,6 +187,28 @@ export const useProfilesStore = defineStore('Profiles', {
     },
     async setLastReadNotification(log: ILoggable) {
       await sessionResource.setData('lastRead', log);
+    },
+    setTimeDiff(diffSeconds: number) {
+      this.timeDiff = diffSeconds;
+      return sessionResource.setData('diffSeconds', {
+        diffSeconds
+      });
+    },
+    async getTimeDiffSeconds() {
+      if (typeof this.timeDiff !== 'undefined') {
+        return this.timeDiff;
+      }
+      const diff = await sessionResource.getData('diffSeconds') as {
+        diffSeconds: number
+      } | undefined;
+      this.timeDiff = diff?.diffSeconds;
+      return this.timeDiff || 0;
+    },
+    async getSyncedDateTime() {
+      const diff = await this.getTimeDiffSeconds();
+      const today = new Date();
+      today.setSeconds(today.getSeconds() + diff);
+      return today;
     }
   }
 });
