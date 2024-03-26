@@ -25,7 +25,6 @@ export const useProfilesStore = defineStore('Profiles', {
   },
   actions: {
     async authenticate() {
-
       if (!this.getUser()) {
         await firebaseService.authenticate();
         this.getUser();

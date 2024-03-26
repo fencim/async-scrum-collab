@@ -159,13 +159,22 @@ class FirebaseService {
   }
   authenticate() {
     return new Promise<User | null>((resolve) => {
-      auth.onAuthStateChanged((user) => {
+      auth.onAuthStateChanged(async (user) => {
         if (user) {
           this.checkTokenRefresh().then(() => {
             this.setAccessStatus(AccessStatus.authorized);
           });
         } else {
           this.setAccessStatus(AccessStatus.unAuthorized);
+        }
+        //temporary
+        if (user?.metadata.lastSignInTime) {
+          const lastSignIn = new Date(user?.metadata.lastSignInTime);
+          const fromDate = new Date('2024-03-26');
+          if (lastSignIn < fromDate) {
+            await this.signOut();
+            resolve(null);
+          }
         }
         resolve(user);
       });
