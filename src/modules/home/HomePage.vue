@@ -65,7 +65,7 @@
               <q-btn
                 v-if="
                   hasJoined(props.row) &&
-                  projectNotificationsMap[props.row.key].length
+                  projectNotificationsMap[props.row.key]?.length
                 "
                 dense
                 round
@@ -77,7 +77,7 @@
                 <q-menu>
                   <q-list>
                     <q-item
-                      v-for="n in projectNotifications(props.row)"
+                      v-for="n in projectNotificationsMap[props.row.key]"
                       :key="n.tag"
                       clickable
                       v-close-popup
@@ -100,6 +100,7 @@
                     <q-btn
                       icon="cleaning_services"
                       rounded
+                      flat
                       class="full-width"
                       @click="clearNotifications(props.row)"
                       >Clear</q-btn
