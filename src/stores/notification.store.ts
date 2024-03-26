@@ -43,6 +43,10 @@ export const useNotificationStore = defineStore(
       this.notifications.push(payload);
     },
     async closeNotification(payload: NotificationInfo) {
+      const index = this.notifications.findIndex(notification => payload.tag == notification.tag);
+      if (index >= 0) {
+        this.notifications.splice(index, 1);
+      }
       if (typeof payload.close == 'function') {
         payload.close();
         return;
