@@ -63,13 +63,16 @@
               </q-btn>
               <q-space />
               <q-btn
-                v-if="hasJoined(props.row)"
+                v-if="
+                  hasJoined(props.row) &&
+                  projectNotificationsMap[props.row.key].length
+                "
                 dense
                 round
                 icon="notifications"
               >
                 <q-badge floating rounded class="text-xs">{{
-                  projectNotifications(props.row).length
+                  projectNotificationsMap[props.row.key].length
                 }}</q-badge>
                 <q-menu>
                   <q-list>
@@ -90,7 +93,17 @@
                         <q-item-label>{{ n.title }}</q-item-label>
                         <q-item-label caption>{{ n.body }}</q-item-label>
                       </q-item-section>
+                      <q-item-section side v-if="n.log">
+                        {{ formatWhen(n.log.date) }}
+                      </q-item-section>
                     </q-item>
+                    <q-btn
+                      icon="cleaning_services"
+                      rounded
+                      class="full-width"
+                      @click="clearNotifications(props.row)"
+                      >Clear</q-btn
+                    >
                   </q-list>
                 </q-menu>
               </q-btn>
@@ -103,8 +116,7 @@
   </q-page>
 </template>
 
-<script lang="ts">
-import { TheDialogs } from 'src/dialogs/the-dialogs';
+<script lang="ts" setup>
 import { IProject } from 'src/entities';
 import {
   useNotificationStore,
@@ -112,75 +124,110 @@ import {
 } from 'src/stores/notification.store';
 import { useProfilesStore } from 'src/stores/profiles.store';
 import { useProjectStore } from 'src/stores/projects.store';
-import { defineComponent } from 'vue';
 import { convoBus } from '../ceremony/convo-bus';
+import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
+import { ref, watch } from 'vue';
+
 const projectStore = useProjectStore();
 const profilesStore = useProfilesStore();
 const notificationStore = useNotificationStore();
-export default defineComponent({
-  name: 'IndexPage',
-  components: {},
-  data() {
-    return {
-      projectStore,
-      TheDialogs,
-    };
-  },
-  methods: {
-    projectNotifications(project: IProject) {
-      return notificationStore.notifications.filter(
-        (n) => n.log?.project == project.key
-      );
-    },
-    hasJoined(project: IProject) {
-      return (
-        profilesStore.presentUser?.key &&
-        [
-          ...project.admins,
-          ...project.moderators,
-          ...project.members,
-          ...project.pending,
-        ].includes(profilesStore.presentUser?.key)
-      );
-    },
-    isAdminOf(project: IProject) {
-      return (
-        profilesStore.presentUser?.key &&
-        [...project.admins].includes(profilesStore.presentUser?.key)
-      );
-    },
-    routeNotification(item: NotificationInfo) {
-      convoBus.emit('routeNotification', item.log);
-      notificationStore.closeNotification(item);
-    },
-    async joinProject(projectKey: string) {
-      const proj = projectStore.projects.find((p) => p.key == projectKey);
-      this.$q.notify({
-        position: 'center',
-        message: `Join (${projectKey}) ${proj?.name || ''}?`,
-        actions: [
-          {
-            label: 'Proceed',
-            icon: 'login',
-            handler: async () => {
-              if (profilesStore.presentUser) {
-                await projectStore.joinProject(
-                  projectKey,
-                  profilesStore.presentUser?.key
-                );
-                await this.$router.replace({
-                  name: 'projectHome',
-                  params: {
-                    project: projectKey,
-                  },
-                });
-              }
-            },
-          },
-        ],
-      });
-    },
-  },
-});
+const $q = useQuasar();
+const $router = useRouter();
+const projectNotificationsMap = ref<Record<string, NotificationInfo[]>>({});
+const projects = ref<IProject[]>([]);
+watch(
+  () => projectStore.projects,
+  (list) => {
+    projects.value = list;
+    list.forEach((project) => {
+      projectNotificationsMap.value[project.key] =
+        projectNotifications(project);
+    });
+  }
+);
+
+function projectNotifications(project: IProject) {
+  return notificationStore.notifications.filter(
+    (n) => n.log?.project == project.key
+  );
+}
+function hasJoined(project: IProject) {
+  return (
+    profilesStore.presentUser?.key &&
+    [
+      ...project.admins,
+      ...project.moderators,
+      ...project.members,
+      ...project.pending,
+    ].includes(profilesStore.presentUser?.key)
+  );
+}
+function isAdminOf(project: IProject) {
+  return (
+    profilesStore.presentUser?.key &&
+    [...project.admins].includes(profilesStore.presentUser?.key)
+  );
+}
+function routeNotification(item: NotificationInfo) {
+  convoBus.emit('routeNotification', item.log);
+  notificationStore.closeNotification(item);
+}
+function clearNotifications(project: IProject) {
+  const notifications = projectNotificationsMap.value[project.key];
+  if (notifications.length == 0) return;
+  notifications.forEach((item) => {
+    notificationStore.closeNotification(item);
+  });
+  const firstLog = notifications[0].log;
+  if (firstLog) {
+    useProfilesStore().setLastReadNotification(firstLog);
+  }
+  projectNotificationsMap.value[project.key] = projectNotifications(project);
+}
+function formatWhen(when: string) {
+  const startDate = new Date(when);
+  const endDate = new Date(); // Current date and time
+
+  const timeDifferenceMs = endDate.getTime() - startDate.getTime(); // Difference in milliseconds
+  const seconds = Math.floor(timeDifferenceMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  if (hours) {
+    return `${hours} hr`;
+  } else if (minutes) {
+    return `${minutes} min`;
+  } else if (seconds) {
+    return `${seconds} min`;
+  }
+  return 'now';
+}
+async function joinProject(projectKey: string) {
+  const proj = projectStore.projects.find((p) => p.key == projectKey);
+  $q.notify({
+    position: 'center',
+    message: `Join (${projectKey}) ${proj?.name || ''}?`,
+    actions: [
+      {
+        label: 'Proceed',
+        icon: 'login',
+        handler: async () => {
+          if (profilesStore.presentUser) {
+            await projectStore.joinProject(
+              projectKey,
+              profilesStore.presentUser?.key
+            );
+            await $router.replace({
+              name: 'projectHome',
+              params: {
+                project: projectKey,
+              },
+            });
+          }
+        },
+      },
+    ],
+  });
+}
 </script>
 <style></style>

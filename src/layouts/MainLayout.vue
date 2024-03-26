@@ -100,10 +100,10 @@ const rightDrawerOpen = ref(false);
 const profileStore = useProfilesStore();
 const projectStore = useProjectStore();
 const discussionStore = useDiscussionStore();
+profileStore.init();
+projectStore.init();
 
 onMounted(async () => {
-  await profileStore.init();
-  await projectStore.init();
   evalDrawers();
 });
 onUpdated(() => {
