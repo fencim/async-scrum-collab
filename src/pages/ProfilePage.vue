@@ -184,7 +184,10 @@ onMounted(async () => {
     return list;
   }, [] as IWorkingProject[]);
   if (online.value) {
-    await loadActivitiesOf(online.value.key, online.value.activeProject);
+    await loadActivitiesOf(
+      online.value.key,
+      online.value.activeProject || undefined
+    );
   }
 });
 async function loadActivitiesOf(operator: string, project?: string) {
