@@ -42,30 +42,36 @@
         </q-card-section>
       </q-card-section>
       <q-separator />
-      <q-card-section>
+      <q-card-section v-if="profile">
         <q-table
           grid
+          :loading="loading"
           :rows="projects"
           :pagination="{ rowsPerPage: 0 }"
           hide-bottom
         >
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-              <q-card class="cursor-pointer">
-                <q-card-section class="text-center">
+              <q-card>
+                <q-card-section
+                  class="cursor-pointer text-center"
+                  @click="loadActivitiesOf(profile.key, props.row.key)"
+                >
                   <strong>{{ props.row.name }}</strong>
                 </q-card-section>
-                <q-card-section
-                  horizontal
-                  @click="
-                    $router.replace({
-                      name: 'projectHome',
-                      params: { project: props.row.key },
-                    })
-                  "
-                >
+                <q-card-section horizontal>
                   <q-card-section>
-                    <q-btn round size="lg" dense>
+                    <q-btn
+                      round
+                      size="lg"
+                      dense
+                      @click="
+                        $router.replace({
+                          name: 'projectHome',
+                          params: { project: props.row.key },
+                        })
+                      "
+                    >
                       <q-avatar size="xl">
                         <q-img v-if="props.row.icon" :src="props.row.icon" />
                         <q-img
@@ -149,7 +155,7 @@ const profile = ref<IProfile>();
 const online = ref<IOnlineUser>();
 const projects = ref<IWorkingProject[]>([]);
 const activities = ref<Activity[]>([]);
-
+const loading = ref(false);
 onMounted(async () => {
   if (typeof $route.params.profile == 'string') {
     profile.value = await profileStore.get($route.params.profile);
@@ -178,11 +184,18 @@ onMounted(async () => {
     return list;
   }, [] as IWorkingProject[]);
   if (online.value) {
-    const logs = await transactionStore.findTransactions({
-      operator: online.value.key,
-      project: online.value.activeProject,
-    });
-    activities.value = await Promise.all(
+    await loadActivitiesOf(online.value.key, online.value.activeProject);
+  }
+});
+async function loadActivitiesOf(operator: string, project?: string) {
+  loading.value = true;
+  activities.value = [];
+  const logs = await transactionStore.findTransactions({
+    operator: operator,
+    project: project,
+  });
+  activities.value = (
+    await Promise.all(
       logs.map(async (log) => {
         const info = await translateLogToNotification(log);
         return {
@@ -190,9 +203,10 @@ onMounted(async () => {
           log,
         };
       })
-    );
-  }
-});
+    )
+  ).sort((a, b) => b.date.localeCompare(a.date));
+  loading.value = false;
+}
 function initials(name?: string) {
   const m = (name || 'C U').match(/\b\w/g);
   return `${m && m[0]}${m && m[1]}`;
