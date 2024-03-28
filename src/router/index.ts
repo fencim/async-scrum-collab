@@ -56,6 +56,15 @@ export default route(async function (/* { store, ssrContext } */) {
         name: 'home'
       })
     } else if (user || (to.meta && to.meta.anonymous)) {
+      if (to.params['project']) {
+        const project = projectStore.projects.find(p => p.key == to.params['project']);
+        if (!project || ![...project.members, ...project.admins, ...project.guests, ...project.moderators].includes(user?.key || '')) {
+          next({
+            name: 'home'
+          })
+          return;
+        }
+      }
       let activeProject: IProject | undefined;
       if (to.params && to.params['project'] && (!projectStore.activeProject || projectStore.activeProject.key != to.params['project'])) {
         activeProject = await projectStore.selectProject(to.params['project'] as string);
@@ -98,10 +107,12 @@ export default route(async function (/* { store, ssrContext } */) {
         onlineUsersStore.saveActive({ key: profileStore.theUser?.key || '' });
       }
       next();
-    } else {
+    } else if (to.name != 'login') {
       next({
         name: 'login'
       })
+    } else {
+      next();
     }
   })
 

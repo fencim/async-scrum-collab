@@ -3,23 +3,22 @@
     <q-table grid :rows="projects" :pagination="{ rowsPerPage: 0 }" hide-bottom>
       <template v-slot:item="props">
         <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-          <q-card class="cursor-pointer">
-            <q-card-section class="text-center">
-              <strong>{{ props.row.name }}</strong>
-            </q-card-section>
-            <q-card-section
-              horizontal
-              @click="
-                hasJoined(props.row)
-                  ? $router.replace({
-                      name: 'projectHome',
-                      params: { project: props.row.key },
-                    })
-                  : joinProject(props.row.key)
-              "
-            >
+          <q-card>
+            <q-card-section horizontal>
               <q-card-section>
-                <q-btn round size="lg" dense>
+                <q-btn
+                  round
+                  size="lg"
+                  dense
+                  @click="
+                    hasJoined(props.row)
+                      ? $router.replace({
+                          name: 'projectHome',
+                          params: { project: props.row.key },
+                        })
+                      : joinProject(props.row.key)
+                  "
+                >
                   <q-avatar size="xl">
                     <q-img v-if="props.row.icon" :src="props.row.icon" />
                     <q-img
@@ -30,81 +29,98 @@
                   </q-avatar>
                 </q-btn>
               </q-card-section>
-              <q-card-section class="text-subtitle1 q-pa-sm">
-                {{ props.row.description }}
-              </q-card-section>
-            </q-card-section>
-            <q-card-actions>
-              <q-btn
-                v-if="!hasJoined(props.row)"
-                @click.prevent="joinProject(props.row.key)"
-                >Join</q-btn
-              >
-              <q-btn
-                v-if="isAdminOf(props.row)"
-                icon="settings"
-                class="rounded"
-                :to="{
-                  name: 'settings',
-                  params: {
-                    project: props.row.key,
-                    part: props.row.pending?.length ? 'members' : 'taskboard',
-                  },
-                }"
-              >
-                <q-badge floating v-if="props.row.pending?.length">{{
-                  props.row.pending?.length
-                }}</q-badge>
-              </q-btn>
-              <q-space />
-              <q-btn
-                v-if="
-                  hasJoined(props.row) &&
-                  projectNotificationsMap[props.row.key]?.length
+              <q-card-section
+                class="cursor-pointer"
+                @click="
+                  hasJoined(props.row)
+                    ? $router.replace({
+                        name: 'projectHome',
+                        params: { project: props.row.key },
+                      })
+                    : joinProject(props.row.key)
                 "
-                dense
-                round
-                icon="notifications"
               >
-                <q-badge floating rounded class="text-xs">{{
-                  projectNotificationsMap[props.row.key].length
-                }}</q-badge>
-                <q-menu>
-                  <q-list>
-                    <q-item
-                      v-for="n in projectNotificationsMap[props.row.key]"
-                      :key="n.tag"
-                      clickable
-                      v-close-popup
-                      @click="routeNotification(n)"
-                    >
-                      <q-item-section avatar>
-                        <q-avatar>
-                          <q-img :src="n.badge" v-if="n.badge" />
-                          <q-icon name="person" v-else />
-                        </q-avatar>
-                      </q-item-section>
-                      <q-item-section>
-                        <q-item-label>{{ n.title }}</q-item-label>
-                        <q-item-label caption>{{ n.body }}</q-item-label>
-                      </q-item-section>
-                      <q-item-section side v-if="n.log">
-                        {{ formatWhen(n.log.date) }}
-                      </q-item-section>
-                    </q-item>
-                    <q-btn
-                      icon="cleaning_services"
-                      rounded
-                      flat
-                      class="full-width"
-                      @click="clearNotifications(props.row)"
-                      >Clear</q-btn
-                    >
-                  </q-list>
-                </q-menu>
-              </q-btn>
-              <q-icon v-else name="workspaces_filled" />
-            </q-card-actions>
+                <strong>{{ props.row.name }}</strong>
+                <div class="text-subtitle1 q-pa-sm">
+                  {{ props.row.description }}
+                </div>
+              </q-card-section>
+              <q-space />
+              <q-card-actions>
+                <q-btn
+                  dense
+                  flat
+                  rounded
+                  v-if="!hasJoined(props.row)"
+                  @click.prevent="joinProject(props.row.key)"
+                  >Join</q-btn
+                >
+                <q-btn
+                  v-if="isAdminOf(props.row)"
+                  icon="settings"
+                  dense
+                  flat
+                  round
+                  :to="{
+                    name: 'settings',
+                    params: {
+                      project: props.row.key,
+                      part: props.row.pending?.length ? 'members' : 'taskboard',
+                    },
+                  }"
+                >
+                  <q-badge floating v-if="props.row.pending?.length">{{
+                    props.row.pending?.length
+                  }}</q-badge>
+                </q-btn>
+                <q-btn
+                  v-if="
+                    hasJoined(props.row) &&
+                    projectNotificationsMap[props.row.key]?.length
+                  "
+                  dense
+                  round
+                  icon="notifications"
+                >
+                  <q-badge floating rounded class="text-xs">{{
+                    projectNotificationsMap[props.row.key].length
+                  }}</q-badge>
+                  <q-menu>
+                    <q-list>
+                      <q-item
+                        v-for="n in projectNotificationsMap[props.row.key]"
+                        :key="n.tag"
+                        clickable
+                        v-close-popup
+                        @click="routeNotification(n)"
+                      >
+                        <q-item-section avatar>
+                          <q-avatar>
+                            <q-img :src="n.badge" v-if="n.badge" />
+                            <q-icon name="person" v-else />
+                          </q-avatar>
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>{{ n.title }}</q-item-label>
+                          <q-item-label caption>{{ n.body }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side v-if="n.log">
+                          {{ formatWhen(n.log.date) }}
+                        </q-item-section>
+                      </q-item>
+                      <q-btn
+                        icon="cleaning_services"
+                        rounded
+                        flat
+                        class="full-width"
+                        @click="clearNotifications(props.row)"
+                        >Clear</q-btn
+                      >
+                    </q-list>
+                  </q-menu>
+                </q-btn>
+              </q-card-actions>
+            </q-card-section>
           </q-card>
         </div>
       </template>
@@ -123,7 +139,7 @@ import { useProjectStore } from 'src/stores/projects.store';
 import { convoBus } from '../ceremony/convo-bus';
 import { useQuasar } from 'quasar';
 import { useRouter } from 'vue-router';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const projectStore = useProjectStore();
 const profilesStore = useProfilesStore();
@@ -132,16 +148,17 @@ const $q = useQuasar();
 const $router = useRouter();
 const projectNotificationsMap = ref<Record<string, NotificationInfo[]>>({});
 const projects = ref<IProject[]>([]);
-watch(
-  () => projectStore.projects,
-  (list) => {
+onMounted(() => {
+  const renderProjects = (list: IProject[]) => {
     projects.value = list;
     list.forEach((project) => {
       projectNotificationsMap.value[project.key] =
         projectNotifications(project);
     });
-  }
-);
+  };
+  renderProjects(projectStore.projects);
+  watch(() => projectStore.projects, renderProjects);
+});
 
 function projectNotifications(project: IProject) {
   return notificationStore.notifications.filter(
@@ -221,6 +238,10 @@ async function joinProject(projectKey: string) {
             });
           }
         },
+      },
+      {
+        icon: 'close',
+        color: 'secondary',
       },
     ],
   });
